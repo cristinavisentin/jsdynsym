@@ -34,8 +34,7 @@ import java.util.SortedMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class NavigationDrawer
-    implements SimulationOutcomeDrawer<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> {
+public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> {
 
   private static final int DEFAULT_SIDE_LENGTH = 400;
 
@@ -60,12 +59,11 @@ public class NavigationDrawer
       double robotFillAlpha,
       double targetSize,
       double marginRate,
-      IOType ioType) {
+      IOType ioType
+  ) {
 
     public enum IOType {
-      OFF,
-      TEXT,
-      GRAPHIC
+      OFF, TEXT, GRAPHIC
     }
 
     public static final Configuration DEFAULT = new Configuration(
@@ -83,7 +81,8 @@ public class NavigationDrawer
         0.25,
         5,
         0.01,
-        IOType.GRAPHIC);
+        IOType.GRAPHIC
+    );
   }
 
   private static void drawRobot(Graphics2D g, Color c, double alpha, double th, Point p, double a, double r) {
@@ -98,7 +97,14 @@ public class NavigationDrawer
   }
 
   private static void drawSensors(
-      Graphics2D g, Color c, Point robotP, double robotA, List<Double> as, double r, double th) {
+      Graphics2D g,
+      Color c,
+      Point robotP,
+      double robotA,
+      List<Double> as,
+      double r,
+      double th
+  ) {
     g.setStroke(new BasicStroke((float) th));
     g.setColor(c);
     as.forEach(a -> {
@@ -131,24 +137,31 @@ public class NavigationDrawer
       double[] in,
       double[] out,
       boolean senseTarget,
-      boolean rescaled) {
+      boolean rescaled
+  ) {
     g.setStroke(new BasicStroke(1f));
     if (ioType.equals(Configuration.IOType.TEXT)) {
       g.setColor(c);
       g.drawString(
           "in:  %s"
-              .formatted(Arrays.stream(in)
-                  .mapToObj("%+4.2f"::formatted)
-                  .collect(Collectors.joining(" "))),
+              .formatted(
+                  Arrays.stream(in)
+                      .mapToObj("%+4.2f"::formatted)
+                      .collect(Collectors.joining(" "))
+              ),
           5,
-          5 + g.getFontMetrics().getHeight() * 2);
+          5 + g.getFontMetrics().getHeight() * 2
+      );
       g.drawString(
           "out: %s"
-              .formatted(Arrays.stream(out)
-                  .mapToObj("%+4.2f"::formatted)
-                  .collect(Collectors.joining(" "))),
+              .formatted(
+                  Arrays.stream(out)
+                      .mapToObj("%+4.2f"::formatted)
+                      .collect(Collectors.joining(" "))
+              ),
           5,
-          5 + g.getFontMetrics().getHeight() * 3);
+          5 + g.getFontMetrics().getHeight() * 3
+      );
     }
     if (ioType.equals(Configuration.IOType.GRAPHIC)) {
       Color aC = GraphicsUtils.alphaed(c, alpha);
@@ -183,13 +196,19 @@ public class NavigationDrawer
 
   @Override
   public void drawSingle(
-      Graphics2D g, double t, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State> step) {
+      Graphics2D g,
+      double t,
+      SingleAgentTask.Step<double[], double[], NavigationEnvironment.State> step
+  ) {
     Arena arena = step.state().configuration().arena();
     // set transform
     AffineTransform previousTransform = setTransform(g, arena);
     // draw arena
-    g.setStroke(new BasicStroke(
-        (float) (configuration.segmentThickness / g.getTransform().getScaleX())));
+    g.setStroke(
+        new BasicStroke(
+            (float) (configuration.segmentThickness / g.getTransform().getScaleX())
+        )
+    );
     g.setColor(configuration.segmentColor);
     arena.segments().forEach(s -> g.draw(new Line2D.Double(s.p1().x(), s.p1().y(), s.p2().x(), s.p2().y())));
     // draw robot
@@ -200,7 +219,8 @@ public class NavigationDrawer
         configuration.robotThickness / g.getTransform().getScaleX(),
         step.state().robotPosition(),
         step.state().robotDirection(),
-        step.state().configuration().robotRadius());
+        step.state().configuration().robotRadius()
+    );
     drawSensors(
         g,
         configuration.sensorsColor,
@@ -208,14 +228,16 @@ public class NavigationDrawer
         step.state().robotDirection(),
         step.state().configuration().sensorAngles(),
         step.state().configuration().sensorRange(),
-        configuration.sensorsThickness / g.getTransform().getScaleX());
+        configuration.sensorsThickness / g.getTransform().getScaleX()
+    );
     // draw target
     drawTarget(
         g,
         configuration.targetColor,
         configuration.targetThickness / g.getTransform().getScaleX(),
         configuration.targetSize / g.getTransform().getScaleX(),
-        step.state().targetPosition());
+        step.state().targetPosition()
+    );
     // restore transformation
     g.setTransform(previousTransform);
     // draw info
@@ -232,14 +254,16 @@ public class NavigationDrawer
           step.observation(),
           step.action(),
           step.state().configuration().senseTarget(),
-          step.state().configuration().rescaleInput());
+          step.state().configuration().rescaleInput()
+      );
     }
   }
 
   @Override
   public void drawAll(
       Graphics2D g,
-      SortedMap<Double, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> map) {
+      SortedMap<Double, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> map
+  ) {
     Arena arena = map.values().iterator().next().state().configuration().arena();
     // set transform
     AffineTransform previousTransform = setTransform(g, arena);
@@ -248,34 +272,34 @@ public class NavigationDrawer
         g,
         configuration.robotColor,
         configuration.trajectoryThickness / g.getTransform().getScaleX(),
-        map.values().stream().map(s -> s.state().robotPosition()).toList());
+        map.values().stream().map(s -> s.state().robotPosition()).toList()
+    );
     // draw target and trajectory
     drawTrajectory(
         g,
         configuration.targetColor,
         configuration.trajectoryThickness / g.getTransform().getScaleX(),
-        map.values().stream().map(s -> s.state().targetPosition()).toList());
+        map.values().stream().map(s -> s.state().targetPosition()).toList()
+    );
     // restore transformation
     g.setTransform(previousTransform);
   }
 
   @Override
   public ImageInfo imageInfo(
-      Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> o) {
+      Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> o
+  ) {
     Arena arena = o.snapshots()
         .get(o.snapshots().firstKey())
         .state()
         .configuration()
         .arena();
     return new ImageInfo(
-        (int)
-            (arena.xExtent() > arena.yExtent()
-                ? DEFAULT_SIDE_LENGTH * arena.xExtent() / arena.yExtent()
-                : DEFAULT_SIDE_LENGTH),
-        (int)
-            (arena.xExtent() > arena.yExtent()
-                ? DEFAULT_SIDE_LENGTH
-                : DEFAULT_SIDE_LENGTH * arena.yExtent() / arena.xExtent()));
+        (int) (arena.xExtent() > arena.yExtent() ? DEFAULT_SIDE_LENGTH * arena.xExtent() / arena
+            .yExtent() : DEFAULT_SIDE_LENGTH),
+        (int) (arena.xExtent() > arena.yExtent() ? DEFAULT_SIDE_LENGTH : DEFAULT_SIDE_LENGTH * arena.yExtent() / arena
+            .xExtent())
+    );
   }
 
   private AffineTransform setTransform(Graphics2D g, Arena arena) {
@@ -286,11 +310,14 @@ public class NavigationDrawer
     // compute transformation
     double scale = Math.min(
         cW / (1 + 2 * configuration.marginRate) / arena.xExtent(),
-        cH / (1 + 2 * configuration.marginRate) / arena.yExtent());
+        cH / (1 + 2 * configuration.marginRate) / arena.yExtent()
+    );
     AffineTransform previousTransform = g.getTransform();
     AffineTransform transform = AffineTransform.getScaleInstance(scale, scale);
     transform.translate(
-        (cX / scale + cW / scale - arena.xExtent()) / 2d, (cY / scale + cH / scale - arena.yExtent()) / 2d);
+        (cX / scale + cW / scale - arena.xExtent()) / 2d,
+        (cY / scale + cH / scale - arena.yExtent()) / 2d
+    );
     g.setTransform(transform);
     return previousTransform;
   }

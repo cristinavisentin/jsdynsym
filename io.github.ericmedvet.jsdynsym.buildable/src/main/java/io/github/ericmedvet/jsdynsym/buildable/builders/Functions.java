@@ -32,14 +32,16 @@ import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.function|f")
 public class Functions {
-  private Functions() {}
+  private Functions() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> doubleOp(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Double> beforeF,
       @Param(value = "activationF", dS = "identity") MultiLayerPerceptron.ActivationFunction activationF,
-      @Param(value = "format", dS = "%.1f") String format) {
+      @Param(value = "format", dS = "%.1f") String format
+  ) {
     Function<Double, Double> f = activationF::applyAsDouble;
     return FormattedNamedFunction.from(f, format, activationF.name().toLowerCase())
         .compose(beforeF);
@@ -49,7 +51,8 @@ public class Functions {
   @Cacheable
   public static <X, S> NamedFunction<X, SortedMap<Double, S>> simOutcome(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<S>> beforeF,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<Simulation.Outcome<S>, SortedMap<Double, S>> f = Simulation.Outcome::snapshots;
     return NamedFunction.from(f, "sim.outcome").compose(beforeF);
   }

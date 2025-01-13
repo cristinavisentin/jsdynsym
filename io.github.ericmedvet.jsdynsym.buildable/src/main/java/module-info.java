@@ -26,6 +26,5 @@ module io.github.ericmedvet.jsdynsym.buildable {
 
   exports io.github.ericmedvet.jsdynsym.buildable.builders;
 
-  opens io.github.ericmedvet.jsdynsym.buildable.builders to
-      io.github.ericmedvet.jnb.core;
+  opens io.github.ericmedvet.jsdynsym.buildable.builders to io.github.ericmedvet.jnb.core;
 }

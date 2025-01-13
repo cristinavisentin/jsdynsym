@@ -25,12 +25,14 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.DoubleUnaryOperator;
 
-public interface NumericalStatelessSystem
-    extends NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem<double[], double[]> {
+public interface NumericalStatelessSystem extends NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem<double[], double[]> {
 
   @SuppressWarnings("unused")
   static NumericalStatelessSystem from(
-      int nOfInputs, int nOfOutputs, BiFunction<Double, double[], double[]> function) {
+      int nOfInputs,
+      int nOfOutputs,
+      BiFunction<Double, double[], double[]> function
+  ) {
     return new NumericalStatelessSystem() {
       @Override
       public int nOfInputs() {
@@ -46,12 +48,14 @@ public interface NumericalStatelessSystem
       public double[] step(double t, double[] input) {
         if (input.length != nOfInputs) {
           throw new IllegalArgumentException(
-              String.format("Unsupported input size: %d instead of %d", input.length, nOfInputs));
+              String.format("Unsupported input size: %d instead of %d", input.length, nOfInputs)
+          );
         }
         double[] output = function.apply(t, input);
         if (output.length != nOfOutputs) {
           throw new IllegalArgumentException(
-              String.format("Unsupported output size: %d instead of %d", output.length, nOfOutputs));
+              String.format("Unsupported output size: %d instead of %d", output.length, nOfOutputs)
+          );
         }
         return output;
       }
@@ -66,16 +70,24 @@ public interface NumericalStatelessSystem
   default NumericalStatelessSystem andThen(NumericalStatelessSystem other) {
     if (other.nOfInputs() != nOfOutputs()) {
       throw new IllegalArgumentException(
-          "Incompatible input/output size: input=%d, output=%d".formatted(other.nOfInputs(), nOfOutputs()));
+          "Incompatible input/output size: input=%d, output=%d".formatted(other.nOfInputs(), nOfOutputs())
+      );
     }
     NumericalStatelessSystem thisSystem = this;
     return NumericalStatelessSystem.from(
-        thisSystem.nOfInputs(), other.nOfOutputs(), (t, in) -> other.step(t, thisSystem.step(t, in)));
+        thisSystem.nOfInputs(),
+        other.nOfOutputs(),
+        (t, in) -> other.step(t, thisSystem.step(t, in))
+    );
   }
 
   default NumericalStatelessSystem andThen(DoubleUnaryOperator f) {
-    return NumericalStatelessSystem.from(nOfInputs(), nOfOutputs(), (t, in) -> Arrays.stream(step(t, in))
-        .map(f)
-        .toArray());
+    return NumericalStatelessSystem.from(
+        nOfInputs(),
+        nOfOutputs(),
+        (t, in) -> Arrays.stream(step(t, in))
+            .map(f)
+            .toArray()
+    );
   }
 }

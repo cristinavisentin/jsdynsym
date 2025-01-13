@@ -27,8 +27,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class EnhancedInput<S> extends AbstractComposed<NumericalDynamicalSystem<S>>
-    implements NumericalDynamicalSystem<S> {
+public class EnhancedInput<S> extends AbstractComposed<NumericalDynamicalSystem<S>> implements NumericalDynamicalSystem<S> {
   private final double windowT;
   private final EnumSet<Type> types;
   private final SortedMap<Double, double[]> memory;
@@ -37,9 +36,9 @@ public class EnhancedInput<S> extends AbstractComposed<NumericalDynamicalSystem<
     super(inner);
     if (inner.nOfInputs() % types.size() != 0) {
       throw new IllegalArgumentException(
-          ("Cannot build dynamical system with %d aggregate types (%s), because inner dynamical system input size is "
-                  + "wrong (%d)")
-              .formatted(types.size(), types, inner.nOfInputs()));
+          ("Cannot build dynamical system with %d aggregate types (%s), because inner dynamical system input size is " + "wrong (%d)")
+              .formatted(types.size(), types, inner.nOfInputs())
+      );
     }
     this.windowT = windowT;
     this.types = EnumSet.copyOf(types);
@@ -47,9 +46,7 @@ public class EnhancedInput<S> extends AbstractComposed<NumericalDynamicalSystem<
   }
 
   public enum Type {
-    CURRENT,
-    TREND,
-    AVG
+    CURRENT, TREND, AVG
   }
 
   @Override
@@ -112,6 +109,8 @@ public class EnhancedInput<S> extends AbstractComposed<NumericalDynamicalSystem<
   public String toString() {
     return "enhanced[%s](%s)"
         .formatted(
-            types.stream().map(t -> t.toString().toLowerCase()).collect(Collectors.joining(",")), inner());
+            types.stream().map(t -> t.toString().toLowerCase()).collect(Collectors.joining(",")),
+            inner()
+        );
   }
 }

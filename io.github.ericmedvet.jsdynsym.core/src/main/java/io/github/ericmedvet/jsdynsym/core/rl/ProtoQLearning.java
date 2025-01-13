@@ -48,10 +48,14 @@ public class ProtoQLearning implements EnumeratedTimeInvariantReinforcementLearn
     @Override
     public String toString() {
       return IntStream.range(0, nOfOutputs)
-          .mapToObj(o -> IntStream.range(0, nOfInputs)
-              .mapToObj(i -> "%5.1f"
-                  .formatted(table().getOrDefault(new ObservationActionPair(i, o), Double.NaN)))
-              .collect(Collectors.joining(" ")))
+          .mapToObj(
+              o -> IntStream.range(0, nOfInputs)
+                  .mapToObj(
+                      i -> "%5.1f"
+                          .formatted(table().getOrDefault(new ObservationActionPair(i, o), Double.NaN))
+                  )
+                  .collect(Collectors.joining(" "))
+          )
           .collect(Collectors.joining("\n"));
     }
   }
@@ -89,11 +93,12 @@ public class ProtoQLearning implements EnumeratedTimeInvariantReinforcementLearn
       output = randomGenerator.nextInt(nOfOutputs);
     } else {
       // choose action based on the table
-      List<Map.Entry<ObservationActionPair, Double>> oEntries = state.table().entrySet().stream()
+      List<Map.Entry<ObservationActionPair, Double>> oEntries = state.table()
+          .entrySet()
+          .stream()
           .filter(e -> e.getKey().observation() == input)
           .toList();
-      Optional<Map.Entry<ObservationActionPair, Double>> oEntry =
-          oEntries.stream().max(Map.Entry.comparingByValue());
+      Optional<Map.Entry<ObservationActionPair, Double>> oEntry = oEntries.stream().max(Map.Entry.comparingByValue());
       if (oEntry.isEmpty()) {
         output = randomGenerator.nextInt(nOfOutputs);
       } else {
@@ -103,10 +108,8 @@ public class ProtoQLearning implements EnumeratedTimeInvariantReinforcementLearn
           output = oEntry.get().getKey().action();
         } else {
           // choose a random action among the one never chosen
-          List<Integer> chosenActions =
-              oEntries.stream().map(e -> e.getKey().action()).toList();
-          List<Integer> allActions =
-              IntStream.range(0, nOfOutputs).boxed().toList();
+          List<Integer> chosenActions = oEntries.stream().map(e -> e.getKey().action()).toList();
+          List<Integer> allActions = IntStream.range(0, nOfOutputs).boxed().toList();
           List<Integer> availableActions = new ArrayList<>(allActions);
           availableActions.removeAll(chosenActions);
           output = availableActions.get(randomGenerator.nextInt(availableActions.size()));

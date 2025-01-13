@@ -59,13 +59,16 @@ public interface UnivariateRealFunction extends MultivariateRealFunction, ToDoub
   static UnivariateRealFunction from(MultivariateRealFunction multivariateRealFunction) {
     return from(
         new NamedToDoubleFunction<>(
-            (double[] xs) -> multivariateRealFunction.compute(xs)[0], multivariateRealFunction.toString()),
-        multivariateRealFunction.nOfInputs());
+            (double[] xs) -> multivariateRealFunction.compute(xs)[0],
+            multivariateRealFunction.toString()
+        ),
+        multivariateRealFunction.nOfInputs()
+    );
   }
 
   @Override
   default double[] compute(double... input) {
-    return new double[] {applyAsDouble(input)};
+    return new double[]{applyAsDouble(input)};
   }
 
   @Override
@@ -77,15 +80,20 @@ public interface UnivariateRealFunction extends MultivariateRealFunction, ToDoub
     return from(
         new NamedToDoubleFunction<>(
             (double[] xs) -> slope * applyAsDouble(xs) + intercept,
-            this + "[scaled:m=%f;q=%f]".formatted(slope, intercept)),
-        nOfInputs());
+            this + "[scaled:m=%f;q=%f]".formatted(slope, intercept)
+        ),
+        nOfInputs()
+    );
   }
 
   @Override
   default UnivariateRealFunction andThen(DoubleUnaryOperator f) {
     return from(
         new NamedToDoubleFunction<>(
-            (double[] xs) -> f.applyAsDouble(applyAsDouble(xs)), this + "[then:%s]".formatted(f)),
-        nOfInputs());
+            (double[] xs) -> f.applyAsDouble(applyAsDouble(xs)),
+            this + "[then:%s]".formatted(f)
+        ),
+        nOfInputs()
+    );
   }
 }

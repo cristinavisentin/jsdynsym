@@ -32,7 +32,8 @@ import java.util.random.RandomGenerator;
 /** @author "Eric Medvet" on 2024/07/24 for jsdynsym */
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.simulation|sim|s")
 public class Simulations {
-  private Simulations() {}
+  private Simulations() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
@@ -40,8 +41,7 @@ public class Simulations {
       @Param(value = "name", iS = "vs[{nOfSensors}]-nav-{arena}") String name,
       @Param(value = "initialRobotXRange", dNPM = "m.range(min=0.45;max=0.55)") DoubleRange initialRobotXRange,
       @Param(value = "initialRobotYRange", dNPM = "m.range(min=0.8;max=0.85)") DoubleRange initialRobotYRange,
-      @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)")
-          DoubleRange initialRobotDirectionRange,
+      @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)") DoubleRange initialRobotDirectionRange,
       @Param(value = "targetXRange", dNPM = "m.range(min=0.5;max=0.5)") DoubleRange targetXRange,
       @Param(value = "targetYRange", dNPM = "m.range(min=0.15;max=0.15)") DoubleRange targetYRange,
       @Param(value = "robotRadius", dD = 0.05) double robotRadius,
@@ -55,7 +55,8 @@ public class Simulations {
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
       @Param(value = "dT", dD = 0.1) double dT,
       @Param(value = "initialT", dD = 0) double initialT,
-      @Param(value = "finalT", dD = 60) double finalT) {
+      @Param(value = "finalT", dD = 60) double finalT
+  ) {
     return new VariableSensorPositionsNavigation(
         new NavigationEnvironment.Configuration(
             initialRobotXRange,
@@ -70,10 +71,12 @@ public class Simulations {
             senseTarget,
             arena.arena(),
             rescaleInput,
-            randomGenerator),
+            randomGenerator
+        ),
         nOfSensors,
         new DoubleRange(initialT, finalT),
         dT,
-        sortAngles);
+        sortAngles
+    );
   }
 }

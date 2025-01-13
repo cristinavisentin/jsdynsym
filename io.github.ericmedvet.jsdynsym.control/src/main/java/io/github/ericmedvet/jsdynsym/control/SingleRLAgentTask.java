@@ -21,5 +21,4 @@ package io.github.ericmedvet.jsdynsym.control;
 
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 
-public interface SingleRLAgentTask<C extends ReinforcementLearningAgent<O, A, ?>, O, A, S>
-    extends SingleAgentTask<C, ReinforcementLearningAgent.RewardedInput<O>, A, S> {}
+public interface SingleRLAgentTask<C extends ReinforcementLearningAgent<O, A, ?>, O, A, S> extends SingleAgentTask<C, ReinforcementLearningAgent.RewardedInput<O>, A, S> {}

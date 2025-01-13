@@ -43,34 +43,31 @@ public class Main {
   @SuppressWarnings("unchecked")
   public static void pointNavVisual() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    String genotype =
-        "rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAWdwQAAAAWc3IAEGphdmEubGFuZy5Eb3VibGWAs8JKKWv7BAIAAUQABXZhbHVleHIAEGphdmEubGFuZy5OdW1iZXKGrJUdC5TgiwIAAHhwP+HfAxn4soBzcQB+AAI/5/cWGhuXynNxAH4AAr/VPpwJHdyAc3EAfgACv8jBAcrQY6BzcQB+AAK/5cwX9vm3MnNxAH4AAj/desmMrqzYc3EAfgACv8/9cWhZJnhzcQB+AAK/z1669BZtQHNxAH4AAj+/BbKVlmMwc3EAfgACv+biExNRExBzcQB+AAI/2NINXFEfoHNxAH4AAr/n8MgDN+0Mc3EAfgACP8gJ2fyu00hzcQB+AAK/7FiZq3ZpsHNxAH4AAr/sodjxwbdqc3EAfgACP8oN6i+X/JhzcQB+AAK/zzJxehFIqHNxAH4AAr/mXy4s9PQic3EAfgACP4xC3kyxYYBzcQB+AAI/4yais6r7EHNxAH4AAj/YYcjqIOGgc3EAfgACP+HNfeh3wOZ4";
+    String genotype = "rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAWdwQAAAAWc3IAEGphdmEubGFuZy5Eb3VibGWAs8JKKWv7BAIAAUQABXZhbHVleHIAEGphdmEubGFuZy5OdW1iZXKGrJUdC5TgiwIAAHhwP+HfAxn4soBzcQB+AAI/5/cWGhuXynNxAH4AAr/VPpwJHdyAc3EAfgACv8jBAcrQY6BzcQB+AAK/5cwX9vm3MnNxAH4AAj/desmMrqzYc3EAfgACv8/9cWhZJnhzcQB+AAK/z1669BZtQHNxAH4AAj+/BbKVlmMwc3EAfgACv+biExNRExBzcQB+AAI/2NINXFEfoHNxAH4AAr/n8MgDN+0Mc3EAfgACP8gJ2fyu00hzcQB+AAK/7FiZq3ZpsHNxAH4AAr/sodjxwbdqc3EAfgACP8oN6i+X/JhzcQB+AAK/zzJxehFIqHNxAH4AAr/mXy4s9PQic3EAfgACP4xC3kyxYYBzcQB+AAI/4yais6r7EHNxAH4AAj/YYcjqIOGgc3EAfgACP+HNfeh3wOZ4";
     Function<String, Object> decoder = (Function<String, Object>) nb.build("f.fromBase64()");
     List<Double> actualGenotype = (List<Double>) decoder.apply(genotype);
-    PointNavigationEnvironment environment = (PointNavigationEnvironment)
-        nb.build("ds.e.pointNavigation(arena = E_MAZE;initialRobotXRange = m.range(min = 0.5; max = 0.55);"
-            + "initialRobotYRange = m.range(min = 0.75; max = 0.75);robotMaxV = 0.05)");
-    MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>)
-            nb.build("ds.num.mlp(innerLayerRatio = 2.0)"))
+    PointNavigationEnvironment environment = (PointNavigationEnvironment) nb.build(
+        "ds.e.pointNavigation(arena = E_MAZE;initialRobotXRange = m.range(min = 0.5; max = 0.55);" + "initialRobotYRange = m.range(min = 0.75; max = 0.75);robotMaxV = 0.05)"
+    );
+    MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb.build(
+        "ds.num.mlp(innerLayerRatio = 2.0)"
+    ))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.setParams(actualGenotype.stream().mapToDouble(d -> d).toArray());
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State>
-        task = SingleAgentTask.fromEnvironment(
+    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(
             environment,
             new double[2],
             s -> s.robotPosition().distance(s.targetPosition()) < .01,
             new DoubleRange(0, 100),
-            0.1);
-    Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome =
-        task.simulate(mlp);
+            0.1
+        );
+    Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
+        .simulate(mlp);
     PointNavigationDrawer d = new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT);
     d.show(new ImageBuilder.ImageInfo(500, 500), outcome);
-    Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double>
-        fitness = (Function<
-                Simulation.Outcome<
-                    SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>,
-                Double>)
-            nb.build("ds.e.n.finalTimePlusD()");
+    Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double>) nb
+        .build("ds.e.n.finalTimePlusD()");
     System.out.println(fitness.apply(outcome));
     /*VectorFieldDrawer vfd =
     new VectorFieldDrawer(Arena.Prepared.E_MAZE.arena(), VectorFieldDrawer.Configuration.DEFAULT);
@@ -79,20 +76,22 @@ public class Main {
 
   public static void pointNavigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    PointNavigationEnvironment environment =
-        (PointNavigationEnvironment) nb.build("ds.e.pointNavigation(arena = E_MAZE)");
-    @SuppressWarnings("unchecked")
-    MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>)
-            nb.build("ds.num.mlp()"))
+    PointNavigationEnvironment environment = (PointNavigationEnvironment) nb.build(
+        "ds.e.pointNavigation(arena = E_MAZE)"
+    );
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
+        .build("ds.num.mlp()"))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
-    VectorFieldDrawer vfd =
-        new VectorFieldDrawer(Arena.Prepared.E_MAZE.arena(), VectorFieldDrawer.Configuration.DEFAULT);
+    VectorFieldDrawer vfd = new VectorFieldDrawer(
+        Arena.Prepared.E_MAZE.arena(),
+        VectorFieldDrawer.Configuration.DEFAULT
+    );
     vfd.show(new ImageBuilder.ImageInfo(500, 500), mlp);
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State>
-        task = SingleAgentTask.fromEnvironment(environment, new double[2], new DoubleRange(0, 10), 0.1);
-    Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome =
-        task.simulate(mlp);
+    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(environment, new double[2], new DoubleRange(0, 10), 0.1);
+    Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
+        .simulate(mlp);
     new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT)
         .videoBuilder()
         .save(new File("../point-navigation.mp4"), outcome);
@@ -101,23 +100,18 @@ public class Main {
   public static void navigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
     NavigationEnvironment environment = (NavigationEnvironment) nb.build("ds.e.navigation(arena = E_MAZE)");
-    @SuppressWarnings("unchecked")
-    MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>)
-            nb.build("ds.num.mlp()"))
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
+        .build("ds.num.mlp()"))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], NavigationEnvironment.State> task =
-        SingleAgentTask.fromEnvironment(environment, new double[2], new DoubleRange(0, 30), 0.1);
-    Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome =
-        task.simulate(mlp);
+    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(environment, new double[2], new DoubleRange(0, 30), 0.1);
+    Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
+        mlp
+    );
     NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
-    @SuppressWarnings("unchecked")
-    Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>
-        fitness = (Function<
-                Simulation.Outcome<
-                    SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>,
-                Double>)
-            nb.build("ds.e.n.arenaCoverage()");
+    @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
+        .build("ds.e.n.arenaCoverage()");
     System.out.println(fitness.apply(outcome));
     d.show(outcome);
   }

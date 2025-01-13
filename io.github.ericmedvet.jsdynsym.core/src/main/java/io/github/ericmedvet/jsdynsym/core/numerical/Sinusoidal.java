@@ -45,7 +45,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
       DoubleRange phaseRange,
       DoubleRange frequencyRange,
       DoubleRange amplitudeRange,
-      DoubleRange biasRange) {
+      DoubleRange biasRange
+  ) {
     this.nOfInputs = nOfInputs;
     this.nOfOutputs = nOfOutputs;
     this.phaseRange = phaseRange;
@@ -89,7 +90,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
   public void setAmplitudes(double[] amplitudes) {
     if (amplitudes.length != nOfOutputs) {
       throw new IllegalArgumentException(
-          "Amplitudes size is wrong: %d expected, %d found".formatted(nOfOutputs, amplitudes.length));
+          "Amplitudes size is wrong: %d expected, %d found".formatted(nOfOutputs, amplitudes.length)
+      );
     }
     System.arraycopy(amplitudes, 0, this.amplitudes, 0, nOfOutputs);
   }
@@ -120,7 +122,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
   public void setBiases(double[] biases) {
     if (biases.length != nOfOutputs) {
       throw new IllegalArgumentException(
-          "Biases size is wrong: %d expected, %d found".formatted(nOfOutputs, biases.length));
+          "Biases size is wrong: %d expected, %d found".formatted(nOfOutputs, biases.length)
+      );
     }
     System.arraycopy(biases, 0, this.biases, 0, nOfOutputs);
   }
@@ -128,7 +131,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
   public void setFrequencies(double[] frequencies) {
     if (frequencies.length != nOfOutputs) {
       throw new IllegalArgumentException(
-          "Frequencies size is wrong: %d expected, %d found".formatted(nOfOutputs, frequencies.length));
+          "Frequencies size is wrong: %d expected, %d found".formatted(nOfOutputs, frequencies.length)
+      );
     }
     System.arraycopy(frequencies, 0, this.frequencies, 0, nOfOutputs);
   }
@@ -145,7 +149,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
   public void setParams(double[] params) {
     if (params.length != (nOfOutputs * nOfTypes())) {
       throw new IllegalArgumentException(
-          "Params size is wrong: %d expected, %d found".formatted(nOfOutputs * nOfTypes(), params.length));
+          "Params size is wrong: %d expected, %d found".formatted(nOfOutputs * nOfTypes(), params.length)
+      );
     }
     int i = 0;
     if (phaseRange.extent() > 0) {
@@ -172,7 +177,8 @@ public class Sinusoidal implements NumericalStatelessSystem, NumericalParametriz
   public void setPhases(double[] phases) {
     if (phases.length != nOfOutputs) {
       throw new IllegalArgumentException(
-          "Phases size is wrong: %d expected, %d found".formatted(nOfOutputs, phases.length));
+          "Phases size is wrong: %d expected, %d found".formatted(nOfOutputs, phases.length)
+      );
     }
     System.arraycopy(phases, 0, this.phases, 0, nOfOutputs);
   }

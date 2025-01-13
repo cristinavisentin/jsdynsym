@@ -30,7 +30,8 @@ import io.github.ericmedvet.jsdynsym.control.navigation.VectorFieldDrawer;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.drawer|d")
 public class Drawers {
-  private Drawers() {}
+  private Drawers() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
