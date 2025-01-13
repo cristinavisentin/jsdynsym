@@ -70,6 +70,19 @@ public record Point(double x, double y) {
     return new Point(x + p.x(), y + p.y());
   }
 
+  //TODO check
+  public Point rotateCounterClockWise(Point centerOfRotation, double angle) {
+    Point thisPointInCenterOfRotationReferenceFrame = this.diff(centerOfRotation);
+    double newX = thisPointInCenterOfRotationReferenceFrame.x() * Math.cos(angle) - thisPointInCenterOfRotationReferenceFrame.y() * Math.sin(angle);
+    double newY = thisPointInCenterOfRotationReferenceFrame.x() * Math.sin(angle) + thisPointInCenterOfRotationReferenceFrame.y() * Math.cos(angle);
+    return new Point(newX, newY).sum(centerOfRotation);
+  }
+
+  //TODO check
+  public double getRotationAngleCounterClockwise(Point centerOfRotation){
+    return this.diff(centerOfRotation).direction();
+  }
+
   @Override
   public String toString() {
     return String.format("(%.3f;%.3f)", x, y);

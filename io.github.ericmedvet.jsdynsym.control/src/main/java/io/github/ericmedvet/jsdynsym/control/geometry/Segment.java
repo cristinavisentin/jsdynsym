@@ -29,4 +29,29 @@ public record Segment(Point p1, Point p2) {
   public double length() {
     return p1.distance(p2);
   }
+
+  public Point intersection(Segment other) {
+    double denominator = (this.p1.x() - this.p2.x()) * (other.p1.y() - other.p2.y())
+        - (this.p1.y() - this.p2.y()) * (other.p1.x() - other.p2.x());
+    // if denominator is 0, the lines are parallel or coincident
+    if (denominator == 0) {
+      return null;
+    }
+    double px = ((this.p1.x() * this.p2.y() - this.p1.y() * this.p2.x()) * (other.p1.x() - other.p2.x())
+        - (this.p1.x() - this.p2.x()) * (other.p1.x() * other.p2.y() - other.p1.y() * other.p2.x())) / denominator;
+    double py = ((this.p1.x() * this.p2.y() - this.p1.y() * this.p2.x()) * (other.p1.y() - other.p2.y())
+        - (this.p1.y() - this.p2.y()) * (other.p1.x() * other.p2.y() - other.p1.y() * other.p2.x())) / denominator;
+    Point intersection = new Point(px, py);
+    // check if the intersection point lies on both segments
+    if (isPointOnSegment(intersection) && other.isPointOnSegment(intersection)) {
+      return intersection;
+    } else {
+      return null;
+    }
+  }
+
+  private boolean isPointOnSegment(Point point) {
+    return point.x() >= Math.min(this.p1.x(), this.p2.x()) && point.x() <= Math.max(this.p1.x(), this.p2.x()) &&
+        point.y() >= Math.min(this.p1.y(), this.p2.y()) && point.y() <= Math.max(this.p1.y(), this.p2.y());
+  }
 }
