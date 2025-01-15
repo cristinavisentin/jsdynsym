@@ -56,7 +56,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     reset();
   }
 
-  private enum Side {
+  public enum Side {
     LEFT,
     RIGHT
   }
