@@ -11,6 +11,7 @@ import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
 
@@ -32,6 +33,21 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
       double maximumTimePerPoint,
       RandomGenerator randomGenerator
   ) {
+    public static final Configuration DEFAULT = new Configuration(
+        new DoubleRange(20, 30),
+        10,
+        1,
+        5,
+        0.5,
+        0.1,
+        new DoubleRange(2,5),
+        new DoubleRange(2,5),
+        1.5,
+        100,
+        50,
+        Double.MAX_VALUE,
+        new Random()
+    );
   }
 
   // All coordinate are in Arena reference frame that is centered in the down-left cornet, with the x-axis pointing rightwards and the y-axis pointing upwards
@@ -395,16 +411,23 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     BallState updatedBallState = updateBallState(state.ballState, deltaTime);
     BallState updatedBallStateWithCollision = updatedBallState.deepCopy();
     checkPointEnd(updatedBallStateWithCollision, t);
-    boolean inGame = pointStatus == PointStatus.IN_GAME;
-    boolean collisionIsPossible = true;
-    while (collisionIsPossible && inGame) {
-      updatedBallStateWithCollision = handleArenaEdgeMirroredVerticalCollisionIfAny(updatedBallStateWithCollision);
-      updatedBallStateWithCollision = handleCollisionWithRacketsIfAny(updatedBallStateWithCollision);
-      checkPointEnd(updatedBallStateWithCollision, t);
-      collisionIsPossible = !updatedBallStateWithCollision.equals(updatedBallState);
-      inGame = pointStatus == PointStatus.IN_GAME;
-      updatedBallState = updatedBallStateWithCollision.deepCopy();
-    }
+    // boolean inGame = pointStatus == PointStatus.IN_GAME;
+    // boolean collisionIsPossible = true;
+    //while (collisionIsPossible && inGame) {
+    //  updatedBallStateWithCollision = handleArenaEdgeMirroredVerticalCollisionIfAny(updatedBallStateWithCollision);
+    //  updatedBallStateWithCollision = handleCollisionWithRacketsIfAny(updatedBallStateWithCollision);
+    //  checkPointEnd(updatedBallStateWithCollision, t);
+    //  collisionIsPossible = !updatedBallStateWithCollision.equals(updatedBallState);
+    //  inGame = pointStatus == PointStatus.IN_GAME;
+    //  updatedBallState = updatedBallStateWithCollision.deepCopy();
+    //}
+    updatedBallStateWithCollision = handleArenaEdgeMirroredVerticalCollisionIfAny(updatedBallStateWithCollision);
+    updatedBallStateWithCollision = handleCollisionWithRacketsIfAny(updatedBallStateWithCollision);
+    checkPointEnd(updatedBallStateWithCollision, t);
+    updatedBallStateWithCollision = handleArenaEdgeMirroredVerticalCollisionIfAny(updatedBallStateWithCollision);
+    updatedBallStateWithCollision = handleCollisionWithRacketsIfAny(updatedBallStateWithCollision);
+    checkPointEnd(updatedBallStateWithCollision, t);
+
     updateState(updatedBallStateWithCollision, updatedLRacketState, updatedRRacketState);
     double[] lRacketObservation = DoubleStream.concat(
         Arrays.stream(updatedLRacketState.toArray()),
