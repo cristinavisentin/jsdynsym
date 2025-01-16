@@ -28,13 +28,13 @@ public class PongDrawer
         Color.MAGENTA,
         Color.DARK_GRAY,
         Color.BLUE,
-        2,
-        2,
-        3,
-        0.25,
-        0.25,
-        3,
-        0.01
+        1,
+        1,
+        1,
+        0.95,
+        0.95,
+        0.5,
+        0.1
     );
   }
 
@@ -93,7 +93,7 @@ public class PongDrawer
       // draw the lower semicircle
       g.fillArc(
           screenX.apply(racketX - edgeRadius),
-          screenY.apply(racketYCenter - rectHeight / 2 - edgeRadius),
+          screenY.apply(racketYCenter - rectHeight / 2 + edgeRadius),
           arcWidth,
           arcHeight,
           180,
@@ -114,8 +114,8 @@ public class PongDrawer
     );
     // draw the scores
     g.setColor(configuration.infoColor());
-    g.setFont(new Font("Arial", Font.BOLD, 18));
+    g.setFont(new Font("Arial", Font.BOLD, 5));
     String scoreText = String.format("Left: %.0f  Right: %.0f", state.lRacketScore(), state.rRacketScore());
-    g.drawString(scoreText, (int) margin, (int) (margin / 2));
+    g.drawString(scoreText, (int) margin * 2, (int) margin * 2);
   }
 }

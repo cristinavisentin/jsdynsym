@@ -5,6 +5,5 @@ import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
 public interface BiEnvironment<O1, O2, A1, A2, S> extends DynamicalSystem<Pair<A1,A2>, Pair<O1,O2>, S> {
 
-    A1 defaultAgent1Action();
-    A2 defaultAgent2Action();
+    Pair<A1, A2> defaultActions();
 }

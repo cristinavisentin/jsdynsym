@@ -32,8 +32,18 @@ public interface HomogeneousBiAgentTask<C extends DynamicalSystem<O, A, ?>, O, A
         Pair<A, A> actions = new Pair<>(agent1.step(t, observations.first()), agent2.step(t, observations.second()));
         observations = biEnvironment.step(t, actions);
         steps.put(t, new Step<>(observations, actions, biEnvironment.getState()));
+        t = t + dT;
       }
       return Outcome.of(new TreeMap<>(steps));
     };
+  }
+
+  static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromHomogenousBiEnvironment(
+      HomogeneousBiEnvironment<O, A, S> biEnvironment,
+      Predicate<S> stopCondition,
+      DoubleRange tRange,
+      double dT
+  ){
+    return fromHomogenousBiEnvironment(biEnvironment, biEnvironment.defaultActions(), stopCondition, tRange, dT);
   }
 }
