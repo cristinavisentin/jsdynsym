@@ -21,11 +21,16 @@ package io.github.ericmedvet.jsdynsym.control.pong;
 
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
-public class DummyPongAgent implements MultivariateRealFunction {
-
+public class MaxSpeedPongAgent implements MultivariateRealFunction {
   @Override
   public double[] compute(double... input) {
-    return new double[] {0};
+    double racketY = input[0];
+    double ballY = input[3];
+    if (racketY >= ballY) {
+      return new double[] {-1};
+    } else {
+      return new double[] {1};
+    }
   }
 
   @Override

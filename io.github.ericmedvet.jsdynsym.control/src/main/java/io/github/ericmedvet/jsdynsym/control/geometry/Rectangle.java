@@ -1,13 +1,33 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jsdynsym-control
+ * %%
+ * Copyright (C) 2023 - 2025 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 package io.github.ericmedvet.jsdynsym.control.geometry;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public record Rectangle(Point topLeft, Point bottomRight) {
 
   public Rectangle {
     if (topLeft.x() >= bottomRight.x() || bottomRight.y() >= topLeft.y()) {
-      throw new IllegalArgumentException("Invalid rectangle: Ensure bottomLeft is below and to the left of topRight.");
+      throw new IllegalArgumentException(
+          "Invalid rectangle: Ensure bottomLeft is below and to the left of topRight.");
     }
   }
 
@@ -33,10 +53,10 @@ public record Rectangle(Point topLeft, Point bottomRight) {
     List<Point> verticalEdgesIntersections = new ArrayList<>();
     Point leftEdgeIntersection = segment.intersection(leftEdge());
     Point rightEdgeIntersection = segment.intersection(rightEdge());
-    if (leftEdgeIntersection != null){
+    if (leftEdgeIntersection != null) {
       verticalEdgesIntersections.add(leftEdgeIntersection);
     }
-    if (rightEdgeIntersection != null){
+    if (rightEdgeIntersection != null) {
       verticalEdgesIntersections.add(rightEdgeIntersection);
     }
     verticalEdgesIntersections.sort((intersection1, intersection2) -> {
@@ -51,10 +71,10 @@ public record Rectangle(Point topLeft, Point bottomRight) {
     List<Point> horizontalEdgesIntersections = new ArrayList<>();
     Point topEdgeIntersection = segment.intersection(topEdge());
     Point bottomEdgeIntersection = segment.intersection(bottomEdge());
-    if (topEdgeIntersection != null){
+    if (topEdgeIntersection != null) {
       horizontalEdgesIntersections.add(topEdgeIntersection);
     }
-    if (bottomEdgeIntersection != null){
+    if (bottomEdgeIntersection != null) {
       horizontalEdgesIntersections.add(bottomEdgeIntersection);
     }
     horizontalEdgesIntersections.sort((intersection1, intersection2) -> {
