@@ -61,7 +61,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
         0.05,
         0.001,
         30,
-        100,
+        80,
         new DoubleRange(-Math.PI / 8, Math.PI / 8),
         1.05,
         60,
@@ -226,9 +226,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
         collisionPoint.x() + (collisionPoint.x() - updatedBallState.center.x()), updatedBallState.center.y());
     Point mirroredVelocity = new Point(
         -updatedBallState.velocity().x(), updatedBallState.velocity().y());
-    double correctionAngle = -(configuration.spinEffectFactor
-        * racketState
-        .yVelocity); // The minus sign is needed to simulate inverse proportionality that arises with
+    double correctionAngle = -(configuration.spinEffectFactor * racketState.yVelocity); // The minus sign is needed to simulate inverse proportionality that arises with
     // the spin effect
     Point adjustedReflection = mirroredReflection.rotateCounterClockWise(collisionPoint, correctionAngle);
     Point adjustedVelocity = mirroredVelocity.rotateCounterClockWise(collisionPoint, correctionAngle);
@@ -258,7 +256,8 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     return new BallState(
         new Point(
             ballStateFlippedReferenceFrame.center.x(),
-            ballStateFlippedReferenceFrame.center.y() - racketState.yCenter),
+            ballStateFlippedReferenceFrame.center.y() - racketState.yCenter
+        ),
         ballStateFlippedReferenceFrame.velocity);
   }
 
@@ -270,7 +269,8 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     return new BallState(
         new Point(
             ballStateFlippedReferenceFrame.center.x(),
-            ballStateFlippedReferenceFrame.center.y() + racketState.yCenter),
+            ballStateFlippedReferenceFrame.center.y() + racketState.yCenter
+        ),
         ballStateFlippedReferenceFrame.velocity);
   }
 

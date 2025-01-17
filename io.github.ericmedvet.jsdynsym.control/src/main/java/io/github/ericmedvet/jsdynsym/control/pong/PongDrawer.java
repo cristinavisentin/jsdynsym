@@ -44,7 +44,17 @@ public class PongDrawer
       double marginRate) {
 
     public static final Configuration DEFAULT = new Configuration(
-        Color.BLUE, Color.MAGENTA, Color.DARK_GRAY, Color.BLUE, 1, 1, 1, 0.95, 0.95, 0.5, 0.1);
+        Color.BLUE,
+        Color.MAGENTA,
+        Color.DARK_GRAY,
+        Color.BLUE,
+        0,
+        0,
+        1,
+        0.95,
+        1,
+        0.4,
+        0.1);
   }
 
   @Override

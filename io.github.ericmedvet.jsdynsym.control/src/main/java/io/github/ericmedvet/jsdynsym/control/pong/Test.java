@@ -32,7 +32,7 @@ import java.util.List;
 
 public class Test {
   public static void main(String[] args) {
-    singleTest(500, 0.05, 11, new Pair<>(new MaxSpeedPongAgent(), new MaxSpeedPongAgent()), "../pong_1.mp4");
+    singleTest(100, 0.02, 11, new Pair<>(new MaxSpeedPongAgent(), new MaxSpeedPongAgent()), "../pong_1.mp4");
 
     // multipleTestsWithConfusionMatrix(2000, 0.05, 101, Arrays.asList(0.0, 0.5, 10.0),
     // "../pong_confusion_matrix.csv");
