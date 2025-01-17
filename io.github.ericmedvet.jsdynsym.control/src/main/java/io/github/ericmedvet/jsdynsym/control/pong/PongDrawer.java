@@ -137,7 +137,7 @@ public class PongDrawer
     String scoreText = String.format("Left: %.0f  Right: %.0f", state.lRacketScore(), state.rRacketScore());
     String ballVelocity = String.format("Ball Velocity: %.0f", state.ballState().velocity().magnitude());
     g.drawString(scoreText, (float) (margin), (float) (margin * 0.9));
-    g.drawString(ballVelocity, (float) (margin * 3), (float) (margin * 0.9));
+    g.drawString(ballVelocity, (float) (margin * 5), (float) (margin * 0.9));
   }
 
   @Override
