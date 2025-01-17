@@ -44,7 +44,6 @@ public class SimplePongAgent implements MultivariateRealFunction {
     } else {
       return new double[] {Math.signum(ballY - racketY) * maxNormalizedSpeed};
     }
-
   }
 
   @Override

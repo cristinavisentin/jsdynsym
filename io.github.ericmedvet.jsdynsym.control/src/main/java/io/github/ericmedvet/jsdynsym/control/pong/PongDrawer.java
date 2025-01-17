@@ -22,13 +22,20 @@ package io.github.ericmedvet.jsdynsym.control.pong;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiAgentTask;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
-
 import java.awt.*;
 import java.util.SortedMap;
 import java.util.function.Function;
 
 public class PongDrawer
     implements SimulationOutcomeDrawer<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> {
+
+  public PongDrawer(PongDrawer.Configuration configuration) {
+    this.configuration = configuration;
+  }
+
+  public PongDrawer() {
+    this.configuration = Configuration.DEFAULT;
+  }
 
   public record Configuration(
       Color racketsColor,
@@ -43,25 +50,16 @@ public class PongDrawer
       double ballRadius,
       double marginRate) {
 
-    public static final Configuration DEFAULT = new Configuration(
-        Color.BLUE,
-        Color.MAGENTA,
-        Color.DARK_GRAY,
-        Color.BLUE,
-        0,
-        0,
-        1,
-        0.95,
-        1,
-        0.4,
-        0.1);
+    public static final Configuration DEFAULT =
+        new Configuration(Color.BLUE, Color.MAGENTA, Color.DARK_GRAY, Color.BLUE, 0, 0, 1, 0.95, 1, 0.4, 0.1);
   }
+
+  private final Configuration configuration;
 
   @Override
   public void drawSingle(
       Graphics2D g, double t, HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State> stateStep) {
     PongEnvironment.State state = stateStep.state();
-    PongDrawer.Configuration configuration = Configuration.DEFAULT;
     // Compute margins and scaling factors
     double arenaWidth = state.configuration().arenaXLength();
     double arenaHeight = state.configuration().arenaYLength();
@@ -145,7 +143,8 @@ public class PongDrawer
     g.setColor(configuration.infoColor());
     g.setFont(new Font("Arial", Font.BOLD, 8));
     String scoreText = String.format("Left: %.0f  Right: %.0f", state.lRacketScore(), state.rRacketScore());
-    String ballVelocity = String.format("Ball Velocity: %.0f", state.ballState().velocity().magnitude());
+    String ballVelocity = String.format(
+        "Ball Velocity: %.0f", state.ballState().velocity().magnitude());
     g.drawString(scoreText, (float) (margin), (float) (margin * 0.9));
     g.drawString(ballVelocity, (float) (margin * 5), (float) (margin * 0.9));
   }

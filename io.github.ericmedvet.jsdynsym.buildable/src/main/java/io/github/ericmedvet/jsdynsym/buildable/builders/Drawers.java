@@ -27,6 +27,7 @@ import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.PointNavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.VectorFieldDrawer;
+import io.github.ericmedvet.jsdynsym.control.pong.PongDrawer;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.drawer|d")
 public class Drawers {
@@ -50,5 +51,8 @@ public class Drawers {
     return new VectorFieldDrawer(arena.arena(), VectorFieldDrawer.Configuration.DEFAULT);
   }
 
-  //TODO drawe pong
+  @Cacheable
+  public static PongDrawer pong() {
+    return new PongDrawer(PongDrawer.Configuration.DEFAULT);
+  }
 }

@@ -26,7 +26,6 @@ import io.github.ericmedvet.jsdynsym.control.geometry.Circle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,12 +57,12 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
         5,
         1.5,
         10,
-        0.05,
+        0.1,
         0.001,
         30,
         80,
         new DoubleRange(-Math.PI / 8, Math.PI / 8),
-        1.05,
+        1.1,
         60,
         50,
         Double.MAX_VALUE,
@@ -78,8 +77,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
       RacketState rRacketState,
       BallState ballState,
       double lRacketScore,
-      double rRacketScore) {
-  }
+      double rRacketScore) {}
 
   private final Configuration configuration;
   private State state;
@@ -115,29 +113,27 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
   }
 
   private double[] toNormalizedArray(RacketState rRacketState) {
-    return new double[]{
-        rRacketState.yCenter / configuration.arenaYLength,
-        rRacketState.yVelocity / configuration.racketsMaxYVelocity
+    return new double[] {
+      rRacketState.yCenter / configuration.arenaYLength,
+      rRacketState.yVelocity / configuration.racketsMaxYVelocity
     };
   }
 
   private double[] toNormalizedArray(BallState ballState) {
     double normalizedBallXVelocity = ballState.velocity().x() / configuration.ballMaxVelocity;
     double normalizedBallYVelocity = ballState.velocity().y() / configuration.ballMaxVelocity;
-    return new double[]{
-        ballState.center().x() / configuration.arenaXLength,
-        ballState.center().y() / configuration.arenaYLength,
-        normalizedBallXVelocity,
-        normalizedBallYVelocity
+    return new double[] {
+      ballState.center().x() / configuration.arenaXLength,
+      ballState.center().y() / configuration.arenaYLength,
+      normalizedBallXVelocity,
+      normalizedBallYVelocity
     };
   }
 
   public record BallState(Point center, Point velocity) {
     BallState rotateCounterClockWise(Point centerOfRotation, double angle) {
-      Point ballCenterRotated = center().rotateCounterClockWise(
-          centerOfRotation, angle);
-      Point ballVelocityRotated =
-          velocity().rotateCounterClockWise(centerOfRotation, angle);
+      Point ballCenterRotated = center().rotateCounterClockWise(centerOfRotation, angle);
+      Point ballVelocityRotated = velocity().rotateCounterClockWise(centerOfRotation, angle);
       return new BallState(ballCenterRotated, ballVelocityRotated);
     }
 
@@ -226,7 +222,9 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
         collisionPoint.x() + (collisionPoint.x() - updatedBallState.center.x()), updatedBallState.center.y());
     Point mirroredVelocity = new Point(
         -updatedBallState.velocity().x(), updatedBallState.velocity().y());
-    double correctionAngle = -(configuration.spinEffectFactor * racketState.yVelocity); // The minus sign is needed to simulate inverse proportionality that arises with
+    double correctionAngle = -(configuration.spinEffectFactor
+        * racketState
+            .yVelocity); // The minus sign is needed to simulate inverse proportionality that arises with
     // the spin effect
     Point adjustedReflection = mirroredReflection.rotateCounterClockWise(collisionPoint, correctionAngle);
     Point adjustedVelocity = mirroredVelocity.rotateCounterClockWise(collisionPoint, correctionAngle);
@@ -256,8 +254,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     return new BallState(
         new Point(
             ballStateFlippedReferenceFrame.center.x(),
-            ballStateFlippedReferenceFrame.center.y() - racketState.yCenter
-        ),
+            ballStateFlippedReferenceFrame.center.y() - racketState.yCenter),
         ballStateFlippedReferenceFrame.velocity);
   }
 
@@ -269,8 +266,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     return new BallState(
         new Point(
             ballStateFlippedReferenceFrame.center.x(),
-            ballStateFlippedReferenceFrame.center.y() + racketState.yCenter
-        ),
+            ballStateFlippedReferenceFrame.center.y() + racketState.yCenter),
         ballStateFlippedReferenceFrame.velocity);
   }
 
@@ -345,7 +341,7 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     try {
       updatedBallInitialVelocity = configuration.ballInitialVelocity
           * Math.pow(configuration.ballAccelerationRatePerPoint, (state.lRacketScore + state.rRacketScore));
-      if (updatedBallInitialVelocity > configuration.ballMaxVelocity){
+      if (updatedBallInitialVelocity > configuration.ballMaxVelocity) {
         updatedBallInitialVelocity = configuration.ballMaxVelocity;
       }
     } catch (NullPointerException e) {
