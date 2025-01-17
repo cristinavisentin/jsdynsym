@@ -42,4 +42,9 @@ public class MaxSpeedPongAgent implements MultivariateRealFunction {
   public int nOfOutputs() {
     return 1;
   }
+
+  @Override
+  public String toString() {
+    return "MaxSpeedPongAgent";
+  }
 }

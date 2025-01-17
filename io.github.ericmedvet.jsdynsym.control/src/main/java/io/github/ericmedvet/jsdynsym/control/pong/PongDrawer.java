@@ -22,6 +22,7 @@ package io.github.ericmedvet.jsdynsym.control.pong;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiAgentTask;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
+
 import java.awt.*;
 import java.util.SortedMap;
 import java.util.function.Function;
@@ -134,7 +135,9 @@ public class PongDrawer
     g.setColor(configuration.infoColor());
     g.setFont(new Font("Arial", Font.BOLD, 8));
     String scoreText = String.format("Left: %.0f  Right: %.0f", state.lRacketScore(), state.rRacketScore());
+    String ballVelocity = String.format("Ball Velocity: %.0f", state.ballState().velocity().magnitude());
     g.drawString(scoreText, (float) (margin), (float) (margin * 0.9));
+    g.drawString(ballVelocity, (float) (margin * 3), (float) (margin * 0.9));
   }
 
   @Override

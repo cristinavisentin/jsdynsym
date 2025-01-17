@@ -24,6 +24,7 @@ import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiAgentTask;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,17 +32,93 @@ import java.util.List;
 
 public class Test {
   public static void main(String[] args) {
-    singleTest(500, 0.05, 11, new Pair<>(new SimplePongAgent(0.1), new MaxSpeedPongAgent()), "../pong.mp4");
+    singleTest(500, 0.05, 11, new Pair<>(new MaxSpeedPongAgent(), new MaxSpeedPongAgent()), "../pong_1.mp4");
 
     // multipleTestsWithConfusionMatrix(2000, 0.05, 101, Arrays.asList(0.0, 0.5, 10.0),
     // "../pong_confusion_matrix.csv");
+
+    List<DynamicalSystem<double[], double[], ?>> agentsList = List.of(
+        new SimplePongAgent(0),
+        new SimplePongAgent(0.1),
+        new MaxSpeedPongAgent()
+    );
+    // multipleTestsWithConfusionMatrixAndTimes(2000, 0.05, 11, agentsList, 100, "../pong_scores-CM.csv", "../pong_times-CM.csv");
+  }
+
+  private static void multipleTestsWithConfusionMatrixAndTimes(
+      double finalTime,
+      double dT,
+      double finalScore,
+      List<DynamicalSystem<double[], double[], ?>> agentsList,
+      int repetitions,
+      String scoresCsvFilePath,
+      String timesCsvFilePath) {
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
+        HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+            new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
+            s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
+            new DoubleRange(0, finalTime),
+            dT);
+    try (
+        FileWriter scoresWriter = new FileWriter(scoresCsvFilePath);
+        FileWriter timesWriter = new FileWriter(timesCsvFilePath)) {
+      // Intestazioni CSV
+      scoresWriter.write("Agent vs Agent;");
+      timesWriter.write("Agent vs Agent;");
+      for (DynamicalSystem<double[], double[], ?> agent : agentsList) {
+        scoresWriter.write(agent.toString() + ";");
+        timesWriter.write(agent.toString() + ";");
+      }
+      scoresWriter.write("\n");
+      timesWriter.write("\n");
+
+      // Simulazioni
+      for (DynamicalSystem<double[], double[], ?> agent_i : agentsList) {
+        scoresWriter.write(agent_i.toString() + ";");
+        timesWriter.write(agent_i.toString() + ";");
+        for (DynamicalSystem<double[], double[], ?> agent_j : agentsList) {
+          double totalLScore = 0.0;
+          double totalRScore = 0.0;
+          double totalTime = 0.0;
+
+          for (int r = 0; r < repetitions; r++) {
+            long startTime = System.nanoTime();
+            Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
+                task.simulate(agent_i, agent_j);
+            long endTime = System.nanoTime();
+
+            var snapshots = outcome.snapshots();
+            var finalStep = snapshots.get(snapshots.lastKey());
+            double lScore = finalStep.state().lRacketScore();
+            double rScore = finalStep.state().rRacketScore();
+
+            totalLScore += lScore;
+            totalRScore += rScore;
+            totalTime += (endTime - startTime) / 1e9;
+          }
+
+          // Calcolo delle medie
+          double averageLScore = totalLScore / repetitions;
+          double averageRScore = totalRScore / repetitions;
+          double averageTime = totalTime / repetitions;
+
+          // Scrittura nei file
+          scoresWriter.write(averageLScore + " - " + averageRScore + ";");
+          timesWriter.write(averageTime + ";");
+        }
+        scoresWriter.write("\n");
+        timesWriter.write("\n");
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static void multipleTestsWithConfusionMatrix(
       double finalTime,
       double dT,
       double finalScore,
-      List<Double> agentsSpeedsDumpingConstants,
+      List<DynamicalSystem<double[], double[], ?>> agentsSpeedsDumpingConstants,
       String csvFilePath) {
     HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
         HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
@@ -51,15 +128,15 @@ public class Test {
             dT);
     try (FileWriter writer = new FileWriter(csvFilePath)) {
       writer.write("Agent vs Agent;");
-      for (Double agentsSpeed : agentsSpeedsDumpingConstants) {
-        writer.write("Agent " + agentsSpeed + ";");
+      for (DynamicalSystem<double[], double[], ?> agentsSpeed : agentsSpeedsDumpingConstants) {
+        writer.write("Agent " + agentsSpeed.toString() + ";");
       }
       writer.write("\n");
-      for (Double agentsSpeed_i : agentsSpeedsDumpingConstants) {
-        writer.write("Agent " + agentsSpeed_i + ";");
-        for (Double agentsSpeed_j : agentsSpeedsDumpingConstants) {
+      for (DynamicalSystem<double[], double[], ?> agentsSpeed_i : agentsSpeedsDumpingConstants) {
+        writer.write("Agent " + agentsSpeed_i.toString() + ";");
+        for (DynamicalSystem<double[], double[], ?> agentsSpeed_j : agentsSpeedsDumpingConstants) {
           Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
-              task.simulate(new SimplePongAgent(agentsSpeed_i), new SimplePongAgent(agentsSpeed_j));
+              task.simulate(agentsSpeed_i, agentsSpeed_j);
           String score = getFinalScore(outcome);
           writer.write(score + ";");
         }
@@ -79,10 +156,10 @@ public class Test {
       String pathName) {
     HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State>
         dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
-            new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
-            s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
-            new DoubleRange(0, finalTime),
-            dT);
+        new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
+        s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
+        new DoubleRange(0, finalTime),
+        dT);
     Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
         dynamicalSystemStateHomogeneousBiAgentTask.simulate(agentsSpeedsDumpingConstants);
     System.out.println("L_Score: "
