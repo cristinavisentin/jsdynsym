@@ -26,9 +26,9 @@ import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironment;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.function.Predicate;
 
-public class BiAgentTasks {
+public class HomogeneousBiAgentTasks {
 
-  private BiAgentTasks() {}
+  private HomogeneousBiAgentTasks() {}
 
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromEnvironment(
       @Param(value = "name", iS = "{environment.name}") String name,
