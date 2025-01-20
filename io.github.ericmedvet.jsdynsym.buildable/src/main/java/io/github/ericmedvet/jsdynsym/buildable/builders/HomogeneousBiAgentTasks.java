@@ -19,23 +19,38 @@
  */
 package io.github.ericmedvet.jsdynsym.buildable.builders;
 
-import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.*;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jsdynsym.control.HomogeneousBiAgentTask;
-import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironment;
+import io.github.ericmedvet.jsdynsym.control.*;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
+@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.biAgentTask|baTask|bat")
 public class HomogeneousBiAgentTasks {
 
   private HomogeneousBiAgentTasks() {}
 
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromEnvironment(
       @Param(value = "name", iS = "{environment.name}") String name,
       @Param("environment") HomogeneousBiEnvironment<O, A, S> environment,
       @Param("stopCondition") Predicate<S> stopCondition,
       @Param("tRange") DoubleRange tRange,
-      @Param("dT") double dT) {
-    return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(environment, stopCondition, tRange, dT);
+      @Param("dT") double dT,
+      @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
+      @Param(value = "", injection = Param.Injection.MAP) ParamMap map) {
+    if (environment instanceof HomogeneousBiEnvironmentWithExample<O, A, S> hbewe) {
+      @SuppressWarnings("unchecked")
+      Supplier<HomogeneousBiEnvironmentWithExample<O, A, S>> supplier =
+          () -> (HomogeneousBiEnvironmentWithExample<O, A, S>)
+              nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
+      return HomogeneousBiAgentTaskWithExample.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
+    }
+    @SuppressWarnings("unchecked")
+    Supplier<HomogeneousBiEnvironment<O, A, S>> supplier = () -> (HomogeneousBiEnvironment<O, A, S>)
+        nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
+    return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
   }
 }

@@ -36,8 +36,8 @@ public class Test {
     // multipleTestsWithConfusionMatrix(2000, 0.05, 101, Arrays.asList(0.0, 0.5, 10.0),
     // "../pong_confusion_matrix.csv");
 
-    List<DynamicalSystem<double[], double[], ?>> agentsList =
-        List.of(new SimplePongAgent(0), new SimplePongAgent(0.1), new MaxSpeedPongAgent());
+    // List<DynamicalSystem<double[], double[], ?>> agentsList =
+    //    List.of(new SimplePongAgent(0), new SimplePongAgent(0.1), new MaxSpeedPongAgent());
     // multipleTestsWithConfusionMatrixAndTimes(2000, 0.05, 11, agentsList, 100, "../pong_scores-CM.csv",
     // "../pong_times-CM.csv");
   }
@@ -52,7 +52,7 @@ public class Test {
       String timesCsvFilePath) {
     HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
         HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
-            new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
+            () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
             new DoubleRange(0, finalTime),
             dT);
@@ -118,7 +118,7 @@ public class Test {
       String csvFilePath) {
     HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
         HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
-            new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
+            () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
             new DoubleRange(0, finalTime),
             dT);
@@ -152,7 +152,7 @@ public class Test {
       String pathName) {
     HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State>
         dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
-            new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
+            () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketScore() + s.rRacketScore() >= finalScore,
             new DoubleRange(0, finalTime),
             dT);

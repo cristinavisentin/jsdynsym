@@ -17,34 +17,10 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-package io.github.ericmedvet.jsdynsym.control.pong;
+package io.github.ericmedvet.jsdynsym.control;
 
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
-public class MaxSpeedPongAgent implements MultivariateRealFunction {
-  @Override
-  public double[] compute(double... input) {
-    double racketY = input[0];
-    double ballY = input[3];
-    if (racketY >= ballY) {
-      return new double[] {-1};
-    } else {
-      return new double[] {1};
-    }
-  }
-
-  @Override
-  public int nOfInputs() {
-    return 6;
-  }
-
-  @Override
-  public int nOfOutputs() {
-    return 1;
-  }
-
-  @Override
-  public String toString() {
-    return "MaxSpeedPongAgent";
-  }
+public interface HomogeneousBiEnvironmentWithExample<O, A, S> extends HomogeneousBiEnvironment<O, A, S> {
+  DynamicalSystem<O, A, ?> example();
 }

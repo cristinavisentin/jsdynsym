@@ -51,6 +51,7 @@ public class Drawers {
     return new VectorFieldDrawer(arena.arena(), VectorFieldDrawer.Configuration.DEFAULT);
   }
 
+  @SuppressWarnings("unused")
   @Cacheable
   public static PongDrawer pong() {
     return new PongDrawer(PongDrawer.Configuration.DEFAULT);

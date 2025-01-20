@@ -21,11 +21,13 @@ package io.github.ericmedvet.jsdynsym.control.pong;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironment;
+import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironmentWithExample;
 import io.github.ericmedvet.jsdynsym.control.geometry.Circle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.Random;
 import java.util.random.RandomGenerator;
 import java.util.stream.DoubleStream;
 
-public class PongEnvironment implements HomogeneousBiEnvironment<double[], double[], PongEnvironment.State> {
+public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<double[], double[], PongEnvironment.State> {
 
   public record Configuration(
       DoubleRange racketsInitialYRange,
@@ -453,10 +455,14 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
     // prepare
     double deltaTime = t - previousTime;
     previousTime = t;
-    RacketState updatedLRacketState =
-        updateRacketState(state.lRacketState, normalizedActions.first()[0], deltaTime);
-    RacketState updatedRRacketState =
-        updateRacketState(state.rRacketState, normalizedActions.second()[0], deltaTime);
+    RacketState updatedLRacketState = updateRacketState(
+        state.lRacketState,
+        DoubleRange.SYMMETRIC_UNIT.clip(normalizedActions.first()[0]),
+        deltaTime);
+    RacketState updatedRRacketState = updateRacketState(
+        state.rRacketState,
+        DoubleRange.SYMMETRIC_UNIT.clip(normalizedActions.second()[0]),
+        deltaTime);
     BallState updatedBallState = updateBallState(state.ballState, deltaTime);
     BallState updatedBallStateWithCollision = updatedBallState.deepCopy();
     updatedBallStateWithCollision = handleArenaEdgeMirroredVerticalCollisionIfAny(updatedBallStateWithCollision);
@@ -478,5 +484,10 @@ public class PongEnvironment implements HomogeneousBiEnvironment<double[], doubl
                 toNormalizedArray(flippedHorizontalAxisReferenceFrame(updatedBallStateWithCollision))))
         .toArray();
     return new Pair<>(lRacketObservation, rRacketObservation);
+  }
+
+  @Override
+  public DynamicalSystem<double[], double[], ?> example() {
+    return NumericalStatelessSystem.from(6, nOfInputsPerAgent(), (t, in) -> new double[nOfInputsPerAgent()]);
   }
 }
