@@ -27,7 +27,6 @@ import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
-
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;
@@ -75,8 +74,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
   }
 
   public record State(
-      Configuration configuration, RacketState lRacketState, RacketState rRacketState, BallState ballState) {
-  }
+      Configuration configuration, RacketState lRacketState, RacketState rRacketState, BallState ballState) {}
 
   public enum Side {
     LEFT,
@@ -120,23 +118,22 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     double normalizedBallXVelocity = state.ballState.velocity().x() / configuration.ballMaxVelocity;
     double normalizedBallYVelocity = state.ballState.velocity().y() / configuration.ballMaxVelocity;
     return new Pair<>(
-        new double[]{
-            state.lRacketState.yCenter / configuration.arenaYLength,
-            state.ballState.position().x() / configuration.arenaXLength,
-            state.ballState.position().y() / configuration.arenaYLength,
-            normalizedBallXVelocity,
-            normalizedBallYVelocity,
-            state.rRacketState.yCenter / configuration.arenaYLength,
+        new double[] {
+          state.lRacketState.yCenter / configuration.arenaYLength,
+          state.ballState.position().x() / configuration.arenaXLength,
+          state.ballState.position().y() / configuration.arenaYLength,
+          normalizedBallXVelocity,
+          normalizedBallYVelocity,
+          state.rRacketState.yCenter / configuration.arenaYLength,
         },
-        new double[]{
-            state.rRacketState.yCenter / configuration.arenaYLength,
-            state.ballState.position().x() / configuration.arenaXLength,
-            state.ballState.position().y() / configuration.arenaYLength,
-            normalizedBallXVelocity,
-            normalizedBallYVelocity,
-            state.lRacketState.yCenter / configuration.arenaYLength,
-        }
-    );
+        new double[] {
+          state.rRacketState.yCenter / configuration.arenaYLength,
+          state.ballState.position().x() / configuration.arenaXLength,
+          state.ballState.position().y() / configuration.arenaYLength,
+          normalizedBallXVelocity,
+          normalizedBallYVelocity,
+          state.lRacketState.yCenter / configuration.arenaYLength,
+        });
   }
 
   public int nOfInputsPerAgent() {
@@ -275,10 +272,10 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
               new Point(
                   arenaHorizontalEdgesCollision.x()
                       + (updatedBallState.position.x() - arenaHorizontalEdgesCollision.x())
-                      * 0.001,
+                          * 0.001,
                   arenaHorizontalEdgesCollision.y()
                       + (updatedBallState.position.y() - arenaHorizontalEdgesCollision.y())
-                      * 0.001),
+                          * 0.001),
               updatedBallState.velocity(),
               updatedBallState.nOfCollisions + 1);
           break;
