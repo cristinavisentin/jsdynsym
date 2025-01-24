@@ -48,10 +48,11 @@ public class PongDrawer
       double racketsFillAlpha,
       double ballFillAlpha,
       double ballRadius,
+      double racketsWidth,
       double marginRate) {
 
-    public static final Configuration DEFAULT =
-        new Configuration(Color.BLUE, Color.MAGENTA, Color.DARK_GRAY, Color.BLUE, 0, 0, 1, 0.95, 1, 0.4, 0.1);
+    public static final Configuration DEFAULT = new Configuration(
+        Color.RED, Color.MAGENTA, Color.DARK_GRAY, Color.BLUE, 0, 0, 0.7, 0.95, 1, 0.3, 0.6, 0.1);
   }
 
   private final Configuration configuration;
@@ -87,40 +88,22 @@ public class PongDrawer
     g.setColor(configuration.racketsColor());
     for (PongEnvironment.RacketState racketState :
         new PongEnvironment.RacketState[] {state.lRacketState(), state.rRacketState()}) {
-      double racketX = racketState.side() == PongEnvironment.Side.LEFT ? 0 : arenaWidth;
+      double racketX =
+          racketState.side() == PongEnvironment.Side.LEFT ? -configuration.racketsWidth * 0.9 : arenaWidth;
       double racketYCenter = racketState.yCenter();
-      double edgeRadius = state.configuration().racketsEdgeRadius();
-      double rectHeight = state.configuration().racketsLength() - 2 * edgeRadius;
+      double racketWidth = configuration.racketsWidth();
+      double racketHeight = state.configuration().racketsLength();
       int alpha = (int) (configuration.racketsFillAlpha() * 255);
       g.setColor(new Color(
           configuration.racketsColor().getRed(),
           configuration.racketsColor().getGreen(),
           configuration.racketsColor().getBlue(),
           alpha));
-      // Draw the central rectangle
       g.fill(new java.awt.geom.Rectangle2D.Double(
-          screenX.apply(racketX - edgeRadius),
-          screenY.apply(racketYCenter + rectHeight / 2),
-          screenLength.apply(2 * edgeRadius),
-          screenLength.apply(rectHeight)));
-      // Draw the upper semicircle
-      g.fill(new java.awt.geom.Arc2D.Double(
-          screenX.apply(racketX - edgeRadius),
-          screenY.apply(racketYCenter + rectHeight / 2 + edgeRadius),
-          screenLength.apply(2 * edgeRadius),
-          screenLength.apply(2 * edgeRadius),
-          0,
-          360,
-          java.awt.geom.Arc2D.OPEN));
-      // Draw the lower semicircle
-      g.fill(new java.awt.geom.Arc2D.Double(
-          screenX.apply(racketX - edgeRadius),
-          screenY.apply(racketYCenter - rectHeight / 2 + edgeRadius),
-          screenLength.apply(2 * edgeRadius),
-          screenLength.apply(2 * edgeRadius),
-          180,
-          360,
-          java.awt.geom.Arc2D.OPEN));
+          screenX.apply(racketX),
+          screenY.apply(racketYCenter + racketHeight / 2),
+          screenLength.apply(racketWidth),
+          screenLength.apply(racketHeight)));
     }
 
     // Draw the ball
@@ -134,19 +117,24 @@ public class PongDrawer
         alpha));
     double ballRadius = configuration.ballRadius();
     g.fill(new java.awt.geom.Ellipse2D.Double(
-        screenX.apply(ballState.center().x() - ballRadius),
-        screenY.apply(ballState.center().y() + ballRadius),
+        screenX.apply(ballState.position().x() - ballRadius),
+        screenY.apply(ballState.position().y() + ballRadius),
         screenLength.apply(ballRadius * 2),
         screenLength.apply(ballRadius * 2)));
 
     // Draw the scores
     g.setColor(configuration.infoColor());
     g.setFont(new Font("Arial", Font.BOLD, 8));
-    String scoreText = String.format("Left: %.0f  Right: %.0f", state.lRacketScore(), state.rRacketScore());
-    String ballVelocity = String.format(
-        "Ball Velocity: %.0f", state.ballState().velocity().magnitude());
+    String scoreText = String.format(
+        "L: %.0f  R: %.0f",
+        state.lRacketState().score(), state.rRacketState().score());
+    String ballVelocity =
+        String.format("BALL_V: %.0f", state.ballState().velocity().magnitude());
+    String ballCollisions =
+        String.format("#BALL_COLLISIONS: %d", state.ballState().nOfCollisions());
     g.drawString(scoreText, (float) (margin), (float) (margin * 0.9));
-    g.drawString(ballVelocity, (float) (margin * 5), (float) (margin * 0.9));
+    g.drawString(ballVelocity, (float) (margin * 4), (float) (margin * 0.9));
+    g.drawString(ballCollisions, (float) (margin * 8), (float) (margin * 0.9));
   }
 
   @Override

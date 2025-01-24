@@ -38,36 +38,29 @@ public class Environments {
       @Param(value = "racketsInitialYRange", dNPM = "m.range(min=22.0;max=28.0)")
           DoubleRange racketsInitialYRange,
       @Param(value = "racketsLength", dD = 10) double racketsLength,
-      @Param(value = "racketsEdgeRadius", dD = 1.5) double racketsEdgeRadius,
-      // the edges of the rackets are made by semi-circumferences, thus the rackets width is equal to
-      // 2*racketsEdgeRadius
       @Param(value = "racketsMaxYVelocity", dD = 20.0) double racketsMaxYVelocity,
-      @Param(value = "racketsFriction", dD = 0.1) double racketsFriction,
-      @Param(value = "spinEffectFactor", dD = 0.0) double spinEffectFactor,
       @Param(value = "ballInitialVelocity", dD = 30.0) double ballInitialVelocity,
       @Param(value = "ballMaxVelocity", dD = 80.0) double ballMaxVelocity,
       @Param(value = "ballInitialAngleRange", dNPM = "m.range(min=-0.39;max=0.39)")
           DoubleRange ballInitialAngleRange,
-      @Param(value = "ballAccelerationRate", dD = 1.01)
-          double ballAccelerationRatePerPoint, // The ball accelerates during a point
+      @Param(value = "ballAccelerationRate", dD = 1.05) double ballAccelerationRate,
+      @Param(value = "maxPercentageAngleAdjustment", dD = 0.1) double maxPercentageAngleAdjustment,
       @Param(value = "arenaXLength", dD = 60.0) double arenaXLength,
       @Param(value = "arenaYLength", dD = 50.0) double arenaYLength,
-      @Param(value = "maximumTimePerPoint", dD = Double.MAX_VALUE) double maximumTimePerPoint,
+      @Param(value = "precision", dD = 1e-5) double precision,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
     return new PongEnvironment(new PongEnvironment.Configuration(
-        racketsInitialYRange,
-        racketsLength,
-        racketsEdgeRadius,
-        racketsMaxYVelocity,
-        racketsFriction,
-        spinEffectFactor,
+        racketsInitialYRange, //
+        racketsLength, //
+        racketsMaxYVelocity, //
         ballInitialVelocity,
         ballMaxVelocity,
         ballInitialAngleRange,
-        ballAccelerationRatePerPoint, // The ball accelerates during a point
+        ballAccelerationRate,
+        maxPercentageAngleAdjustment,
         arenaXLength,
         arenaYLength,
-        maximumTimePerPoint,
+        precision,
         randomGenerator));
   }
 

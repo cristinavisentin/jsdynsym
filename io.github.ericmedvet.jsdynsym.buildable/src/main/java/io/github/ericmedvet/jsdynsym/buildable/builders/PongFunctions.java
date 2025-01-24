@@ -43,7 +43,7 @@ public class PongFunctions {
               beforeF,
       @Param(value = "format", dS = "%5.3f") String format) {
     Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().lRacketScore();
+        o -> o.snapshots().lastEntry().getValue().state().lRacketState().score();
     return FormattedNamedFunction.from(f, format, "score.1").compose(beforeF);
   }
 
@@ -58,7 +58,7 @@ public class PongFunctions {
               beforeF,
       @Param(value = "format", dS = "%5.3f") String format) {
     Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().rRacketScore();
+        o -> o.snapshots().lastEntry().getValue().state().rRacketState().score();
     return FormattedNamedFunction.from(f, format, "score.2").compose(beforeF);
   }
 
@@ -73,8 +73,13 @@ public class PongFunctions {
               beforeF,
       @Param(value = "format", dS = "%5.3f") String format) {
     Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().lRacketScore()
-            - o.snapshots().lastEntry().getValue().state().rRacketScore();
+        o -> o.snapshots().lastEntry().getValue().state().lRacketState().score()
+            - o.snapshots()
+                .lastEntry()
+                .getValue()
+                .state()
+                .rRacketState()
+                .score();
     return FormattedNamedFunction.from(f, format, "score.diff.1").compose(beforeF);
   }
 
@@ -89,8 +94,13 @@ public class PongFunctions {
               beforeF,
       @Param(value = "format", dS = "%5.3f") String format) {
     Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().rRacketScore()
-            - o.snapshots().lastEntry().getValue().state().lRacketScore();
+        o -> o.snapshots().lastEntry().getValue().state().rRacketState().score()
+            - o.snapshots()
+                .lastEntry()
+                .getValue()
+                .state()
+                .lRacketState()
+                .score();
     return FormattedNamedFunction.from(f, format, "score.diff.2").compose(beforeF);
   }
 }

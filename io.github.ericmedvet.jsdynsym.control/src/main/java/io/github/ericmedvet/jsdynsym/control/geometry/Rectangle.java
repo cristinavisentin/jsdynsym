@@ -36,7 +36,7 @@ public record Rectangle(Point topLeft, Point bottomRight) {
     List<Point> intersections = new ArrayList<>();
     // check intersection with each edge
     for (Segment edge : List.of(topEdge(), bottomEdge(), leftEdge(), rightEdge())) {
-      Point intersection = segment.intersection(edge,precision);
+      Point intersection = segment.intersection(edge, precision);
       if (intersection != null) {
         intersections.add(intersection);
       }

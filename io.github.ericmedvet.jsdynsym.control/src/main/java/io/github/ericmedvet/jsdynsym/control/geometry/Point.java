@@ -80,17 +80,11 @@ public record Point(double x, double y) {
   }
 
   public Point translate(Point translation) {
-    return new Point(
-        x + translation.x(),
-        y + translation.y()
-    );
+    return new Point(x + translation.x(), y + translation.y());
   }
 
-  public Point rotate(double angle){
-    return new Point(
-        x * Math.cos(angle) - y * Math.sin(angle),
-        x * Math.sin(angle) + y * Math.cos(angle)
-    );
+  public Point rotate(double angle) {
+    return new Point(x * Math.cos(angle) - y * Math.sin(angle), x * Math.sin(angle) + y * Math.cos(angle));
   }
 
   // TODO check

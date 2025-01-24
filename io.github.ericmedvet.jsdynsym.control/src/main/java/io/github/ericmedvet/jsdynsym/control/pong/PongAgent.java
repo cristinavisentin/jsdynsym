@@ -23,41 +23,31 @@ import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 
 public class PongAgent implements MultivariateRealFunction {
 
-  private final double maxNormalizedSpeed;
+  private final double normalizedDeltaY;
 
   public PongAgent() {
-    maxNormalizedSpeed = 0.5;
+    normalizedDeltaY = 0.5;
   }
 
-  public PongAgent(double normalizedSpeed) {
-    this.maxNormalizedSpeed = normalizedSpeed;
+  public PongAgent(double normalizedDeltaY) {
+    this.normalizedDeltaY = normalizedDeltaY;
   }
 
-  // racketY, racketYV, ballX, ballY, ballXV, ballYV
   @Override
-  public double[] compute(double... input) {
+  public double[] compute(double... input) { // racketY, ballX, ballY, ballVX, ballVY
     double racketY = input[0];
-    double racketYV = input[1];
-    double ballY = input[3];
-    if (Math.abs(racketYV) > maxNormalizedSpeed && racketYV * Math.signum(ballY - racketY) >= 0) {
-      return new double[] {0};
-    } else {
-      return new double[] {Math.signum(ballY - racketY) * maxNormalizedSpeed};
-    }
+    double ballY = input[2];
+    double diff = ballY - racketY;
+    return new double[] {Math.signum(diff) * normalizedDeltaY};
   }
 
   @Override
   public int nOfInputs() {
-    return 6;
+    return 5;
   }
 
   @Override
   public int nOfOutputs() {
     return 1;
-  }
-
-  @Override
-  public String toString() {
-    return "SimplePongAgent [maxNS=" + maxNormalizedSpeed + "]";
   }
 }
