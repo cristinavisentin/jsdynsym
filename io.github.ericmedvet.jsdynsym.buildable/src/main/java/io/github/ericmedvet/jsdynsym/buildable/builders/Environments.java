@@ -37,13 +37,13 @@ public class Environments {
       @Param(value = "name", iS = "pong") String name,
       @Param(value = "racketsInitialYRange", dNPM = "m.range(min=22.0;max=28.0)")
           DoubleRange racketsInitialYRange,
-      @Param(value = "racketsLength", dD = 10) double racketsLength,
-      @Param(value = "racketsMaxYVelocity", dD = 20.0) double racketsMaxYVelocity,
-      @Param(value = "ballInitialVelocity", dD = 30.0) double ballInitialVelocity,
-      @Param(value = "ballMaxVelocity", dD = 80.0) double ballMaxVelocity,
-      @Param(value = "ballInitialAngleRange", dNPM = "m.range(min=-0.39;max=0.39)")
+      @Param(value = "racketsLength", dD = 5.0) double racketsLength,
+      @Param(value = "racketsMaxDeltaPosition", dD = 0.5) double racketsMaxDeltaPosition,
+      @Param(value = "ballInitialVelocity", dD = 20.0) double ballInitialVelocity,
+      @Param(value = "ballMaxVelocity", dD = 50.0) double ballMaxVelocity,
+      @Param(value = "ballInitialAngleRange", dNPM = "m.range(min=-0.4;max=0.4)")
           DoubleRange ballInitialAngleRange,
-      @Param(value = "ballAccelerationRate", dD = 1.05) double ballAccelerationRate,
+      @Param(value = "ballAccelerationRate", dD = 1.1) double ballAccelerationRate,
       @Param(value = "maxPercentageAngleAdjustment", dD = 0.1) double maxPercentageAngleAdjustment,
       @Param(value = "arenaXLength", dD = 60.0) double arenaXLength,
       @Param(value = "arenaYLength", dD = 50.0) double arenaYLength,
@@ -52,7 +52,7 @@ public class Environments {
     return new PongEnvironment(new PongEnvironment.Configuration(
         racketsInitialYRange, //
         racketsLength, //
-        racketsMaxYVelocity, //
+        racketsMaxDeltaPosition, //
         ballInitialVelocity,
         ballMaxVelocity,
         ballInitialAngleRange,

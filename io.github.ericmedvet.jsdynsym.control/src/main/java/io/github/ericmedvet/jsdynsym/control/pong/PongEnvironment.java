@@ -62,15 +62,15 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     public static final Configuration DEFAULT = new Configuration(
         new DoubleRange(22, 28),
         5,
-        0.4,
-        30,
+        0.5,
+        20,
         50,
         new DoubleRange(-Math.PI / 8, Math.PI / 8),
         1.1,
         0.1,
         60,
         50,
-        0.001,
+        1e-5,
         new Random());
   }
 
@@ -116,7 +116,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     }
   }
 
-  private Pair<double[], double[]> getNormalizedRacketObservation() {
+  private Pair<double[], double[]> getNormalizedRacketObservations() {
     double normalizedBallXVelocity = state.ballState.velocity().x() / configuration.ballMaxVelocity;
     double normalizedBallYVelocity = state.ballState.velocity().y() / configuration.ballMaxVelocity;
     return new Pair<>(
@@ -293,7 +293,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
       updateState(updatedBallState, updatedLRacketState, updatedRRacketState);
     }
     // return pair of observations
-    return getNormalizedRacketObservation();
+    return getNormalizedRacketObservations();
   }
 
   private ArenaObject getClosestCollidingArenaObject(
