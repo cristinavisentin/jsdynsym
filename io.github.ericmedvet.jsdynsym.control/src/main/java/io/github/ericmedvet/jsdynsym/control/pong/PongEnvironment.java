@@ -141,7 +141,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
   }
 
   public int nOfObservationsPerAgent() {
-    return 5;
+    return getNormalizedRacketObservations().first().length;
   }
 
   @Override
@@ -252,7 +252,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
           assert arenaHorizontalEdgesCollision != null;
           double offsetAbove = configuration.arenaYLength - updatedBallState.position.y();
           double offsetBelow = updatedBallState.position.y();
-          if (offsetBelow * offsetAbove > 0.0d) {
+          if (offsetBelow * offsetAbove >= configuration.precision) {
             throw new IllegalArgumentException(
                 "Problem with Arena horizontal edges collision: " + arenaHorizontalEdgesCollision);
           }
@@ -272,10 +272,10 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
               new Point(
                   arenaHorizontalEdgesCollision.x()
                       + (updatedBallState.position.x() - arenaHorizontalEdgesCollision.x())
-                          * 0.001,
+                          * configuration.precision,
                   arenaHorizontalEdgesCollision.y()
                       + (updatedBallState.position.y() - arenaHorizontalEdgesCollision.y())
-                          * 0.001),
+                          * configuration.precision),
               updatedBallState.velocity(),
               updatedBallState.nOfCollisions + 1);
           break;
@@ -354,8 +354,10 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     bouncedBallState = bouncedBallState.rotate(collisionPointRRF, correctionAngle);
     BallState previousBallState = new BallState(
         new Point(
-            collisionPointRRF.x() + (bouncedBallState.position.x() - collisionPointRRF.x()) * 0.001,
-            collisionPointRRF.y() + (bouncedBallState.position.y() - collisionPointRRF.y()) * 0.001),
+            collisionPointRRF.x()
+                + (bouncedBallState.position.x() - collisionPointRRF.x()) * configuration.precision,
+            collisionPointRRF.y()
+                + (bouncedBallState.position.y() - collisionPointRRF.y()) * configuration.precision),
         bouncedBallState.velocity(),
         bouncedBallState.nOfCollisions);
     return new Pair<>(
