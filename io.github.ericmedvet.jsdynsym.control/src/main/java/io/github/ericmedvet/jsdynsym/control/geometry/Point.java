@@ -62,6 +62,10 @@ public record Point(double x, double y) {
     return Math.sqrt(x * x + y * y);
   }
 
+  public Point getOpposite() {
+    return new Point(-x, -y);
+  }
+
   public Point scale(double r) {
     return new Point(r * x, r * y);
   }
@@ -71,17 +75,26 @@ public record Point(double x, double y) {
   }
 
   // TODO check
-  public Point rotateCounterClockWise(Point centerOfRotation, double angle) {
-    Point thisPointInCenterOfRotationReferenceFrame = this.diff(centerOfRotation);
-    double newX = thisPointInCenterOfRotationReferenceFrame.x() * Math.cos(angle)
-        - thisPointInCenterOfRotationReferenceFrame.y() * Math.sin(angle);
-    double newY = thisPointInCenterOfRotationReferenceFrame.x() * Math.sin(angle)
-        + thisPointInCenterOfRotationReferenceFrame.y() * Math.cos(angle);
-    return new Point(newX, newY).sum(centerOfRotation);
+  public Point rotate(Point centerOfRotation, double angle) {
+    return this.translate(centerOfRotation.getOpposite()).rotate(angle).translate(centerOfRotation);
+  }
+
+  public Point translate(Point translation) {
+    return new Point(
+        x + translation.x(),
+        y + translation.y()
+    );
+  }
+
+  public Point rotate(double angle){
+    return new Point(
+        x * Math.cos(angle) - y * Math.sin(angle),
+        x * Math.sin(angle) + y * Math.cos(angle)
+    );
   }
 
   // TODO check
-  public double getRotationAngleCounterClockwise(Point centerOfRotation) {
+  public double getRotationAngle(Point centerOfRotation) {
     return this.diff(centerOfRotation).direction();
   }
 

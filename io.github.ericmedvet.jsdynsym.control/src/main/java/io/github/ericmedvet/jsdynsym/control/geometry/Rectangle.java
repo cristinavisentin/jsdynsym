@@ -32,11 +32,11 @@ public record Rectangle(Point topLeft, Point bottomRight) {
   }
 
   // the list of intersection points returned sorted in ascending order based on the distance from segment.p1()
-  public List<Point> intersection(Segment segment) {
+  public List<Point> intersection(Segment segment, double precision) {
     List<Point> intersections = new ArrayList<>();
     // check intersection with each edge
     for (Segment edge : List.of(topEdge(), bottomEdge(), leftEdge(), rightEdge())) {
-      Point intersection = segment.intersection(edge);
+      Point intersection = segment.intersection(edge,precision);
       if (intersection != null) {
         intersections.add(intersection);
       }
@@ -49,10 +49,10 @@ public record Rectangle(Point topLeft, Point bottomRight) {
     return intersections;
   }
 
-  public List<Point> verticalEdgesIntersections(Segment segment) {
+  public List<Point> verticalEdgesIntersections(Segment segment, double precision) {
     List<Point> verticalEdgesIntersections = new ArrayList<>();
-    Point leftEdgeIntersection = segment.intersection(leftEdge());
-    Point rightEdgeIntersection = segment.intersection(rightEdge());
+    Point leftEdgeIntersection = segment.intersection(leftEdge(), precision);
+    Point rightEdgeIntersection = segment.intersection(rightEdge(), precision);
     if (leftEdgeIntersection != null) {
       verticalEdgesIntersections.add(leftEdgeIntersection);
     }
@@ -67,10 +67,10 @@ public record Rectangle(Point topLeft, Point bottomRight) {
     return verticalEdgesIntersections;
   }
 
-  public List<Point> horizontalEdgesIntersections(Segment segment) {
+  public List<Point> horizontalEdgesIntersections(Segment segment, double precision) {
     List<Point> horizontalEdgesIntersections = new ArrayList<>();
-    Point topEdgeIntersection = segment.intersection(topEdge());
-    Point bottomEdgeIntersection = segment.intersection(bottomEdge());
+    Point topEdgeIntersection = segment.intersection(topEdge(), precision);
+    Point bottomEdgeIntersection = segment.intersection(bottomEdge(), precision);
     if (topEdgeIntersection != null) {
       horizontalEdgesIntersections.add(topEdgeIntersection);
     }

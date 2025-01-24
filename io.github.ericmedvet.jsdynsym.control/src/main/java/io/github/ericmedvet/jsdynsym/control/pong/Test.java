@@ -31,7 +31,23 @@ import java.util.List;
 
 public class Test {
   public static void main(String[] args) {
-    singleTest(200, 0.02, 6, new Pair<>(new MaxSpeedPongAgent(), new MaxSpeedPongAgent()), "../pong_1.mp4");
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], SimplePongEnvironment.State>
+        dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+        () -> new SimplePongEnvironment(SimplePongEnvironment.Configuration.DEFAULT),
+        s -> s.lRacketState().score() + s.rRacketState().score() >= 101,
+        new DoubleRange(0, 20),
+        0.05);
+    Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], SimplePongEnvironment.State>> outcome =
+        dynamicalSystemStateHomogeneousBiAgentTask.simulate(new Pair<> (new SimplePongAgent(1), new SimplePongAgent(1)));
+    System.out.println("L_Score: "
+        + outcome.snapshots().get(outcome.snapshots().lastKey()).state().lRacketState().score());
+    System.out.println("R_Score: "
+        + outcome.snapshots().get(outcome.snapshots().lastKey()).state().rRacketState().score());
+    SimplePongDrawer pongDrawer = new SimplePongDrawer();
+    // pongDrawer.show(outcome);
+    pongDrawer.videoBuilder().save(new File("../simple-pong.mp4"), outcome);
+
+    // singleTest(200, 0.02, 6, new Pair<>(new PongAgent(1), new PongAgent(1)), "../pong_1.mp4");
 
     // multipleTestsWithConfusionMatrix(2000, 0.05, 101, Arrays.asList(0.0, 0.5, 10.0),
     // "../pong_confusion_matrix.csv");

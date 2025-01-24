@@ -48,7 +48,7 @@ public class Environments {
       @Param(value = "ballMaxVelocity", dD = 80.0) double ballMaxVelocity,
       @Param(value = "ballInitialAngleRange", dNPM = "m.range(min=-0.39;max=0.39)")
           DoubleRange ballInitialAngleRange,
-      @Param(value = "ballAccelerationRatePerPoint", dD = 1.01)
+      @Param(value = "ballAccelerationRate", dD = 1.01)
           double ballAccelerationRatePerPoint, // The ball accelerates during a point
       @Param(value = "arenaXLength", dD = 60.0) double arenaXLength,
       @Param(value = "arenaYLength", dD = 50.0) double arenaYLength,

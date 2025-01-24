@@ -134,8 +134,8 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
 
   public record BallState(Point center, Point velocity) {
     BallState rotateCounterClockWise(Point centerOfRotation, double angle) {
-      Point ballCenterRotated = center().rotateCounterClockWise(centerOfRotation, angle);
-      Point ballVelocityRotated = velocity().rotateCounterClockWise(centerOfRotation, angle);
+      Point ballCenterRotated = center().rotate(centerOfRotation, angle);
+      Point ballVelocityRotated = velocity().rotate(centerOfRotation, angle);
       return new BallState(ballCenterRotated, ballVelocityRotated);
     }
 
@@ -177,7 +177,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     List<Point> upperCircleIntersections = upperCircle.intersection(racketTrajectoryRRF);
     List<Point> lowerCircleIntersections = lowerCircle.intersection(racketTrajectoryRRF);
     List<Point> rectangleVerticalEdgesIntersections =
-        racketRectangle.verticalEdgesIntersections(racketTrajectoryRRF);
+        racketRectangle.verticalEdgesIntersections(racketTrajectoryRRF, 0.001);
     List<Point> allRacketIntersections = new ArrayList<>();
     allRacketIntersections.addAll(upperCircleIntersections);
     allRacketIntersections.addAll(lowerCircleIntersections);
@@ -228,19 +228,19 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
         * racketState
             .yVelocity); // The minus sign is needed to simulate inverse proportionality that arises with
     // the spin effect
-    Point adjustedReflection = mirroredReflection.rotateCounterClockWise(collisionPoint, correctionAngle);
-    Point adjustedVelocity = mirroredVelocity.rotateCounterClockWise(collisionPoint, correctionAngle);
+    Point adjustedReflection = mirroredReflection.rotate(collisionPoint, correctionAngle);
+    Point adjustedVelocity = mirroredVelocity.rotate(collisionPoint, correctionAngle);
     return new BallState(adjustedReflection, adjustedVelocity);
   }
 
   // TODO check
   private BallState racketCircularEdgeCollisionWithSimplifiedSpinEffect(
       BallState updatedBallState, RacketState racketState, Point collisionPoint, Point circularEdgeCenter) {
-    double collisionPointRotationAngel = collisionPoint.getRotationAngleCounterClockwise(circularEdgeCenter);
+    double collisionPointRotationAngel = collisionPoint.getRotationAngle(circularEdgeCenter);
     BallState ballStateRotatedVertically =
         updatedBallState.rotateCounterClockWise(circularEdgeCenter, -collisionPointRotationAngel);
     Point collisionPointRotatedVertically =
-        collisionPoint.rotateCounterClockWise(circularEdgeCenter, -collisionPointRotationAngel);
+        collisionPoint.rotate(circularEdgeCenter, -collisionPointRotationAngel);
     BallState ballStateAfterVerticalCollision = racketVerticalEdgeCollisionWithSimplifiedSpinEffect(
         ballStateRotatedVertically, racketState, collisionPointRotatedVertically);
     return ballStateAfterVerticalCollision.rotateCounterClockWise(circularEdgeCenter, collisionPointRotationAngel);

@@ -22,7 +22,7 @@ package io.github.ericmedvet.jsdynsym.buildable.builders;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jsdynsym.control.pong.SimplePongAgent;
+import io.github.ericmedvet.jsdynsym.control.pong.PongAgent;
 import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.opponent.pong")
@@ -31,7 +31,7 @@ public class PongOpponents {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Supplier<SimplePongAgent> simple(@Param(value = "speed", dD = 1d) double speed) {
-    return () -> new SimplePongAgent(speed);
+  public static Supplier<PongAgent> simple(@Param(value = "speed", dD = 1d) double speed) {
+    return () -> new PongAgent(speed);
   }
 }

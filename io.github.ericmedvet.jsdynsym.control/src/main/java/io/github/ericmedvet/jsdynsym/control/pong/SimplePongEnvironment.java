@@ -18,11 +18,11 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
   private final Configuration configuration;
   private State state;
   private double previousTime;
-  private Rectangle arena;
+  private final Rectangle arena;
 
   public SimplePongEnvironment(Configuration configuration) {
     this.configuration = configuration;
-    this.arena = new Rectangle(new Point(0.0, configuration.arenaYLength), new Point(configuration.arenaXLength, 0));
+    this.arena = new Rectangle(new Point(0.0, configuration.arenaYLength), new Point(configuration.arenaXLength, 0.0));
     reset();
   }
 
@@ -33,20 +33,24 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
       double ballInitialVelocity,
       double ballMaxVelocity,
       DoubleRange ballInitialAngleRange,
-      double ballAccelerationRatePerPoint, // The ball accelerates during a point
+      double ballAccelerationRate,
+      double maxPercentageAngleAdjustment,// The ball accelerates during a point
       double arenaXLength,
       double arenaYLength,
+      double precision,
       RandomGenerator randomGenerator) {
-    public static final SimplePongEnvironment.Configuration DEFAULT = new SimplePongEnvironment.Configuration(
+    public static final Configuration DEFAULT = new Configuration(
         new DoubleRange(22, 28),
         5,
-        1.5,
+        0.4,
         30,
-        70,
+        50,
         new DoubleRange(-Math.PI / 8, Math.PI / 8),
-        1.01,
+        1.1,
+        0.1,
         60,
         50,
+        0.001,
         new Random());
   }
 
@@ -70,7 +74,7 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
     NONE
   }
 
-  public record RacketState(double yCenter, int nOfBallCollisions, int score, Side side) {
+  public record RacketState(double yCenter, int nOfBallCollisions, double score, Side side) {
     RacketState updatePosition(double yCenter) {
       return new RacketState(yCenter, this.nOfBallCollisions, this.score, this.side);
     }
@@ -84,10 +88,19 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
     }
   }
 
-  public record BallState(Point position, Point velocity) {
+  public record BallState(Point position, Point velocity, int nOfCollisions) {
+    BallState deepCopy(){
+      return new BallState(this.position, this.velocity, this.nOfCollisions);
+    }
+
+    BallState rotate(Point centerOfRotation, double angle) {
+      Point ballCenterRotated = this.position.rotate(centerOfRotation, angle);
+      Point ballVelocityRotated = this.velocity.rotate(centerOfRotation, angle);
+      return new BallState(ballCenterRotated, ballVelocityRotated, this.nOfCollisions);
+    }
   }
 
-  private double[] getNormalizedObservation(RacketState racketState, BallState ballState) {
+  private double[] getNormalizedRacketObservation(RacketState racketState, BallState ballState) {
     double normalizedBallXVelocity = ballState.velocity().x() / configuration.ballMaxVelocity;
     double normalizedBallYVelocity = ballState.velocity().y() / configuration.ballMaxVelocity;
     return new double[]{
@@ -138,7 +151,8 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
             Side.RIGHT),
         new BallState(
             new Point(configuration.arenaXLength / 2.0, configuration.arenaYLength / 2.0),
-            randomBallVelocity()));
+            randomBallVelocity(),
+            0));
     previousTime = 0.0;
   }
 
@@ -158,18 +172,93 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
     // update time
     double deltaTime = t - previousTime;
     previousTime = t;
-    // update rackets positions
+    // update rackets states
     RacketState updatedLRacketState = updateRacketPosition(state.lRacketState, lAction);
     RacketState updatedRRacketState = updateRacketPosition(state.rRacketState, rAction);
+    // update ball state
+    BallState previousBallState = state.ballState;
+    BallState updatedBallState = updateBallState(previousBallState, deltaTime);
+    // manage collisions if any
+    Segment ballTrajectory;
+    boolean collisionIsPossible = true;
+    boolean resetStateAfterPoint = false;
+    while (collisionIsPossible) {
+      ballTrajectory = getAsSegment(previousBallState, updatedBallState);
+      Point lRacketCollision = ballTrajectory.intersection(getAsSegment(updatedLRacketState), configuration.precision);
+      Point rRacketCollision = ballTrajectory.intersection(getAsSegment(updatedRRacketState), configuration.precision);
+      List<Point> arenaHorizontalEdgesCollisions = arena.horizontalEdgesIntersections(ballTrajectory, configuration.precision);
+      Point arenaHorizontalEdgesCollision = arenaHorizontalEdgesCollisions.isEmpty() ? null : arenaHorizontalEdgesCollisions.getFirst();
+      ArenaObject closestCollidingArenaObject = getClosestCollidingArenaObject(lRacketCollision, rRacketCollision, arenaHorizontalEdgesCollision, previousBallState);
+      switch (closestCollidingArenaObject) {
+        case NONE:
+          if (updatedBallState.position.x() < 0) {
+            updatedRRacketState = updatedRRacketState.incrementScore();
+            resetStateAfterPoint = true;
+          } else if (updatedBallState.position.x() > configuration.arenaXLength) {
+            updatedLRacketState = updatedLRacketState.incrementScore();
+            resetStateAfterPoint = true;
+          }
+          collisionIsPossible = false;
+          break;
+        case L_RACKET:
+          assert lRacketCollision != null;
+          updatedLRacketState = updatedLRacketState.incrementNofBallCollisions();
+          Pair<BallState, BallState> lBallStates = racketsCollision(lRacketCollision, updatedBallState, updatedLRacketState, lAction);
+          updatedBallState = lBallStates.first();
+          previousBallState = lBallStates.second();
+          break;
+        case R_RACKET:
+          assert rRacketCollision != null;
+          updatedRRacketState = updatedRRacketState.incrementNofBallCollisions();
+          Pair<BallState, BallState> rBallStates = racketsCollision(rRacketCollision, updatedBallState, updatedRRacketState, rAction);
+          updatedBallState = rBallStates.first();
+          previousBallState = rBallStates.second();
+          break;
+        case HORIZONTAL_EDGES:
+          assert arenaHorizontalEdgesCollision != null;
+          double offsetAbove = configuration.arenaYLength - updatedBallState.position.y();
+          double offsetBelow = updatedBallState.position.y();
+          if (offsetBelow * offsetAbove > 0.0d) {
+            throw new IllegalArgumentException("Problem with Arena horizontal edges collision: " + arenaHorizontalEdgesCollision);
+          }
+          Point bouncedBallVelocity = new Point(updatedBallState.velocity().x(), -updatedBallState.velocity().y());
+          Point bouncedBallPosition;
+          if (offsetAbove < offsetBelow) {
+            bouncedBallPosition = new Point(updatedBallState.position.x(), configuration.arenaYLength + offsetAbove);
+          } else {
+            bouncedBallPosition = new Point(updatedBallState.position.x(), -offsetBelow);
+          }
+          updatedBallState = new BallState(
+              bouncedBallPosition,
+              bouncedBallVelocity,
+              updatedBallState.nOfCollisions + 1
+          );
+          previousBallState = new BallState(
+              new Point(
+                  arenaHorizontalEdgesCollision.x() + (updatedBallState.position.x() - arenaHorizontalEdgesCollision.x()) * 0.001,
+                  arenaHorizontalEdgesCollision.y() + (updatedBallState.position.y() - arenaHorizontalEdgesCollision.y()) * 0.001),
+              updatedBallState.velocity(),
+              updatedBallState.nOfCollisions + 1);
+          break;
+        default:
+          throw new IllegalStateException("Unexpected value: " + closestCollidingArenaObject);
+      }
+    }
+    // update state
+    if (resetStateAfterPoint) {
+      resetSetAfterPoint(updatedLRacketState, updatedRRacketState, updatedBallState);
+    } else {
+      updateState(updatedBallState, updatedLRacketState, updatedRRacketState);
+    }
+    // return pair of observations
+    return new Pair<>(
+        getNormalizedRacketObservation(updatedLRacketState, updatedBallState),
+        getNormalizedRacketObservation(updatedRRacketState, updatedBallState)
+    );
+  }
 
-    BallState updatedBallState = updateBallState(state.ballState, deltaTime);
-    Segment ballTrajectory = getAsSegment(state.ballState, updatedBallState);
-    Point lRacketCollision = ballTrajectory.intersection(getAsSegment(updatedLRacketState));
-    Point rRacketCollision = ballTrajectory.intersection(getAsSegment(updatedRRacketState));
-    List<Point> arenaHorizontalEdgesCollisions = arena.horizontalEdgesIntersections(ballTrajectory);
-    Point arenaHorizontalEdgesCollision = arenaHorizontalEdgesCollisions.isEmpty() ? null : arenaHorizontalEdgesCollisions.getFirst();
-
-    Point previousBallPosition = state.ballState.position;
+  private ArenaObject getClosestCollidingArenaObject(Point lRacketCollision, Point rRacketCollision, Point arenaHorizontalEdgesCollision, BallState previousBallState) {
+    Point previousBallPosition = previousBallState.position;
     ArenaObject closestCollidingArenaObject = ArenaObject.NONE;
     double closestDistance = Double.MAX_VALUE;
     if (lRacketCollision != null) {
@@ -193,20 +282,81 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
         closestCollidingArenaObject = ArenaObject.HORIZONTAL_EDGES;
       }
     }
-    switch (closestCollidingArenaObject) {
-      case NONE:
-        if (updatedBallState.position.x() < 0) {
-          updatedLRacketState = updatedLRacketState.incrementScore();
-        } else if (updatedBallState.position.x() > configuration.arenaXLength) {
-          updatedRRacketState = updatedRRacketState.incrementScore();
-        }
-        break;
-      case L_RACKET:
+    return closestCollidingArenaObject;
+  }
 
+
+  private Pair<BallState,BallState> racketsCollision(Point racketCollisionPoint, BallState updatedBallState, RacketState updatedRacketState, double racketAction) {
+    Point collisionPointRRF = toRacketReferenceFrame(racketCollisionPoint, updatedRacketState);
+    BallState updatedBallStateRRF = toRacketReferenceFrame(updatedBallState, updatedRacketState);
+    double deltaX = updatedBallStateRRF.position.x() - collisionPointRRF.x();
+    Point increasedBallVelocity = updatedBallStateRRF.velocity().scale(configuration.ballAccelerationRate);
+    if (increasedBallVelocity.magnitude() > configuration.ballMaxVelocity){
+      increasedBallVelocity = new Point(increasedBallVelocity.direction()).scale(configuration.ballMaxVelocity);
     }
+    BallState bouncedBallState = new BallState(
+        new Point(collisionPointRRF.x() - deltaX, updatedBallStateRRF.position.y()),
+        new Point(-increasedBallVelocity.x(), increasedBallVelocity.y()),
+        updatedBallStateRRF.nOfCollisions + 1);
+    double collisionAngle = bouncedBallState.position.getRotationAngle(racketCollisionPoint);
+    double anglePercentageCorrection = DoubleRange.SYMMETRIC_UNIT.clip(racketAction/configuration.racketsMaxDeltaY) * configuration.maxPercentageAngleAdjustment;
+    double correctionAngle;
+    if (collisionAngle>=0){
+      correctionAngle = -collisionAngle*anglePercentageCorrection;
+    } else {
+      correctionAngle = collisionAngle*anglePercentageCorrection;
+    }
+    bouncedBallState = bouncedBallState.rotate(collisionPointRRF, correctionAngle);
+    BallState previousBallState = new BallState(
+        new Point(
+            collisionPointRRF.x() + (bouncedBallState.position.x() - collisionPointRRF.x()) * 0.001,
+            collisionPointRRF.y() + (bouncedBallState.position.y() - collisionPointRRF.y()) * 0.001),
+        bouncedBallState.velocity(),
+        bouncedBallState.nOfCollisions);
+    return new Pair<>(toArenaReferenceFrame(bouncedBallState, updatedRacketState),toArenaReferenceFrame(previousBallState, updatedRacketState));
+  }
 
+  private Point toRacketReferenceFrame(Point point, RacketState racketState) {
+    if (racketState.side.equals(Side.LEFT)) {
+      return new Point(point.x(), point.y() - racketState.yCenter);
+    } else {
+      return new Point(configuration.arenaXLength - point.x(), point.y() - racketState.yCenter);
+    }
+  }
 
-    return null;
+  // The racket reference frame is centered in the racket center with the x-axis pointing the center of the arena and
+  // the y-axis pointing upwards
+  private BallState toRacketReferenceFrame(BallState ballState, RacketState racketState) {
+    BallState ballStateFlippedReferenceFrame = ballState.deepCopy();
+    if (racketState.side.equals(Side.RIGHT)) {
+      ballStateFlippedReferenceFrame = flippedHorizontalAxisReferenceFrame(ballStateFlippedReferenceFrame);
+    }
+    return new BallState(
+        new Point(
+            ballStateFlippedReferenceFrame.position.x(),
+            ballStateFlippedReferenceFrame.position.y() - racketState.yCenter),
+        ballStateFlippedReferenceFrame.velocity,
+        ballStateFlippedReferenceFrame.nOfCollisions);
+  }
+
+  private BallState toArenaReferenceFrame(BallState ballState, RacketState racketState) {
+    BallState ballStateFlippedReferenceFrame = ballState.deepCopy();
+    if (racketState.side.equals(Side.RIGHT)) {
+      ballStateFlippedReferenceFrame = flippedHorizontalAxisReferenceFrame(ballStateFlippedReferenceFrame);
+    }
+    return new BallState(
+        new Point(
+            ballStateFlippedReferenceFrame.position.x(),
+            ballStateFlippedReferenceFrame.position.y() + racketState.yCenter),
+        ballStateFlippedReferenceFrame.velocity,
+        ballStateFlippedReferenceFrame.nOfCollisions);
+  }
+
+  private BallState flippedHorizontalAxisReferenceFrame(BallState ballState) {
+    return new BallState(
+        new Point(configuration.arenaXLength() - ballState.position.x(), ballState.position.y()),
+        new Point(-ballState.velocity.x(), ballState.velocity.y()),
+        ballState.nOfCollisions);
   }
 
   private Segment getAsSegment(BallState previousBallState, BallState nextBallState) {
@@ -232,13 +382,37 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
     double deltaX = ballState.velocity.x() * deltaTime;
     double deltaY = ballState.velocity.y() * deltaTime;
     Point deltaPosition = new Point(deltaX, deltaY);
-    return new BallState(ballState.position.sum(deltaPosition), ballState.velocity);
+    return new BallState(ballState.position.sum(deltaPosition), ballState.velocity, ballState.nOfCollisions);
   }
 
   private RacketState updateRacketPosition(RacketState racketState, double deltaY) {
     double updatedY = racketState.yCenter + deltaY;
-    updatedY = DoubleRange.UNIT.clip(updatedY / configuration.arenaYLength) * configuration.arenaYLength;
+    DoubleRange racketsValidMargin = new DoubleRange(configuration.racketsLength/2, configuration.arenaYLength-configuration.racketsLength/2);
+    updatedY = racketsValidMargin.clip(updatedY);
     return racketState.updatePosition(updatedY);
+  }
+
+  private void resetSetAfterPoint(RacketState updatedLRacketState, RacketState updatedRRacketState, BallState ballState) {
+    state = new State(
+        configuration,
+        new RacketState(
+            configuration.racketsInitialYRange.denormalize(configuration.randomGenerator.nextDouble()),
+            updatedLRacketState.nOfBallCollisions,
+            updatedLRacketState.score,
+            updatedLRacketState.side
+        ),
+        new RacketState(
+            configuration.racketsInitialYRange.denormalize(configuration.randomGenerator.nextDouble()),
+            updatedRRacketState.nOfBallCollisions,
+            updatedRRacketState.score,
+            updatedRRacketState.side
+        ),
+        new BallState(
+            new Point(configuration.arenaXLength / 2.0, configuration.arenaYLength / 2.0),
+            randomBallVelocity(),
+            ballState.nOfCollisions
+        )
+    );
   }
 
   private void updateState(BallState ballState, RacketState lRacketState, RacketState rRacketState) {
@@ -257,18 +431,8 @@ public class SimplePongEnvironment implements HomogeneousBiEnvironmentWithExampl
     if (flipBallVelocity) {
       ballInitialAngle = ballInitialAngle + Math.PI;
     }
-    double updatedBallInitialVelocity;
-    try {
-      updatedBallInitialVelocity = configuration.ballInitialVelocity
-          * Math.pow(configuration.ballAccelerationRatePerPoint, (state.lRacketState.score() + state.rRacketState.score()));
-      if (updatedBallInitialVelocity > configuration.ballMaxVelocity) {
-        updatedBallInitialVelocity = configuration.ballMaxVelocity;
-      }
-    } catch (NullPointerException e) {
-      updatedBallInitialVelocity = configuration.ballInitialVelocity;
-    }
-    double ballInitialXV = Math.cos(ballInitialAngle) * updatedBallInitialVelocity;
-    double ballInitialYV = Math.sin(ballInitialAngle) * updatedBallInitialVelocity;
+    double ballInitialXV = Math.cos(ballInitialAngle) * configuration.ballInitialVelocity;
+    double ballInitialYV = Math.sin(ballInitialAngle) * configuration.ballInitialVelocity;
     return new Point(ballInitialXV, ballInitialYV);
   }
 }
