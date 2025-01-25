@@ -69,7 +69,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
         0.1,
         60,
         50,
-        1e-5,
+        1e-3,
         new Random());
   }
 
@@ -208,7 +208,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     Segment ballTrajectory;
     boolean collisionIsPossible = true;
     boolean resetStateAfterPoint = false;
-    while (collisionIsPossible) {
+    while (collisionIsPossible) { //TODO add variable to exclude the previous colliding object from the ones that are considered in the next step
       ballTrajectory = getAsSegment(previousBallState, updatedBallState);
       Point lRacketCollision =
           ballTrajectory.intersection(getAsSegment(updatedLRacketState), configuration.precision);
@@ -238,7 +238,6 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
               racketsCollision(lRacketCollision, updatedBallState, updatedLRacketState, lAction);
           updatedBallState = lBallStates.first();
           previousBallState = lBallStates.second();
-          //collisionIsPossible = false; //TODO This should not be here
           break;
         case R_RACKET:
           assert rRacketCollision != null;
