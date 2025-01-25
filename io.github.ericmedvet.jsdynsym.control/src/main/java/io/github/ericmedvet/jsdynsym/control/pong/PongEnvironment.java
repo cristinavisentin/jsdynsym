@@ -238,7 +238,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
               racketsCollision(lRacketCollision, updatedBallState, updatedLRacketState, lAction);
           updatedBallState = lBallStates.first();
           previousBallState = lBallStates.second();
-          collisionIsPossible = false;
+          //collisionIsPossible = false; //TODO This should not be here
           break;
         case R_RACKET:
           assert rRacketCollision != null;
