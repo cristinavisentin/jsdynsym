@@ -116,23 +116,22 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
   }
 
   private Pair<double[], double[]> getNormalizedRacketObservations() {
-    double normalizedBallXVelocity = state.ballState.velocity().x() / configuration.ballMaxVelocity;
-    double normalizedBallYVelocity = state.ballState.velocity().y() / configuration.ballMaxVelocity;
+    BallState flippedBallState = flippedHorizontalAxisReferenceFrame(state.ballState);
     return new Pair<>(
         new double[] {
           state.lRacketState.yCenter / configuration.arenaYLength,
           state.ballState.position().x() / configuration.arenaXLength,
           state.ballState.position().y() / configuration.arenaYLength,
-          normalizedBallXVelocity,
-          normalizedBallYVelocity,
+          state.ballState.velocity().x() / configuration.ballMaxVelocity,
+          state.ballState.velocity().y() / configuration.ballMaxVelocity,
           state.rRacketState.yCenter / configuration.arenaYLength,
         },
         new double[] {
           state.rRacketState.yCenter / configuration.arenaYLength,
-          state.ballState.position().x() / configuration.arenaXLength,
-          state.ballState.position().y() / configuration.arenaYLength,
-          normalizedBallXVelocity,
-          normalizedBallYVelocity,
+          flippedBallState.position().x() / configuration.arenaXLength,
+          flippedBallState.position().y() / configuration.arenaYLength,
+          flippedBallState.velocity().x() / configuration.ballMaxVelocity,
+          flippedBallState.velocity().y() / configuration.ballMaxVelocity,
           state.lRacketState.yCenter / configuration.arenaYLength,
         });
   }
@@ -210,7 +209,7 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
     boolean collisionIsPossible = true;
     boolean resetStateAfterPoint = false;
     ArenaObject lastCollidingObject = ArenaObject.NONE;
-    while (collisionIsPossible) { // TODO add variable to exclude the previous colliding object from the ones that
+    while (collisionIsPossible) {
       // are considered in the next step
       ballTrajectory = getAsSegment(previousBallState, updatedBallState);
       Point lRacketCollision =
