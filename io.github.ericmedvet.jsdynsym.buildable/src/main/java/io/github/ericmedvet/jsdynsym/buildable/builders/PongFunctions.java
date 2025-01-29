@@ -106,42 +106,42 @@ public class PongFunctions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Integer> numberOfCollisionsWithBall1(
+  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall1(
       @Param(value = "of", dNPM = "f.identity()")
           Function<
                   X,
                   Simulation.Outcome<
                       HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
               beforeF,
-      @Param(value = "format", dS = "%5d") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Integer>
-        f = o -> o.snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .lRacketState()
-        .nOfBallCollisions();
+      @Param(value = "format", dS = "%5.0f") String format) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
+        o -> (double) o.snapshots()
+            .lastEntry()
+            .getValue()
+            .state()
+            .lRacketState()
+            .nOfBallCollisions();
     return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.1")
         .compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Integer> numberOfCollisionsWithBall2(
+  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall2(
       @Param(value = "of", dNPM = "f.identity()")
           Function<
                   X,
                   Simulation.Outcome<
                       HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
               beforeF,
-      @Param(value = "format", dS = "%5d") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Integer>
-        f = o -> o.snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .rRacketState()
-        .nOfBallCollisions();
+      @Param(value = "format", dS = "%5.0f") String format) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
+        o -> (double) o.snapshots()
+            .lastEntry()
+            .getValue()
+            .state()
+            .rRacketState()
+            .nOfBallCollisions();
     return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.2")
         .compose(beforeF);
   }
