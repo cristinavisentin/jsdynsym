@@ -46,16 +46,16 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
       boolean senseTarget,
       Arena arena,
       boolean rescaleInput,
-      RandomGenerator randomGenerator)
-      implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {}
+      RandomGenerator randomGenerator
+  ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {}
 
   public record State(
       Configuration configuration,
       Point targetPosition,
       Point robotPosition,
       double robotDirection,
-      int nOfCollisions)
-      implements io.github.ericmedvet.jsdynsym.control.navigation.State {}
+      int nOfCollisions
+  ) implements io.github.ericmedvet.jsdynsym.control.navigation.State {}
 
   private final Configuration configuration;
   private State state;
@@ -81,20 +81,25 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
         configuration,
         new Point(
             configuration.targetXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.targetYRange.denormalize(configuration.randomGenerator.nextDouble())),
+            configuration.targetYRange.denormalize(configuration.randomGenerator.nextDouble())
+        ),
         new Point(
             configuration.initialRobotXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.initialRobotYRange.denormalize(configuration.randomGenerator.nextDouble())),
+            configuration.initialRobotYRange.denormalize(configuration.randomGenerator.nextDouble())
+        ),
         configuration.initialRobotDirectionRange.denormalize(configuration.randomGenerator.nextDouble()),
-        0);
+        0
+    );
   }
 
   @Override
   public double[] step(double t, double[] action) {
     // check consistency
     if (action.length != nOfInputs()) {
-      throw new IllegalArgumentException("Agent action has wrong number of elements: %d found, %d expected"
-          .formatted(action.length, nOfInputs()));
+      throw new IllegalArgumentException(
+          "Agent action has wrong number of elements: %d found, %d expected"
+              .formatted(action.length, nOfInputs())
+      );
     }
     // prepare
     List<Segment> segments = configuration.arena.segments();
@@ -112,7 +117,8 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
         state.targetPosition,
         (minD > configuration.robotRadius) ? newRobotP : state.robotPosition,
         state.robotDirection + deltaA,
-        state.nOfCollisions + ((minD > configuration.robotRadius) ? 0 : 1));
+        state.nOfCollisions + ((minD > configuration.robotRadius) ? 0 : 1)
+    );
     // compute observation
     double[] sInputs = configuration.sensorAngles.stream()
         .mapToDouble(a -> {
@@ -120,8 +126,7 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
           return segments.stream()
               .map(sl::interception)
               .filter(Optional::isPresent)
-              .mapToDouble(op ->
-                  sensorsRange.normalize(op.orElseThrow().distance(state.robotPosition)))
+              .mapToDouble(op -> sensorsRange.normalize(op.orElseThrow().distance(state.robotPosition)))
               .min()
               .orElse(Double.POSITIVE_INFINITY);
         })
@@ -130,8 +135,7 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
     if (configuration.senseTarget) {
       System.arraycopy(sInputs, 0, observation, 2, sInputs.length);
       double d = state.robotPosition.distance(state.targetPosition);
-      double a = (state.targetPosition.diff(state.robotPosition).direction() - state.robotDirection)
-          % (2d * Math.PI);
+      double a = (state.targetPosition.diff(state.robotPosition).direction() - state.robotDirection) % (2d * Math.PI);
       observation[0] = sensorsRange.normalize(d);
       observation[1] = new DoubleRange(-2d * Math.PI, 2d * Math.PI).normalize(a);
     }

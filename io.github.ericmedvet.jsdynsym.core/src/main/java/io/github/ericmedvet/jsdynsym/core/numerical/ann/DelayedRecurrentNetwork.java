@@ -26,9 +26,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DelayedRecurrentNetwork
-    implements NumericalDynamicalSystem<DelayedRecurrentNetwork.State>,
-        NumericalParametrized<DelayedRecurrentNetwork> {
+public class DelayedRecurrentNetwork implements NumericalDynamicalSystem<DelayedRecurrentNetwork.State>, NumericalParametrized<DelayedRecurrentNetwork> {
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
   private final int nOfInputs;
   private final int nOfOutputs;
@@ -48,7 +46,8 @@ public class DelayedRecurrentNetwork
       int nOfInnerNeurons,
       DoubleRange timeRange,
       double threshold,
-      double timeResolution) {
+      double timeResolution
+  ) {
     this.activationFunction = activationFunction;
     this.nOfInputs = nOfInputs;
     this.nOfOutputs = nOfOutputs;
@@ -95,8 +94,10 @@ public class DelayedRecurrentNetwork
   public void setParams(double[] params) {
     int nOfNeurons = nOfInputs + nOfOutputs + nOfInnerNeurons;
     if (params.length != 3 * nOfNeurons * nOfNeurons + nOfNeurons) {
-      throw new IllegalArgumentException("Wrong number of parameters: %d found, %d expected"
-          .formatted(params.length, 3 * nOfNeurons * nOfNeurons + nOfNeurons));
+      throw new IllegalArgumentException(
+          "Wrong number of parameters: %d found, %d expected"
+              .formatted(params.length, 3 * nOfNeurons * nOfNeurons + nOfNeurons)
+      );
     }
     int c = 0;
     for (int i = 0; i < nOfNeurons; i = i + 1) {
@@ -151,9 +152,7 @@ public class DelayedRecurrentNetwork
           double delay = timeRange.denormalize(DoubleRange.SYMMETRIC_UNIT.normalize(connection.delay()));
           double duration = new DoubleRange(delay, timeRange.max())
               .denormalize(DoubleRange.SYMMETRIC_UNIT.normalize(connection.duration()));
-          for (double futureT = t + delay;
-              futureT <= t + delay + duration;
-              futureT = futureT + timeResolution) {
+          for (double futureT = t + delay; futureT <= t + delay + duration; futureT = futureT + timeResolution) {
             int futureTI = timeIndex(futureT);
             inValues[toI][futureTI] = inValues[toI][futureTI] + pulseValue;
           }

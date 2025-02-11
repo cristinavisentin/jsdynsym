@@ -26,8 +26,7 @@ import java.util.EnumSet;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class AggregatedInput<S> extends AbstractComposed<NumericalDynamicalSystem<S>>
-    implements NumericalDynamicalSystem<AggregatedInput.State<S>> {
+public class AggregatedInput<S> extends AbstractComposed<NumericalDynamicalSystem<S>> implements NumericalDynamicalSystem<AggregatedInput.State<S>> {
 
   public record State<S>(SortedMap<Double, double[]> inputHistory, S innerState) {}
 
@@ -40,7 +39,8 @@ public class AggregatedInput<S> extends AbstractComposed<NumericalDynamicalSyste
     if (innerVDS.nOfInputs() % types.size() != 0) {
       throw new IllegalArgumentException(
           "Cannot build VDS with %d aggregate types (%s), because inner VDS input size is wrong (%d)"
-              .formatted(types.size(), types, innerVDS.nOfInputs()));
+              .formatted(types.size(), types, innerVDS.nOfInputs())
+      );
     }
     this.windowT = windowT;
     this.types = EnumSet.copyOf(types);
@@ -48,9 +48,7 @@ public class AggregatedInput<S> extends AbstractComposed<NumericalDynamicalSyste
   }
 
   public enum Type {
-    CURRENT,
-    TREND,
-    AVG
+    CURRENT, TREND, AVG
   }
 
   @Override

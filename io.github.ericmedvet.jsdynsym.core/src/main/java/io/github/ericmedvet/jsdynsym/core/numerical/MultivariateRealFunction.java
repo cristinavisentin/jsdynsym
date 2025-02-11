@@ -70,19 +70,22 @@ public interface MultivariateRealFunction extends NumericalTimeInvariantStateles
   default MultivariateRealFunction andThen(MultivariateRealFunction other) {
     if (other.nOfInputs() != nOfOutputs()) {
       throw new IllegalArgumentException(
-          "Incompatible input/output size: input=%d, output=%d".formatted(other.nOfInputs(), nOfOutputs()));
+          "Incompatible input/output size: input=%d, output=%d".formatted(other.nOfInputs(), nOfOutputs())
+      );
     }
     MultivariateRealFunction thisMrf = this;
     return MultivariateRealFunction.from(
         NamedFunction.from(in -> other.compute(thisMrf.compute(in)), this + "[then:%s]".formatted(other)),
         thisMrf.nOfInputs(),
-        other.nOfOutputs());
+        other.nOfOutputs()
+    );
   }
 
   default MultivariateRealFunction andThen(DoubleUnaryOperator f) {
     return MultivariateRealFunction.from(
         NamedFunction.from(in -> Arrays.stream(compute(in)).map(f).toArray(), "[all:%s]".formatted(f)),
         nOfInputs(),
-        nOfOutputs());
+        nOfOutputs()
+    );
   }
 }

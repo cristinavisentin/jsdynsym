@@ -31,7 +31,8 @@ import io.github.ericmedvet.jsdynsym.control.pong.PongDrawer;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.drawer|d")
 public class Drawers {
-  private Drawers() {}
+  private Drawers() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable

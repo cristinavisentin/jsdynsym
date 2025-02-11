@@ -31,7 +31,8 @@ import java.util.function.Predicate;
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.singleAgentTask|saTask|sat")
 public class SingleAgentTasks {
 
-  private SingleAgentTasks() {}
+  private SingleAgentTasks() {
+  }
 
   @SuppressWarnings("unused")
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> SingleAgentTask<C, O, A, S> fromEnvironment(
@@ -39,7 +40,8 @@ public class SingleAgentTasks {
       @Param("environment") Environment<O, A, S> environment,
       @Param("stopCondition") Predicate<S> stopCondition,
       @Param("tRange") DoubleRange tRange,
-      @Param("dT") double dT) {
+      @Param("dT") double dT
+  ) {
     return SingleAgentTask.fromEnvironment(environment, stopCondition, tRange, dT);
   }
 }

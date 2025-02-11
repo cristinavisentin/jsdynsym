@@ -42,17 +42,22 @@ public interface SimulationOutcomeDrawer<S> extends ImageBuilder<Simulation.Outc
     return lastDrawer.andThen(allDrawer).build(imageInfo, o.snapshots());
   }
 
-  default void drawAll(Graphics2D g, SortedMap<Double, S> ss) {}
+  default void drawAll(Graphics2D g, SortedMap<Double, S> ss) {
+  }
 
   default VideoBuilder<Simulation.Outcome<S>> videoBuilder() {
     return new VideoBuilder<>() {
       @Override
       public Video build(VideoInfo videoInfo, Outcome<S> o) {
-        Drawer<Map.Entry<Double, S>> drawer =
-            (g, e) -> SimulationOutcomeDrawer.this.drawSingle(g, e.getKey(), e.getValue());
-        Function<Outcome<S>, SortedMap<Double, Map.Entry<Double, S>>> splitter =
-            lO -> lO.snapshots().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e, (e1, e2) -> e1, TreeMap::new));
+        Drawer<Map.Entry<Double, S>> drawer = (g, e) -> SimulationOutcomeDrawer.this.drawSingle(
+            g,
+            e.getKey(),
+            e.getValue()
+        );
+        Function<Outcome<S>, SortedMap<Double, Map.Entry<Double, S>>> splitter = lO -> lO.snapshots()
+            .entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, e -> e, (e1, e2) -> e1, TreeMap::new));
         return VideoBuilder.from(drawer, splitter).build(videoInfo, o);
       }
 

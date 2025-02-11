@@ -30,11 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /** @author "Eric Medvet" on 2024/07/24 for jgea */
-public class VariableSensorPositionsNavigation
-    implements SimulationWithExample<
-        Pair<List<Double>, NumericalDynamicalSystem<?>>,
-        SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>,
-        Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> {
+public class VariableSensorPositionsNavigation implements SimulationWithExample<Pair<List<Double>, NumericalDynamicalSystem<?>>, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> {
   private final NavigationEnvironment.Configuration configuration;
   private final int nOfSensors;
   private final DoubleRange tRange;
@@ -46,7 +42,8 @@ public class VariableSensorPositionsNavigation
       int nOfSensors,
       DoubleRange tRange,
       double dT,
-      boolean sortSensorAngles) {
+      boolean sortSensorAngles
+  ) {
     this.configuration = configuration;
     this.nOfSensors = nOfSensors;
     this.tRange = tRange;
@@ -56,19 +53,23 @@ public class VariableSensorPositionsNavigation
 
   @Override
   public Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> simulate(
-      Pair<List<Double>, NumericalDynamicalSystem<?>> pair) {
+      Pair<List<Double>, NumericalDynamicalSystem<?>> pair
+  ) {
     if (pair.first().size() != nOfSensors) {
-      throw new IllegalArgumentException("Wrong number of sensor angles: %d found, %d expected"
-          .formatted(pair.first().size(), nOfSensors));
+      throw new IllegalArgumentException(
+          "Wrong number of sensor angles: %d found, %d expected"
+              .formatted(pair.first().size(), nOfSensors)
+      );
     }
     return SingleAgentTask.fromEnvironment(
-            new NavigationEnvironment(
-                sortSensorAngles
-                    ? configuration(pair.first())
-                    : configuration(
-                        pair.first().stream().sorted().toList())),
-            tRange,
-            dT)
+        new NavigationEnvironment(
+            sortSensorAngles ? configuration(pair.first()) : configuration(
+                pair.first().stream().sorted().toList()
+            )
+        ),
+        tRange,
+        dT
+    )
         .simulate(pair.second());
   }
 
@@ -86,7 +87,8 @@ public class VariableSensorPositionsNavigation
         configuration.senseTarget(),
         configuration.arena(),
         configuration.rescaleInput(),
-        configuration.randomGenerator());
+        configuration.randomGenerator()
+    );
   }
 
   @Override
@@ -96,6 +98,10 @@ public class VariableSensorPositionsNavigation
     return new Pair<>(
         angles,
         NumericalStatelessSystem.from(
-            env.nOfOutputs(), env.nOfInputs(), (t, in) -> new double[env.nOfOutputs()]));
+            env.nOfOutputs(),
+            env.nOfInputs(),
+            (t, in) -> new double[env.nOfOutputs()]
+        )
+    );
   }
 }

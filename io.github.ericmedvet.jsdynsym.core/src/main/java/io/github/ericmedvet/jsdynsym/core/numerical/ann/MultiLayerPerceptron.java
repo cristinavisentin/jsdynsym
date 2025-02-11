@@ -38,37 +38,53 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
     this.weights = weights;
     this.neurons = neurons;
     if (flat(weights, neurons).length != countWeights(neurons)) {
-      throw new IllegalArgumentException(String.format(
-          "Wrong number of weights: %d expected, %d found",
-          countWeights(neurons), flat(weights, neurons).length));
+      throw new IllegalArgumentException(
+          String.format(
+              "Wrong number of weights: %d expected, %d found",
+              countWeights(neurons),
+              flat(weights, neurons).length
+          )
+      );
     }
   }
 
   public MultiLayerPerceptron(
-      ActivationFunction activationFunction, int nOfInput, int[] innerNeurons, int nOfOutput, double[] weights) {
+      ActivationFunction activationFunction,
+      int nOfInput,
+      int[] innerNeurons,
+      int nOfOutput,
+      double[] weights
+  ) {
     this(
         activationFunction,
         unflat(weights, countNeurons(nOfInput, innerNeurons, nOfOutput)),
-        countNeurons(nOfInput, innerNeurons, nOfOutput));
+        countNeurons(nOfInput, innerNeurons, nOfOutput)
+    );
   }
 
   public MultiLayerPerceptron(
-      ActivationFunction activationFunction, int nOfInput, int[] innerNeurons, int nOfOutput) {
+      ActivationFunction activationFunction,
+      int nOfInput,
+      int[] innerNeurons,
+      int nOfOutput
+  ) {
     this(
         activationFunction,
         nOfInput,
         innerNeurons,
         nOfOutput,
-        new double[countWeights(countNeurons(nOfInput, innerNeurons, nOfOutput))]);
+        new double[countWeights(countNeurons(nOfInput, innerNeurons, nOfOutput))]
+    );
   }
 
   public enum ActivationFunction implements DoubleUnaryOperator {
-    RELU(x -> (x < 0) ? 0d : x, new DoubleRange(0d, Double.POSITIVE_INFINITY)),
-    SIGMOID(x -> 1d / (1d + Math.exp(-x)), DoubleRange.UNIT),
-    SIN(Math::sin, DoubleRange.SYMMETRIC_UNIT),
-    TANH(Math::tanh, DoubleRange.SYMMETRIC_UNIT),
-    SIGN(Math::signum, DoubleRange.SYMMETRIC_UNIT),
-    IDENTITY(x -> x, DoubleRange.UNBOUNDED);
+    RELU(x -> (x < 0) ? 0d : x, new DoubleRange(0d, Double.POSITIVE_INFINITY)), SIGMOID(
+        x -> 1d / (1d + Math.exp(-x)),
+        DoubleRange.UNIT
+    ), SIN(Math::sin, DoubleRange.SYMMETRIC_UNIT), TANH(Math::tanh, DoubleRange.SYMMETRIC_UNIT), SIGN(
+        Math::signum,
+        DoubleRange.SYMMETRIC_UNIT
+    ), IDENTITY(x -> x, DoubleRange.UNBOUNDED);
 
     private final DoubleUnaryOperator f;
     private final DoubleRange domain;
@@ -146,7 +162,8 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
   public double[] compute(double[] input) {
     if (input.length != neurons[0]) {
       throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length));
+          String.format("Expected input length is %d: found %d", neurons[0], input.length)
+      );
     }
     double[][] activationValues = new double[neurons.length][];
     activationValues[0] = Arrays.stream(input).map(activationFunction).toArray();
@@ -193,6 +210,7 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
     return "MLP-%s-%s"
         .formatted(
             activationFunction.toString().toLowerCase(),
-            Arrays.stream(neurons).mapToObj(Integer::toString).collect(Collectors.joining(">")));
+            Arrays.stream(neurons).mapToObj(Integer::toString).collect(Collectors.joining(">"))
+        );
   }
 }

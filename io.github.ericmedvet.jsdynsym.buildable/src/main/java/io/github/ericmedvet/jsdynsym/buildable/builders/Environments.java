@@ -31,7 +31,8 @@ import java.util.random.RandomGenerator;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.environment|env|e")
 public class Environments {
-  private Environments() {}
+  private Environments() {
+  }
 
   public static PongEnvironment pong(
       @Param(value = "name", iS = "pong") String name,
@@ -69,8 +70,7 @@ public class Environments {
       @Param(value = "name", iS = "nav-{arena}") String name,
       @Param(value = "initialRobotXRange", dNPM = "m.range(min=0.45;max=0.55)") DoubleRange initialRobotXRange,
       @Param(value = "initialRobotYRange", dNPM = "m.range(min=0.8;max=0.85)") DoubleRange initialRobotYRange,
-      @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)")
-          DoubleRange initialRobotDirectionRange,
+      @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)") DoubleRange initialRobotDirectionRange,
       @Param(value = "targetXRange", dNPM = "m.range(min=0.5;max=0.5)") DoubleRange targetXRange,
       @Param(value = "targetYRange", dNPM = "m.range(min=0.15;max=0.15)") DoubleRange targetYRange,
       @Param(value = "robotRadius", dD = 0.05) double robotRadius,
@@ -81,21 +81,25 @@ public class Environments {
       @Param(value = "senseTarget", dB = true) boolean senseTarget,
       @Param(value = "arena", dS = "empty") Arena.Prepared arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
-      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
-    return new NavigationEnvironment(new NavigationEnvironment.Configuration(
-        initialRobotXRange,
-        initialRobotYRange,
-        initialRobotDirectionRange,
-        targetXRange,
-        targetYRange,
-        robotRadius,
-        robotMaxV,
-        sensorsAngleRange.points(nOfSensors).boxed().toList(),
-        sensorRange,
-        senseTarget,
-        arena.arena(),
-        rescaleInput,
-        randomGenerator));
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
+  ) {
+    return new NavigationEnvironment(
+        new NavigationEnvironment.Configuration(
+            initialRobotXRange,
+            initialRobotYRange,
+            initialRobotDirectionRange,
+            targetXRange,
+            targetYRange,
+            robotRadius,
+            robotMaxV,
+            sensorsAngleRange.points(nOfSensors).boxed().toList(),
+            sensorRange,
+            senseTarget,
+            arena.arena(),
+            rescaleInput,
+            randomGenerator
+        )
+    );
   }
 
   @SuppressWarnings("unused")
@@ -109,16 +113,20 @@ public class Environments {
       @Param(value = "collisionBlock", dD = 0.005) double collisionBlock,
       @Param(value = "arena", dS = "empty") Arena.Prepared arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
-      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator) {
-    return new PointNavigationEnvironment(new PointNavigationEnvironment.Configuration(
-        initialRobotXRange,
-        initialRobotYRange,
-        targetXRange,
-        targetYRange,
-        robotMaxV,
-        collisionBlock,
-        arena.arena(),
-        rescaleInput,
-        randomGenerator));
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
+  ) {
+    return new PointNavigationEnvironment(
+        new PointNavigationEnvironment.Configuration(
+            initialRobotXRange,
+            initialRobotYRange,
+            targetXRange,
+            targetYRange,
+            robotMaxV,
+            collisionBlock,
+            arena.arena(),
+            rescaleInput,
+            randomGenerator
+        )
+    );
   }
 }

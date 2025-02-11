@@ -31,7 +31,11 @@ public class Noised<S> extends AbstractComposed<NumericalDynamicalSystem<S>> imp
   private final RandomGenerator randomGenerator;
 
   public Noised(
-      NumericalDynamicalSystem<S> inner, double inputSigma, double outputSigma, RandomGenerator randomGenerator) {
+      NumericalDynamicalSystem<S> inner,
+      double inputSigma,
+      double outputSigma,
+      RandomGenerator randomGenerator
+  ) {
     super(inner);
     this.inputSigma = inputSigma;
     this.outputSigma = outputSigma;

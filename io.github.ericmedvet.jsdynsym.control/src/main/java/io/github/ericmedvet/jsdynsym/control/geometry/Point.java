@@ -44,12 +44,13 @@ public record Point(double x, double y) {
 
   public double distance(Segment s) {
     return DoubleStream.of(
-            Line.from(this, s.direction() + Math.PI / 2d)
-                .interception(s)
-                .map(p -> p.distance(this))
-                .orElse(Double.POSITIVE_INFINITY),
-            distance(s.p1()),
-            distance(s.p2()))
+        Line.from(this, s.direction() + Math.PI / 2d)
+            .interception(s)
+            .map(p -> p.distance(this))
+            .orElse(Double.POSITIVE_INFINITY),
+        distance(s.p1()),
+        distance(s.p2())
+    )
         .min()
         .orElseThrow();
   }
