@@ -30,97 +30,96 @@ import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.environment|env|e.pong")
 public class PongFunctions {
-  private PongFunctions() {}
+  private PongFunctions() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> score1(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.3f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().lRacketState().score();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.3f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .lRacketState()
+        .score();
     return FormattedNamedFunction.from(f, format, "score.1").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> score2(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.3f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().rRacketState().score();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.3f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .rRacketState()
+        .score();
     return FormattedNamedFunction.from(f, format, "score.2").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> scoreDiff1(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.3f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().lRacketState().score()
-            - o.snapshots()
-                .lastEntry()
-                .getValue()
-                .state()
-                .rRacketState()
-                .score();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.3f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .lRacketState()
+        .score() - o.snapshots()
+            .lastEntry()
+            .getValue()
+            .state()
+            .rRacketState()
+            .score();
     return FormattedNamedFunction.from(f, format, "score.diff.1").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> scoreDiff2(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.3f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> o.snapshots().lastEntry().getValue().state().rRacketState().score()
-            - o.snapshots()
-                .lastEntry()
-                .getValue()
-                .state()
-                .lRacketState()
-                .score();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.3f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .rRacketState()
+        .score() - o.snapshots()
+            .lastEntry()
+            .getValue()
+            .state()
+            .lRacketState()
+            .score();
     return FormattedNamedFunction.from(f, format, "score.diff.2").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall1(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.0f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> (double) o.snapshots()
-            .lastEntry()
-            .getValue()
-            .state()
-            .lRacketState()
-            .nOfBallCollisions();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.0f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .lRacketState()
+        .nOfBallCollisions();
     return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.1")
         .compose(beforeF);
   }
@@ -128,20 +127,16 @@ public class PongFunctions {
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall2(
-      @Param(value = "of", dNPM = "f.identity()")
-          Function<
-                  X,
-                  Simulation.Outcome<
-                      HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>>
-              beforeF,
-      @Param(value = "format", dS = "%5.0f") String format) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f =
-        o -> (double) o.snapshots()
-            .lastEntry()
-            .getValue()
-            .state()
-            .rRacketState()
-            .nOfBallCollisions();
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.0f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .rRacketState()
+        .nOfBallCollisions();
     return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.2")
         .compose(beforeF);
   }

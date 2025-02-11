@@ -27,7 +27,8 @@ import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.opponent.pong")
 public class PongOpponents {
-  private PongOpponents() {}
+  private PongOpponents() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable

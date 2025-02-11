@@ -38,7 +38,7 @@ public class PongAgent implements MultivariateRealFunction {
     double racketY = input[0];
     double ballY = input[2];
     double diff = ballY - racketY;
-    return new double[] {Math.signum(diff) * normalizedDeltaY};
+    return new double[]{Math.signum(diff) * normalizedDeltaY};
   }
 
   @Override

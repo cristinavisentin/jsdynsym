@@ -27,7 +27,8 @@ public record Rectangle(Point topLeft, Point bottomRight) {
   public Rectangle {
     if (topLeft.x() >= bottomRight.x() || bottomRight.y() >= topLeft.y()) {
       throw new IllegalArgumentException(
-          "Invalid rectangle: Ensure bottomLeft is below and to the left of topRight.");
+          "Invalid rectangle: Ensure bottomLeft is below and to the left of topRight."
+      );
     }
   }
 

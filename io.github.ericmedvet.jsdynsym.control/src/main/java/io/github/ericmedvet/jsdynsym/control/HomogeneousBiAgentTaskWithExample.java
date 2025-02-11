@@ -25,12 +25,7 @@ import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public interface HomogeneousBiAgentTaskWithExample<C extends DynamicalSystem<O, A, ?>, O, A, S>
-    extends HomogeneousBiAgentTask<C, O, A, S>,
-        HomogeneousBiSimulationWithExample<
-            C,
-            HomogeneousBiAgentTask.Step<O, A, S>,
-            Simulation.Outcome<HomogeneousBiAgentTask.Step<O, A, S>>> {
+public interface HomogeneousBiAgentTaskWithExample<C extends DynamicalSystem<O, A, ?>, O, A, S> extends HomogeneousBiAgentTask<C, O, A, S>, HomogeneousBiSimulationWithExample<C, HomogeneousBiAgentTask.Step<O, A, S>, Simulation.Outcome<HomogeneousBiAgentTask.Step<O, A, S>>> {
   C example();
 
   static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromHomogenousBiEnvironment(
@@ -38,9 +33,15 @@ public interface HomogeneousBiAgentTaskWithExample<C extends DynamicalSystem<O, 
       Pair<A, A> initialActions,
       Predicate<S> stopCondition,
       DoubleRange tRange,
-      double dT) {
+      double dT
+  ) {
     HomogeneousBiAgentTask<C, O, A, S> hbe = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
-        biEnvironmentSupplier::get, initialActions, stopCondition, tRange, dT);
+        biEnvironmentSupplier::get,
+        initialActions,
+        stopCondition,
+        tRange,
+        dT
+    );
     return new HomogeneousBiAgentTaskWithExample<>() {
       @Override
       public C example() {
@@ -58,8 +59,14 @@ public interface HomogeneousBiAgentTaskWithExample<C extends DynamicalSystem<O, 
       Supplier<HomogeneousBiEnvironmentWithExample<O, A, S>> biEnvironmentSupplier,
       Predicate<S> stopCondition,
       DoubleRange tRange,
-      double dT) {
+      double dT
+  ) {
     return HomogeneousBiAgentTaskWithExample.fromHomogenousBiEnvironment(
-        biEnvironmentSupplier, biEnvironmentSupplier.get().defaultActions(), stopCondition, tRange, dT);
+        biEnvironmentSupplier,
+        biEnvironmentSupplier.get().defaultActions(),
+        stopCondition,
+        tRange,
+        dT
+    );
   }
 }

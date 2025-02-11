@@ -64,22 +64,23 @@ public class Functions {
   public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> selfBiSimulator(
       @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
       @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
-      @Param(value = "format", dS = "%s") String format) {
+      @Param(value = "format", dS = "%s") String format
+  ) {
     Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s);
     return NamedFunction.from(f, "self.sim").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, S, B extends Simulation.Outcome<SS>, SS>
-      NamedFunction<X, Simulation.Outcome<SS>> opponentBiSimulator(
-          @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
-          @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
-          @Param("opponent") Supplier<S> opponent,
-          @Param(value = "home", dB = true) boolean home,
-          @Param(value = "format", dS = "%s") String format) {
-    Function<S, Simulation.Outcome<SS>> f =
-        s -> home ? biSimulation.simulate(s, opponent.get()) : biSimulation.simulate(opponent.get(), s);
+  public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> opponentBiSimulator(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
+      @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
+      @Param("opponent") Supplier<S> opponent,
+      @Param(value = "home", dB = true) boolean home,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(s, opponent.get()) : biSimulation
+        .simulate(opponent.get(), s);
     return NamedFunction.from(f, "opponent.sim").compose(beforeF);
   }
 }

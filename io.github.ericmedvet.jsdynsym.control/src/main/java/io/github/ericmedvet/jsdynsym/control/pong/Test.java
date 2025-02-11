@@ -31,26 +31,29 @@ import java.util.List;
 
 public class Test {
   public static void main(String[] args) {
-    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State>
-        dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask
+        .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketState().score() + s.rRacketState().score() >= 101,
             new DoubleRange(0, 20),
-            0.05);
-    Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
-        dynamicalSystemStateHomogeneousBiAgentTask.simulate(new Pair<>(new PongAgent(1), new PongAgent(1)));
-    System.out.println("L_Score: "
-        + outcome.snapshots()
+            0.05
+        );
+    Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = dynamicalSystemStateHomogeneousBiAgentTask
+        .simulate(new Pair<>(new PongAgent(1), new PongAgent(1)));
+    System.out.println(
+        "L_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())
             .state()
             .lRacketState()
-            .score());
-    System.out.println("R_Score: "
-        + outcome.snapshots()
+            .score()
+    );
+    System.out.println(
+        "R_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())
             .state()
             .rRacketState()
-            .score());
+            .score()
+    );
     PongDrawer pongDrawer = new PongDrawer();
     // pongDrawer.show(outcome);
     pongDrawer.videoBuilder().save(new File("../simple-pong.mp4"), outcome);
@@ -73,15 +76,18 @@ public class Test {
       List<DynamicalSystem<double[], double[], ?>> agentsList,
       int repetitions,
       String scoresCsvFilePath,
-      String timesCsvFilePath) {
-    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
-        HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+      String timesCsvFilePath
+  ) {
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task = HomogeneousBiAgentTask
+        .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
             new DoubleRange(0, finalTime),
-            dT);
-    try (FileWriter scoresWriter = new FileWriter(scoresCsvFilePath);
-        FileWriter timesWriter = new FileWriter(timesCsvFilePath)) {
+            dT
+        );
+    try (FileWriter scoresWriter = new FileWriter(scoresCsvFilePath); FileWriter timesWriter = new FileWriter(
+        timesCsvFilePath
+    )) {
       // Intestazioni CSV
       scoresWriter.write("Agent vs Agent;");
       timesWriter.write("Agent vs Agent;");
@@ -103,8 +109,8 @@ public class Test {
 
           for (int r = 0; r < repetitions; r++) {
             long startTime = System.nanoTime();
-            Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>
-                outcome = task.simulate(agent_i, agent_j);
+            Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = task
+                .simulate(agent_i, agent_j);
             long endTime = System.nanoTime();
 
             var snapshots = outcome.snapshots();
@@ -139,13 +145,15 @@ public class Test {
       double dT,
       double finalScore,
       List<DynamicalSystem<double[], double[], ?>> agentsSpeedsDumpingConstants,
-      String csvFilePath) {
-    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task =
-        HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+      String csvFilePath
+  ) {
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> task = HomogeneousBiAgentTask
+        .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
             new DoubleRange(0, finalTime),
-            dT);
+            dT
+        );
     try (FileWriter writer = new FileWriter(csvFilePath)) {
       writer.write("Agent vs Agent;");
       for (DynamicalSystem<double[], double[], ?> agentsSpeed : agentsSpeedsDumpingConstants) {
@@ -155,8 +163,8 @@ public class Test {
       for (DynamicalSystem<double[], double[], ?> agentsSpeed_i : agentsSpeedsDumpingConstants) {
         writer.write("Agent " + agentsSpeed_i.toString() + ";");
         for (DynamicalSystem<double[], double[], ?> agentsSpeed_j : agentsSpeedsDumpingConstants) {
-          Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
-              task.simulate(agentsSpeed_i, agentsSpeed_j);
+          Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = task
+              .simulate(agentsSpeed_i, agentsSpeed_j);
           String score = getFinalScore(outcome);
           writer.write(score + ";");
         }
@@ -171,36 +179,40 @@ public class Test {
       double finalTime,
       double dT,
       double finalScore,
-      Pair<DynamicalSystem<double[], double[], ?>, DynamicalSystem<double[], double[], ?>>
-          agentsSpeedsDumpingConstants,
-      String pathName) {
-    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State>
-        dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask.fromHomogenousBiEnvironment(
+      Pair<DynamicalSystem<double[], double[], ?>, DynamicalSystem<double[], double[], ?>> agentsSpeedsDumpingConstants,
+      String pathName
+  ) {
+    HomogeneousBiAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PongEnvironment.State> dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask
+        .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
             s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
             new DoubleRange(0, finalTime),
-            dT);
-    Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome =
-        dynamicalSystemStateHomogeneousBiAgentTask.simulate(agentsSpeedsDumpingConstants);
-    System.out.println("L_Score: "
-        + outcome.snapshots()
+            dT
+        );
+    Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = dynamicalSystemStateHomogeneousBiAgentTask
+        .simulate(agentsSpeedsDumpingConstants);
+    System.out.println(
+        "L_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())
             .state()
             .lRacketState()
-            .score());
-    System.out.println("R_Score: "
-        + outcome.snapshots()
+            .score()
+    );
+    System.out.println(
+        "R_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())
             .state()
             .rRacketState()
-            .score());
+            .score()
+    );
     PongDrawer pongDrawer = new PongDrawer();
     // pongDrawer.show(outcome);
     pongDrawer.videoBuilder().save(new File(pathName), outcome);
   }
 
   private static String getFinalScore(
-      Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome) {
+      Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome
+  ) {
     var snapshots = outcome.snapshots();
     var finalStep = snapshots.get(snapshots.lastKey());
     double lScore = finalStep.state().lRacketState().score();

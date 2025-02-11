@@ -29,7 +29,8 @@ import java.util.function.Supplier;
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.biAgentTask|baTask|bat")
 public class HomogeneousBiAgentTasks {
 
-  private HomogeneousBiAgentTasks() {}
+  private HomogeneousBiAgentTasks() {
+  }
 
   @SuppressWarnings("unused")
   @Cacheable
@@ -40,17 +41,15 @@ public class HomogeneousBiAgentTasks {
       @Param("tRange") DoubleRange tRange,
       @Param("dT") double dT,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
-      @Param(value = "", injection = Param.Injection.MAP) ParamMap map) {
+      @Param(value = "", injection = Param.Injection.MAP) ParamMap map
+  ) {
     if (environment instanceof HomogeneousBiEnvironmentWithExample<O, A, S> hbewe) {
-      @SuppressWarnings("unchecked")
-      Supplier<HomogeneousBiEnvironmentWithExample<O, A, S>> supplier =
-          () -> (HomogeneousBiEnvironmentWithExample<O, A, S>)
-              nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
+      @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironmentWithExample<O, A, S>> supplier = () -> (HomogeneousBiEnvironmentWithExample<O, A, S>) nb
+          .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
       return HomogeneousBiAgentTaskWithExample.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
     }
-    @SuppressWarnings("unchecked")
-    Supplier<HomogeneousBiEnvironment<O, A, S>> supplier = () -> (HomogeneousBiEnvironment<O, A, S>)
-        nb.build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
+    @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironment<O, A, S>> supplier = () -> (HomogeneousBiEnvironment<O, A, S>) nb
+        .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
     return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
   }
 }
