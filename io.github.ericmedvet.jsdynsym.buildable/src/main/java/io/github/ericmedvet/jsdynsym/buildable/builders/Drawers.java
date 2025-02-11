@@ -27,6 +27,7 @@ import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.PointNavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.VectorFieldDrawer;
+import io.github.ericmedvet.jsdynsym.control.pong.PongDrawer;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.drawer|d")
 public class Drawers {
@@ -48,5 +49,11 @@ public class Drawers {
   @Cacheable
   public static VectorFieldDrawer vectorField(@Param(value = "arena", dNPM = "empty") Arena.Prepared arena) {
     return new VectorFieldDrawer(arena.arena(), VectorFieldDrawer.Configuration.DEFAULT);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static PongDrawer pong() {
+    return new PongDrawer(PongDrawer.Configuration.DEFAULT);
   }
 }

@@ -62,12 +62,34 @@ public record Point(double x, double y) {
     return Math.sqrt(x * x + y * y);
   }
 
+  public Point getOpposite() {
+    return new Point(-x, -y);
+  }
+
   public Point scale(double r) {
     return new Point(r * x, r * y);
   }
 
   public Point sum(Point p) {
     return new Point(x + p.x(), y + p.y());
+  }
+
+  // TODO check
+  public Point rotate(Point centerOfRotation, double angle) {
+    return this.translate(centerOfRotation.getOpposite()).rotate(angle).translate(centerOfRotation);
+  }
+
+  public Point translate(Point translation) {
+    return new Point(x + translation.x(), y + translation.y());
+  }
+
+  public Point rotate(double angle) {
+    return new Point(x * Math.cos(angle) - y * Math.sin(angle), x * Math.sin(angle) + y * Math.cos(angle));
+  }
+
+  // TODO check
+  public double getRotationAngle(Point centerOfRotation) {
+    return this.diff(centerOfRotation).direction();
   }
 
   @Override

@@ -2,7 +2,7 @@
  * ========================LICENSE_START=================================
  * jsdynsym-control
  * %%
- * Copyright (C) 2023 - 2024 Eric Medvet
+ * Copyright (C) 2023 - 2025 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jsdynsym.control {
-  exports io.github.ericmedvet.jsdynsym.control;
-  exports io.github.ericmedvet.jsdynsym.control.navigation;
-  exports io.github.ericmedvet.jsdynsym.control.geometry;
-  exports io.github.ericmedvet.jsdynsym.control.pong;
+package io.github.ericmedvet.jsdynsym.control;
 
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires io.github.ericmedvet.jnb.datastructure;
-  requires io.github.ericmedvet.jviz.core;
-  requires java.desktop;
+import io.github.ericmedvet.jnb.datastructure.Pair;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+
+public interface BiEnvironment<O1, O2, A1, A2, S> extends DynamicalSystem<Pair<A1, A2>, Pair<O1, O2>, S> {
+
+  Pair<A1, A2> defaultActions();
 }

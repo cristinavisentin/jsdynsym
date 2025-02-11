@@ -1,8 +1,8 @@
 /*-
  * ========================LICENSE_START=================================
- * jsdynsym-control
+ * jsdynsym-buildable
  * %%
- * Copyright (C) 2023 - 2024 Eric Medvet
+ * Copyright (C) 2023 - 2025 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,21 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-module io.github.ericmedvet.jsdynsym.control {
-  exports io.github.ericmedvet.jsdynsym.control;
-  exports io.github.ericmedvet.jsdynsym.control.navigation;
-  exports io.github.ericmedvet.jsdynsym.control.geometry;
-  exports io.github.ericmedvet.jsdynsym.control.pong;
+package io.github.ericmedvet.jsdynsym.buildable.builders;
 
-  requires io.github.ericmedvet.jsdynsym.core;
-  requires io.github.ericmedvet.jnb.datastructure;
-  requires io.github.ericmedvet.jviz.core;
-  requires java.desktop;
+import io.github.ericmedvet.jnb.core.Cacheable;
+import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jsdynsym.control.pong.PongAgent;
+import java.util.function.Supplier;
+
+@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.opponent.pong")
+public class PongOpponents {
+  private PongOpponents() {}
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static Supplier<PongAgent> simple(@Param(value = "deltaPosition", dD = 1d) double deltaPosition) {
+    return () -> new PongAgent(deltaPosition);
+  }
 }

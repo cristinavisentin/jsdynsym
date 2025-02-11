@@ -25,10 +25,12 @@ import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
+import io.github.ericmedvet.jsdynsym.control.HomogeneousBiSimulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.function|f")
 public class Functions {
@@ -52,5 +54,29 @@ public class Functions {
       @Param(value = "format", dS = "%s") String format) {
     Function<Simulation.Outcome<S>, SortedMap<Double, S>> f = Simulation.Outcome::snapshots;
     return NamedFunction.from(f, "sim.outcome").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> selfBiSimulator(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
+      @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
+      @Param(value = "format", dS = "%s") String format) {
+    Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s);
+    return NamedFunction.from(f, "self.sim").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, S, B extends Simulation.Outcome<SS>, SS>
+      NamedFunction<X, Simulation.Outcome<SS>> opponentBiSimulator(
+          @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
+          @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
+          @Param("opponent") Supplier<S> opponent,
+          @Param(value = "home", dB = true) boolean home,
+          @Param(value = "format", dS = "%s") String format) {
+    Function<S, Simulation.Outcome<SS>> f =
+        s -> home ? biSimulation.simulate(s, opponent.get()) : biSimulation.simulate(opponent.get(), s);
+    return NamedFunction.from(f, "opponent.sim").compose(beforeF);
   }
 }
