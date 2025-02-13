@@ -22,6 +22,8 @@ package io.github.ericmedvet.jsdynsym.control;
 
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
-public interface Environment<O, A, S> extends DynamicalSystem<A, O, S> {
-  A defaultAgentAction();
+public interface Environment<O, A, S, C extends DynamicalSystem<O, A, ?>> extends DynamicalSystem<A, O, S> {
+  C exampleAgent();
+
+  O defaultObservation();
 }

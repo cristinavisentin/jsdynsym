@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jsdynsym.control;
 
+import java.util.Optional;
 import java.util.SortedMap;
 
 public interface Simulation<T, S, O extends Simulation.Outcome<S>> {
@@ -32,4 +33,8 @@ public interface Simulation<T, S, O extends Simulation.Outcome<S>> {
   }
 
   O simulate(T t);
+
+  default Optional<T> example() {
+    return Optional.empty();
+  }
 }

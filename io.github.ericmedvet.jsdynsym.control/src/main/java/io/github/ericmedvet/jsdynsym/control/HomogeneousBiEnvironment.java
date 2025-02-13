@@ -19,4 +19,31 @@
  */
 package io.github.ericmedvet.jsdynsym.control;
 
-public interface HomogeneousBiEnvironment<O, A, S> extends BiEnvironment<O, O, A, A, S> {}
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+
+public interface HomogeneousBiEnvironment<O, A, S, C extends DynamicalSystem<O, A, ?>> extends BiEnvironment<O, O, A, A, S, C, C> {
+
+  C exampleAgent();
+
+  O defaultObservation();
+
+  @Override
+  default C exampleAgent1() {
+    return exampleAgent();
+  }
+
+  @Override
+  default C exampleAgent2() {
+    return exampleAgent();
+  }
+
+  @Override
+  default O defaultObservation1() {
+    return defaultObservation();
+  }
+
+  @Override
+  default O defaultObservation2() {
+    return defaultObservation();
+  }
+}

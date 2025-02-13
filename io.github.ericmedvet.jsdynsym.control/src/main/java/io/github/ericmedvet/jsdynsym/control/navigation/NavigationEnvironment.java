@@ -25,13 +25,14 @@ import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
 import io.github.ericmedvet.jsdynsym.control.geometry.Semiline;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment.State;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
 
-public class NavigationEnvironment implements NumericalDynamicalSystem<State>, Environment<double[], double[], State> {
+public class NavigationEnvironment implements NumericalDynamicalSystem<State>, Environment<double[], double[], State, NumericalDynamicalSystem<?>> {
 
   public record Configuration(
       DoubleRange initialRobotXRange,
@@ -66,8 +67,13 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
   }
 
   @Override
-  public double[] defaultAgentAction() {
-    return new double[nOfInputs()];
+  public NumericalDynamicalSystem<?> exampleAgent() {
+    return MultivariateRealFunction.from(o -> new double[nOfInputs()], nOfOutputs(), nOfInputs());
+  }
+
+  @Override
+  public double[] defaultObservation() {
+    return new double[nOfOutputs()];
   }
 
   @Override

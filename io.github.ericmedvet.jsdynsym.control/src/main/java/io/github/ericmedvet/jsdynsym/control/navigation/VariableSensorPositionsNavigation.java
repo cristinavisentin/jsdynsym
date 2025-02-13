@@ -22,15 +22,17 @@ package io.github.ericmedvet.jsdynsym.control.navigation;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
-import io.github.ericmedvet.jsdynsym.control.SimulationWithExample;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-/** @author "Eric Medvet" on 2024/07/24 for jgea */
-public class VariableSensorPositionsNavigation implements SimulationWithExample<Pair<List<Double>, NumericalDynamicalSystem<?>>, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> {
+/**
+ * @author "Eric Medvet" on 2024/07/24 for jgea
+ */
+public class VariableSensorPositionsNavigation implements Simulation<Pair<List<Double>, NumericalDynamicalSystem<?>>, SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> {
+
   private final NavigationEnvironment.Configuration configuration;
   private final int nOfSensors;
   private final DoubleRange tRange;
@@ -62,11 +64,12 @@ public class VariableSensorPositionsNavigation implements SimulationWithExample<
       );
     }
     return SingleAgentTask.fromEnvironment(
-        new NavigationEnvironment(
+        () -> new NavigationEnvironment(
             sortSensorAngles ? configuration(pair.first()) : configuration(
                 pair.first().stream().sorted().toList()
             )
         ),
+        s -> false,
         tRange,
         dT
     )
@@ -92,15 +95,13 @@ public class VariableSensorPositionsNavigation implements SimulationWithExample<
   }
 
   @Override
-  public Pair<List<Double>, NumericalDynamicalSystem<?>> example() {
+  public Optional<Pair<List<Double>, NumericalDynamicalSystem<?>>> example() {
     List<Double> angles = Collections.nCopies(nOfSensors, 0d);
     NavigationEnvironment env = new NavigationEnvironment(configuration(angles));
-    return new Pair<>(
-        angles,
-        NumericalStatelessSystem.from(
-            env.nOfOutputs(),
-            env.nOfInputs(),
-            (t, in) -> new double[env.nOfOutputs()]
+    return Optional.of(
+        new Pair<>(
+            angles,
+            env.exampleAgent()
         )
     );
   }

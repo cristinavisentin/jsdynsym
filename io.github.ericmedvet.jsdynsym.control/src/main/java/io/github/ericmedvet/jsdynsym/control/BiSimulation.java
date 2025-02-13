@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jsdynsym.control;
 
 import io.github.ericmedvet.jnb.datastructure.Pair;
+import java.util.Optional;
 
 public interface BiSimulation<T1, T2, S, O extends Simulation.Outcome<S>> extends Simulation<Pair<T1, T2>, S, O> {
 
@@ -28,5 +29,21 @@ public interface BiSimulation<T1, T2, S, O extends Simulation.Outcome<S>> extend
   @Override
   default O simulate(Pair<T1, T2> tPair) {
     return simulate(tPair.first(), tPair.second());
+  }
+
+  default Optional<T1> example1() {
+    return Optional.empty();
+  }
+
+  default Optional<T2> example2() {
+    return Optional.empty();
+  }
+
+  @Override
+  default Optional<Pair<T1, T2>> example() {
+    if (example1().isPresent() || example2().isPresent()) {
+      return Optional.of(new Pair<>(example1().orElse(null), example2().orElse(null)));
+    }
+    return Optional.empty();
   }
 }

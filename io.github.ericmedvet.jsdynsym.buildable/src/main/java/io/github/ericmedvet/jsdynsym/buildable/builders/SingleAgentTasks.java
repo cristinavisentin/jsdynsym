@@ -21,12 +21,16 @@
 package io.github.ericmedvet.jsdynsym.buildable.builders;
 
 import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.NamedBuilder;
+import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.singleAgentTask|saTask|sat")
 public class SingleAgentTasks {
@@ -36,12 +40,16 @@ public class SingleAgentTasks {
 
   @SuppressWarnings("unused")
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> SingleAgentTask<C, O, A, S> fromEnvironment(
-      @Param(value = "name", iS = "{environment.name}") String name,
-      @Param("environment") Environment<O, A, S> environment,
-      @Param("stopCondition") Predicate<S> stopCondition,
+      @Param(value = "name", iS = "{environment.name}[{tRange.min};{tRange.max}]") String name,
+      @Param("environment") Environment<O, A, S, C> environment,
+      @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<S> stopCondition,
       @Param("tRange") DoubleRange tRange,
-      @Param("dT") double dT
+      @Param("dT") double dT,
+      @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
+      @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
-    return SingleAgentTask.fromEnvironment(environment, stopCondition, tRange, dT);
+    @SuppressWarnings("unchecked") Supplier<Environment<O, A, S, C>> supplier = () -> (Environment<O, A, S, C>) nb
+        .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
+    return SingleAgentTask.fromEnvironment(supplier, stopCondition, tRange, dT);
   }
 }

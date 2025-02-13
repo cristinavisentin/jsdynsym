@@ -19,4 +19,21 @@
  */
 package io.github.ericmedvet.jsdynsym.control;
 
-public interface HomogeneousBiSimulation<T, S, O extends Simulation.Outcome<S>> extends BiSimulation<T, T, S, O> {}
+import java.util.Optional;
+
+public interface HomogeneousBiSimulation<T, S, O extends Simulation.Outcome<S>> extends BiSimulation<T, T, S, O> {
+
+  default Optional<T> homogeneousExample() {
+    return Optional.empty();
+  }
+
+  @Override
+  default Optional<T> example1() {
+    return homogeneousExample();
+  }
+
+  @Override
+  default Optional<T> example2() {
+    return homogeneousExample();
+  }
+}

@@ -25,7 +25,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
-import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import java.io.File;
@@ -35,6 +35,7 @@ import java.util.Random;
 import java.util.function.Function;
 
 public class Main {
+
   public static void main(String[] args) throws IOException {
     navigation();
     // pointNavigation();
@@ -54,17 +55,18 @@ public class Main {
     ))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.setParams(actualGenotype.stream().mapToDouble(d -> d).toArray());
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(
-            environment,
-            new double[2],
+            () -> environment,
             s -> s.robotPosition().distance(s.targetPosition()) < .01,
             new DoubleRange(0, 100),
             0.1
         );
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
         .simulate(mlp);
-    PointNavigationDrawer d = new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT);
+    PointNavigationDrawer d = new PointNavigationDrawer(
+        PointNavigationDrawer.Configuration.DEFAULT
+    );
     d.show(new ImageBuilder.ImageInfo(500, 500), outcome);
     Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double>) nb
         .build("ds.e.n.finalTimePlusD()");
@@ -88,8 +90,8 @@ public class Main {
         VectorFieldDrawer.Configuration.DEFAULT
     );
     vfd.show(new ImageBuilder.ImageInfo(500, 500), mlp);
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(environment, new double[2], new DoubleRange(0, 10), 0.1);
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 10), 0.1);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
         .simulate(mlp);
     new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT)
@@ -99,13 +101,15 @@ public class Main {
 
   public static void navigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    NavigationEnvironment environment = (NavigationEnvironment) nb.build("ds.e.navigation(arena = E_MAZE)");
+    NavigationEnvironment environment = (NavigationEnvironment) nb.build(
+        "ds.e.navigation(arena = E_MAZE)"
+    );
     @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
         .build("ds.num.mlp()"))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
-    SingleAgentTask<DynamicalSystem<double[], double[], ?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(environment, new double[2], new DoubleRange(0, 30), 0.1);
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 30), 0.1);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
         mlp
     );

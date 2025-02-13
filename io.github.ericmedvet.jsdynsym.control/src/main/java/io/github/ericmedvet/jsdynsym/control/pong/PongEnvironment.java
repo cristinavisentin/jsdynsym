@@ -21,17 +21,18 @@ package io.github.ericmedvet.jsdynsym.control.pong;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
-import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironmentWithExample;
+import io.github.ericmedvet.jsdynsym.control.HomogeneousBiEnvironment;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Rectangle;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
-import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
+import io.github.ericmedvet.jsdynsym.control.pong.PongEnvironment.State;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;
 
-public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<double[], double[], PongEnvironment.State> {
+public class PongEnvironment implements HomogeneousBiEnvironment<double[], double[], State, NumericalDynamicalSystem<?>> {
 
   private final Configuration configuration;
   private State state;
@@ -139,17 +140,17 @@ public class PongEnvironment implements HomogeneousBiEnvironmentWithExample<doub
   }
 
   @Override
-  public DynamicalSystem<double[], double[], ?> example() {
-    return NumericalStatelessSystem.from(
+  public NumericalDynamicalSystem<?> exampleAgent() {
+    return MultivariateRealFunction.from(
+        o -> new double[nOfInputsPerAgent()],
         nOfObservationsPerAgent(),
-        nOfInputsPerAgent(),
-        (t, in) -> new double[nOfInputsPerAgent()]
+        nOfInputsPerAgent()
     );
   }
 
   @Override
-  public Pair<double[], double[]> defaultActions() {
-    return new Pair<>(new double[nOfInputsPerAgent()], new double[nOfInputsPerAgent()]);
+  public double[] defaultObservation() {
+    return new double[nOfObservationsPerAgent()];
   }
 
   @Override

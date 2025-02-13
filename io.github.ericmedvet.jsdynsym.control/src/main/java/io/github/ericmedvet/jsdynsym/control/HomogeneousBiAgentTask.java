@@ -24,6 +24,7 @@ import io.github.ericmedvet.jnb.datastructure.Pair;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -33,39 +34,55 @@ public interface HomogeneousBiAgentTask<C extends DynamicalSystem<O, A, ?>, O, A
   record Step<O, A, S>(Pair<O, O> observations, Pair<A, A> actions, S state) {}
 
   static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromHomogenousBiEnvironment(
-      Supplier<HomogeneousBiEnvironment<O, A, S>> biEnvironmentSupplier,
-      Pair<A, A> initialActions,
+      Supplier<? extends DynamicalSystem<Pair<A, A>, Pair<O, O>, S>> biEnvironmentSupplier,
+      O initialObservation,
+      C exampleAgent,
       Predicate<S> stopCondition,
       DoubleRange tRange,
       double dT
   ) {
-    return (agent1, agent2) -> {
-      HomogeneousBiEnvironment<O, A, S> biEnvironment = biEnvironmentSupplier.get();
-      biEnvironment.reset();
-      agent1.reset();
-      agent2.reset();
-      double t = tRange.min();
-      Map<Double, HomogeneousBiAgentTask.Step<O, A, S>> steps = new HashMap<>();
-      Pair<O, O> observations = biEnvironment.step(t, initialActions);
-      while (t <= tRange.max() && !stopCondition.test(biEnvironment.getState())) {
-        Pair<A, A> actions = new Pair<>(agent1.step(t, observations.first()), agent2.step(t, observations.second()));
-        observations = biEnvironment.step(t, actions);
-        steps.put(t, new Step<>(observations, actions, biEnvironment.getState()));
-        t = t + dT;
+    return new HomogeneousBiAgentTask<C, O, A, S>() {
+      @Override
+      public Outcome<Step<O, A, S>> simulate(C agent1, C agent2) {
+        DynamicalSystem<Pair<A, A>, Pair<O, O>, S> biEnvironment = biEnvironmentSupplier.get();
+        biEnvironment.reset();
+        agent1.reset();
+        agent2.reset();
+        double t = tRange.min();
+        Map<Double, HomogeneousBiAgentTask.Step<O, A, S>> steps = new HashMap<>();
+        Pair<O, O> observations = new Pair<>(
+            initialObservation,
+            initialObservation
+        );
+        while (t <= tRange.max() && !stopCondition.test(biEnvironment.getState())) {
+          Pair<A, A> actions = new Pair<>(
+              agent1.step(t, observations.first()),
+              agent2.step(t, observations.second())
+          );
+          observations = biEnvironment.step(t, actions);
+          steps.put(t, new Step<>(observations, actions, biEnvironment.getState()));
+          t = t + dT;
+        }
+        return Outcome.of(new TreeMap<>(steps));
       }
-      return Outcome.of(new TreeMap<>(steps));
+
+      @Override
+      public Optional<C> homogeneousExample() {
+        return Optional.of(exampleAgent);
+      }
     };
   }
 
   static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromHomogenousBiEnvironment(
-      Supplier<HomogeneousBiEnvironment<O, A, S>> biEnvironmentSupplier,
+      Supplier<HomogeneousBiEnvironment<O, A, S, C>> biEnvironmentSupplier,
       Predicate<S> stopCondition,
       DoubleRange tRange,
       double dT
   ) {
     return fromHomogenousBiEnvironment(
         biEnvironmentSupplier,
-        biEnvironmentSupplier.get().defaultActions(),
+        biEnvironmentSupplier.get().defaultObservation(),
+        biEnvironmentSupplier.get().exampleAgent(),
         stopCondition,
         tRange,
         dT

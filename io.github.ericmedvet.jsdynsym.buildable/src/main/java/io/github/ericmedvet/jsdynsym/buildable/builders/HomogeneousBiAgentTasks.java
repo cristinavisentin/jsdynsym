@@ -35,20 +35,15 @@ public class HomogeneousBiAgentTasks {
   @SuppressWarnings("unused")
   @Cacheable
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromEnvironment(
-      @Param(value = "name", iS = "{environment.name}") String name,
-      @Param("environment") HomogeneousBiEnvironment<O, A, S> environment,
+      @Param(value = "name", iS = "{environment.name}[{tRange.min};{tRange.max}]") String name,
+      @Param("environment") HomogeneousBiEnvironment<O, A, S, C> environment,
       @Param("stopCondition") Predicate<S> stopCondition,
       @Param("tRange") DoubleRange tRange,
       @Param("dT") double dT,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
-    if (environment instanceof HomogeneousBiEnvironmentWithExample<O, A, S> hbewe) {
-      @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironmentWithExample<O, A, S>> supplier = () -> (HomogeneousBiEnvironmentWithExample<O, A, S>) nb
-          .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-      return HomogeneousBiAgentTaskWithExample.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
-    }
-    @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironment<O, A, S>> supplier = () -> (HomogeneousBiEnvironment<O, A, S>) nb
+    @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironment<O, A, S, C>> supplier = () -> (HomogeneousBiEnvironment<O, A, S, C>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
     return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
   }
