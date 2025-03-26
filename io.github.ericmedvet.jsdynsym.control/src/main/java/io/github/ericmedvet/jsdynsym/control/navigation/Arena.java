@@ -180,7 +180,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
                 new Segment(new Point(0.2, 0), new Point(0.2, 0.8)),
                 new Segment(new Point(0.2, 0.8), new Point(0.8, 0.8)),
                 new Segment(new Point(0.4, 0.6), new Point(1, 0.6)),
-                new Segment(new Point(0.2, 0.4), new Point(1, 0.4)),
+                new Segment(new Point(0.2, 0.4), new Point(0.8, 0.4)),
                 new Segment(new Point(0.4, 0.2), new Point(1, 0.2))
             )
         ).xMirrored()
