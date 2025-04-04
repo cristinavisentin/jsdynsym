@@ -32,7 +32,9 @@ public class PongOpponents {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Supplier<PongAgent> simple(@Param(value = "deltaPosition", dD = 1d) double deltaPosition) {
+  public static Supplier<PongAgent> simple(
+      @Param(value = "deltaPosition", dD = 1d) double deltaPosition
+  ) {
     return () -> new PongAgent(deltaPosition);
   }
 }
