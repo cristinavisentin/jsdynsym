@@ -23,7 +23,6 @@ import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.control.pong.PongAgent;
-import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.opponent.pong")
 public class PongOpponents {
@@ -32,9 +31,9 @@ public class PongOpponents {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Supplier<PongAgent> simple(
+  public static PongAgent simple(
       @Param(value = "deltaPosition", dD = 1d) double deltaPosition
   ) {
-    return () -> new PongAgent(deltaPosition);
+    return new PongAgent(deltaPosition);
   }
 }
