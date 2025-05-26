@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
 
 public class MultiLayerPerceptron implements MultivariateRealFunction, NumericalParametrized<MultiLayerPerceptron> {
 
-  protected final ActivationFunction activationFunction;
-  protected final double[][][] weights;
-  protected final int[] neurons;
+  private final ActivationFunction activationFunction;
+  private final double[][][] weights;
+  private final int[] neurons;
 
   public MultiLayerPerceptron(ActivationFunction activationFunction, double[][][] weights, int[] neurons) {
     this.activationFunction = activationFunction;
@@ -195,14 +195,24 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
     }
   }
 
+  public int sizeOfLayer(
+      int indexOfLayer
+  ) {
+    return neurons[indexOfLayer];
+  }
+
   @Override
   public int nOfInputs() {
-    return neurons[0];
+    return sizeOfLayer(0);
+  }
+
+  public int nOfLayers() {
+    return neurons.length;
   }
 
   @Override
   public int nOfOutputs() {
-    return neurons[neurons.length - 1];
+    return sizeOfLayer(neurons.length - 1);
   }
 
   @Override
