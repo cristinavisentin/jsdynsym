@@ -23,7 +23,6 @@ import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jsdynsym.control.pong.PongAgent;
-import java.util.function.Supplier;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.opponent.pong")
 public class PongOpponents {
