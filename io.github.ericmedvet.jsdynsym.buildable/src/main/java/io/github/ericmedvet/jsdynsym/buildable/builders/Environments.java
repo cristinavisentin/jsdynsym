@@ -33,7 +33,7 @@ import java.util.random.RandomGenerator;
 public class Environments {
   private Environments() {
   }
-  
+
   @SuppressWarnings("unused")
   public static PongEnvironment pong(
       @Param(value = "name", iS = "pong") String name,
