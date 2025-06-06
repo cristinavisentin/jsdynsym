@@ -71,7 +71,7 @@ public class NavigationFunctions {
           .count();
       return (double) nOfVisitedCells / (double) (xBins * yBins);
     };
-    return FormattedNamedFunction.from(f, format, "area.coverage[%dx%d]".formatted(xBins, yBins))
+    return FormattedNamedFunction.from(f, format, "arena.coverage[%dx%d]".formatted(xBins, yBins))
         .compose(beforeF);
   }
 
