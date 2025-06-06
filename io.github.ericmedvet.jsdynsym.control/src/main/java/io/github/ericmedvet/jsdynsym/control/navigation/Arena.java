@@ -25,6 +25,37 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
+
+  public Arena yMirrored() {
+    return new Arena(
+        xExtent,
+        yExtent,
+        obstacles.stream()
+            .map(
+                segment -> new Segment(
+                    new Point(xExtent - segment.p1().x(), segment.p1().y()),
+                    new Point(xExtent - segment.p2().x(), segment.p2().y())
+                )
+            )
+            .toList()
+    );
+  }
+
+  public Arena xMirrored() {
+    return new Arena(
+        xExtent,
+        yExtent,
+        obstacles.stream()
+            .map(
+                segment -> new Segment(
+                    new Point(segment.p1().x(), yExtent - segment.p1().y()),
+                    new Point(segment.p2().x(), yExtent - segment.p2().y())
+                )
+            )
+            .toList()
+    );
+  }
+
   public enum Prepared {
     EMPTY(new Arena(1, 1, List.of())), A_BARRIER(
         new Arena(1, 1, List.of(new Segment(new Point(0.40, 0.3), new Point(0.60, 0.3))))
@@ -114,6 +145,56 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
                 new Segment(new Point(1, 0.6), new Point(0.3, 0.7))
             )
         )
+    ), STANDARD(
+        new Arena(
+            //suitable starting point is 0.15,0.15; suitable target is 0.15,0.9
+            1,
+            1,
+            List.of(
+                new Segment(new Point(.35, 0), new Point(0.55, 0.2)),
+                new Segment(new Point(0.25, 0.25), new Point(0.25, 0.8)),
+                new Segment(new Point(0.25, 0.5), new Point(0.75, 0.25)),
+                new Segment(new Point(0.45, 0.55), new Point(1, 0.3)),
+                new Segment(new Point(0, 0.825), new Point(0.25, 0.8)),
+                new Segment(new Point(0.25, 0.8), new Point(0.7, 0.9)),
+                new Segment(new Point(0, 0.65), new Point(0.15, 0.45))
+            )
+        ).xMirrored()
+    ), U_SHAPED(
+        new Arena(
+            //suitable starting point is 0.15,0.15; suitable target is 0.85,0.15
+            1,
+            1,
+            List.of(
+                new Segment(new Point(0.35, 0), new Point(0.35, 0.7)),
+                new Segment(new Point(0.35, 0.7), new Point(0.65, 0.7)),
+                new Segment(new Point(0.65, 0), new Point(0.65, 0.7))
+            )
+        ).xMirrored()
+    ), SNAKE(
+        new Arena(
+            //suitable starting point is 0.1,0.1; suitable target is 0.9,0.1
+            1,
+            1,
+            List.of(
+                new Segment(new Point(0.2, 0), new Point(0.2, 0.8)),
+                new Segment(new Point(0.2, 0.8), new Point(0.8, 0.8)),
+                new Segment(new Point(0.4, 0.6), new Point(1, 0.6)),
+                new Segment(new Point(0.2, 0.4), new Point(0.8, 0.4)),
+                new Segment(new Point(0.4, 0.2), new Point(1, 0.2))
+            )
+        ).xMirrored()
+    ), Y_MAZE(
+        //suitable starting point is 0.5,0.1; suitable target is 0.5,0.7
+        new Arena(
+            1,
+            1,
+            List.of(
+                new Segment(new Point(0.5, 0.2), new Point(0.5, 0.6)),
+                new Segment(new Point(0.5, 0.6), new Point(0.3, 0.8)),
+                new Segment(new Point(0.5, 0.6), new Point(0.7, 0.8))
+            )
+        ).xMirrored()
     );
 
     private final Arena arena;

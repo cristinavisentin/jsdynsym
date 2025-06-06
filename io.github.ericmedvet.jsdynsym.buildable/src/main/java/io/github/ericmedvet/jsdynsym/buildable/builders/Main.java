@@ -102,7 +102,7 @@ public class Main {
   public static void navigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
     NavigationEnvironment environment = (NavigationEnvironment) nb.build(
-        "ds.e.navigation(arena = E_MAZE)"
+        "ds.e.navigation(arena = snake)"
     );
     @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
         .build("ds.num.mlp()"))
