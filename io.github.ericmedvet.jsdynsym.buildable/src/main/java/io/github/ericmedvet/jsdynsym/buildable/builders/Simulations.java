@@ -2,14 +2,14 @@
  * ========================LICENSE_START=================================
  * jsdynsym-buildable
  * %%
- * Copyright (C) 2023 - 2024 Eric Medvet
+ * Copyright (C) 2023 - 2025 Eric Medvet
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +28,6 @@ import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
 import io.github.ericmedvet.jsdynsym.control.navigation.VariableSensorPositionsNavigation;
 import java.util.List;
 import java.util.random.RandomGenerator;
-
-/** @author "Eric Medvet" on 2024/07/24 for jsdynsym */
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.simulation|sim|s")
 public class Simulations {
   private Simulations() {
