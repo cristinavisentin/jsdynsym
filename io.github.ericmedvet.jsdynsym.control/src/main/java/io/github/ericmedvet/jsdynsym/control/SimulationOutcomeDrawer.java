@@ -25,7 +25,6 @@ import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
 import io.github.ericmedvet.jviz.core.drawer.Video;
 import io.github.ericmedvet.jviz.core.drawer.VideoBuilder;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -38,11 +37,15 @@ public interface SimulationOutcomeDrawer<S> extends ImageBuilder<Simulation.Outc
   void drawSingle(Graphics2D g, double t, S s);
 
   @Override
-  default <G extends Graphics2D, O> O build(ImageInfo imageInfo, Outcome<S> o,
-      Supplier<EnhancedGraphics<G, O>> supplier, UnaryOperator<EnhancedGraphics<G, O>> operator) {
+  default <G extends Graphics2D, O> O build(
+      ImageInfo imageInfo,
+      Outcome<S> o,
+      Supplier<EnhancedGraphics<G, O>> supplier,
+      UnaryOperator<EnhancedGraphics<G, O>> operator
+  ) {
     Drawer<SortedMap<Double, S>> lastDrawer = (g, map) -> drawSingle(g, map.lastKey(), map.get(map.lastKey()));
     Drawer<SortedMap<Double, S>> allDrawer = this::drawAll;
-    return lastDrawer.andThen(allDrawer).build(imageInfo, o.snapshots(), supplier, operator)    ;
+    return lastDrawer.andThen(allDrawer).build(imageInfo, o.snapshots(), supplier, operator);
   }
 
   default void drawAll(Graphics2D g, SortedMap<Double, S> ss) {
