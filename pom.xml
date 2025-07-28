@@ -69,7 +69,7 @@
     <jdk.version>21</jdk.version>
     <revision>1.1.1-SNAPSHOT</revision>
     <jnb.version>1.4.1-SNAPSHOT</jnb.version>
-    <jviz.version>1.0.1-SNAPSHOT</jviz.version>
+    <jviz.version>1.1.1-SNAPSHOT</jviz.version>
   </properties>
 
   <dependencies/>

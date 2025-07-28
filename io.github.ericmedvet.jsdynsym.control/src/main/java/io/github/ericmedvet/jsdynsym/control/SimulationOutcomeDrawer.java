@@ -30,16 +30,19 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 public interface SimulationOutcomeDrawer<S> extends ImageBuilder<Simulation.Outcome<S>> {
   void drawSingle(Graphics2D g, double t, S s);
 
   @Override
-  default BufferedImage build(ImageInfo imageInfo, Simulation.Outcome<S> o) {
+  default <G extends Graphics2D, O> O build(ImageInfo imageInfo, Outcome<S> o,
+      Supplier<EnhancedGraphics<G, O>> supplier, UnaryOperator<EnhancedGraphics<G, O>> operator) {
     Drawer<SortedMap<Double, S>> lastDrawer = (g, map) -> drawSingle(g, map.lastKey(), map.get(map.lastKey()));
     Drawer<SortedMap<Double, S>> allDrawer = this::drawAll;
-    return lastDrawer.andThen(allDrawer).build(imageInfo, o.snapshots());
+    return lastDrawer.andThen(allDrawer).build(imageInfo, o.snapshots(), supplier, operator)    ;
   }
 
   default void drawAll(Graphics2D g, SortedMap<Double, S> ss) {
