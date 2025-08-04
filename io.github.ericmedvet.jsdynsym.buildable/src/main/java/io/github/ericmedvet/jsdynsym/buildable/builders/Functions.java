@@ -27,6 +27,7 @@ import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiSimulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
+import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import java.util.SortedMap;
 import java.util.function.Function;
@@ -81,5 +82,14 @@ public class Functions {
     Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(s, opponent) : biSimulation
         .simulate(opponent, s);
     return NamedFunction.from(f, "opponent.sim").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, C> NamedFunction<X, C> inner(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Composed<C>> beforeF
+  ) {
+    Function<Composed<C>, C> f = Composed::inner;
+    return NamedFunction.from(f, "inner").compose(beforeF);
   }
 }

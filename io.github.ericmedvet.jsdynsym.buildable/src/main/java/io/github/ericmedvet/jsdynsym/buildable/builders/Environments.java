@@ -34,6 +34,7 @@ public class Environments {
   private Environments() {
   }
 
+  @SuppressWarnings("unused")
   public static PongEnvironment pong(
       @Param(value = "name", iS = "pong") String name,
       @Param(value = "racketsInitialYRange", dNPM = "m.range(min=22.0;max=28.0)") DoubleRange racketsInitialYRange,

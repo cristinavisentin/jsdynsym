@@ -35,6 +35,40 @@ public class PongFunctions {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall1(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.0f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .lRacketState()
+        .nOfBallCollisions();
+    return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.1")
+        .compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall2(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.0f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
+        .snapshots()
+        .lastEntry()
+        .getValue()
+        .state()
+        .rRacketState()
+        .nOfBallCollisions();
+    return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.2")
+        .compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <X> FormattedNamedFunction<X, Double> score1(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
@@ -71,18 +105,11 @@ public class PongFunctions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
-        .snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .lRacketState()
-        .score() - o.snapshots()
-            .lastEntry()
-            .getValue()
-            .state()
-            .rRacketState()
-            .score();
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double s1 = o.snapshots().lastEntry().getValue().state().lRacketState().score();
+      double s2 = o.snapshots().lastEntry().getValue().state().rRacketState().score();
+      return s1 - s2;
+    };
     return FormattedNamedFunction.from(f, format, "score.diff.1").compose(beforeF);
   }
 
@@ -92,52 +119,94 @@ public class PongFunctions {
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> o
-        .snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .rRacketState()
-        .score() - o.snapshots()
-            .lastEntry()
-            .getValue()
-            .state()
-            .lRacketState()
-            .score();
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double s1 = o.snapshots().lastEntry().getValue().state().lRacketState().score();
+      double s2 = o.snapshots().lastEntry().getValue().state().rRacketState().score();
+      return s2 - s1;
+    };
     return FormattedNamedFunction.from(f, format, "score.diff.2").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall1(
+  public static <X> FormattedNamedFunction<X, Double> shiftedScoreDiff1(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
-      @Param(value = "format", dS = "%5.0f") String format
+      @Param(value = "format", dS = "%5.3f") String format
   ) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
-        .snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .lRacketState()
-        .nOfBallCollisions();
-    return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.1")
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double s1 = o.snapshots().lastEntry().getValue().state().lRacketState().score();
+      double s2 = o.snapshots().lastEntry().getValue().state().rRacketState().score();
+      return s1 - s2 - Math.min(s1, s2);
+    };
+    return FormattedNamedFunction.from(f, format, "shifted.score.diff.1").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> shiftedScoreDiff2(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.3f") String format
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double s1 = o.snapshots().lastEntry().getValue().state().lRacketState().score();
+      double s2 = o.snapshots().lastEntry().getValue().state().rRacketState().score();
+      return s2 - s1 - Math.min(s1, s2);
+    };
+    return FormattedNamedFunction.from(f, format, "shifted.score.diff.2").compose(beforeF);
+  }
+
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> yOffsetFromBall1(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
+      @Param(value = "format", dS = "%5.0f") String format,
+      @Param(value = "ballXProximityThreshold", dD = 0.2) double ballXProximityThreshold
+  ) {
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double distanceThreshold = o.snapshots()
+          .lastEntry()
+          .getValue()
+          .state()
+          .configuration()
+          .arenaXLength() * ballXProximityThreshold;
+      return o.snapshots()
+          .values()
+          .stream()
+          .map(HomogeneousBiAgentTask.Step::state)
+          .filter(s -> s.ballState().position().x() < distanceThreshold)
+          .mapToDouble(s -> Math.abs(s.lRacketState().yCenter() - s.ballState().position().y()))
+          .average()
+          .orElse(distanceThreshold); //TODO check if this is correct
+    };
+    return FormattedNamedFunction.from(f, format, "y.offset.from.ball.1")
         .compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X> FormattedNamedFunction<X, Double> numberOfCollisionsWithBall2(
+  public static <X> FormattedNamedFunction<X, Double> yOffsetFromBall2(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>> beforeF,
-      @Param(value = "format", dS = "%5.0f") String format
+      @Param(value = "format", dS = "%5.0f") String format,
+      @Param(value = "ballXProximityThreshold", dD = 0.2) double ballXProximityThreshold
   ) {
-    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> (double) o
-        .snapshots()
-        .lastEntry()
-        .getValue()
-        .state()
-        .rRacketState()
-        .nOfBallCollisions();
-    return FormattedNamedFunction.from(f, format, "number.of.collisions.with.ball.2")
+    Function<Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>>, Double> f = o -> {
+      double distanceThreshold = o.snapshots()
+          .lastEntry()
+          .getValue()
+          .state()
+          .configuration()
+          .arenaXLength() * (1 - ballXProximityThreshold);
+      return o.snapshots()
+          .values()
+          .stream()
+          .map(HomogeneousBiAgentTask.Step::state)
+          .filter(s -> s.ballState().position().x() > distanceThreshold)
+          .mapToDouble(s -> Math.abs(s.rRacketState().yCenter() - s.ballState().position().y()))
+          .average()
+          .orElse(distanceThreshold); //TODO check if this is correct
+    };
+    return FormattedNamedFunction.from(f, format, "y.offset.from.ball.2")
         .compose(beforeF);
   }
 }
