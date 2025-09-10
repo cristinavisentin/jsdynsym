@@ -42,6 +42,7 @@ public class NumericalDynamicalSystems {
   }
 
   public interface Builder<F extends NumericalDynamicalSystem<S>, S> extends BiFunction<List<String>, List<String>, F> {
+
     default F apply(int nOfInputs, int nOfOutputs) {
       return apply(
           MultivariateRealFunction.varNames("x", nOfInputs),
@@ -63,6 +64,7 @@ public class NumericalDynamicalSystems {
   public static Builder<DelayedRecurrentNetwork, DelayedRecurrentNetwork.State> drn(
       @Param(value = "timeRange", dNPM = "m.range(min=0;max=1)") DoubleRange timeRange,
       @Param(value = "innerNeuronsRatio", dD = 1d) double innerNeuronsRatio,
+      @Param("innerNeurons") int innerNeurons,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "threshold", dD = 0.1d) double threshold,
       @Param(value = "timeResolution", dD = 0.16666d) double timeResolution
@@ -71,7 +73,7 @@ public class NumericalDynamicalSystems {
         activationFunction,
         xVarNames.size(),
         yVarNames.size(),
-        (int) Math.round(innerNeuronsRatio * (xVarNames.size() + yVarNames.size())),
+        innerNeurons > 0 ? innerNeurons : ((int) Math.round(innerNeuronsRatio * (xVarNames.size() + yVarNames.size()))),
         timeRange,
         threshold,
         timeResolution
@@ -121,23 +123,38 @@ public class NumericalDynamicalSystems {
   public static Builder<MultiLayerPerceptron, StatelessSystem.State> mlp(
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
+      @Param("innerLayers") List<Integer> innerLayers,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
   ) {
     return (xVarNames, yVarNames) -> {
-      int[] innerNeurons = new int[nOfInnerLayers];
-      int centerSize = (int) Math.max(2, Math.round(xVarNames.size() * innerLayerRatio));
-      if (nOfInnerLayers > 1) {
-        for (int i = 0; i < nOfInnerLayers / 2; i++) {
-          innerNeurons[i] = xVarNames.size() + (centerSize - xVarNames.size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+      if (innerLayers.isEmpty()) {
+        int[] innerNeurons = new int[nOfInnerLayers];
+        int centerSize = (int) Math.max(2, Math.round(xVarNames.size() * innerLayerRatio));
+        if (nOfInnerLayers > 1) {
+          for (int i = 0; i < nOfInnerLayers / 2; i++) {
+            innerNeurons[i] = xVarNames.size() + (centerSize - xVarNames.size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+          }
+          for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
+            innerNeurons[i] = centerSize + (yVarNames
+                .size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
+          }
+        } else if (nOfInnerLayers > 0) {
+          innerNeurons[0] = centerSize;
         }
-        for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
-          innerNeurons[i] = centerSize + (yVarNames
-              .size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
-        }
-      } else if (nOfInnerLayers > 0) {
-        innerNeurons[0] = centerSize;
+        return new MultiLayerPerceptron(
+            activationFunction,
+            xVarNames.size(),
+            innerNeurons,
+            yVarNames.size()
+        );
+      } else {
+        return new MultiLayerPerceptron(
+            activationFunction,
+            xVarNames.size(),
+            innerLayers.stream().mapToInt(i -> i).toArray(),
+            yVarNames.size()
+        );
       }
-      return new MultiLayerPerceptron(activationFunction, xVarNames.size(), innerNeurons, yVarNames.size());
     };
   }
 
