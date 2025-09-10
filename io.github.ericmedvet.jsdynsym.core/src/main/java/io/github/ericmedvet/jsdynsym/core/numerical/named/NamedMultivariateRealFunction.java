@@ -25,8 +25,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -37,12 +39,60 @@ public interface NamedMultivariateRealFunction extends MultivariateRealFunction 
 
   List<String> yVarNames();
 
+  static <I> NamedMultivariateRealFunction from(
+      UnaryOperator<Map<String, Double>> f,
+      List<String> xVarNames,
+      List<String> yVarNames,
+      I inner
+  ) {
+    record HardComposedNMRF<I>(
+        UnaryOperator<Map<String, Double>> f,
+        List<String> xVarNames,
+        List<String> yVarNames,
+        I inner
+    ) implements io.github.ericmedvet.jsdynsym.core.composed.Composed<I>, NamedMultivariateRealFunction {
+
+      @Override
+      public Map<String, Double> compute(Map<String, Double> input) {
+        return f.apply(input);
+      }
+
+      @Override
+      public String toString() {
+        return Objects.isNull(inner) ? f.toString() : inner.toString();
+      }
+    }
+    return new HardComposedNMRF<>(f, xVarNames, yVarNames, inner);
+  }
+
   static NamedMultivariateRealFunction from(
       MultivariateRealFunction mrf,
       List<String> xVarNames,
       List<String> yVarNames
   ) {
-    return new ComposedNamedMultivariateRealFunction(mrf, xVarNames, yVarNames);
+    return from(
+        input -> {
+          double[] in = xVarNames.stream().mapToDouble(input::get).toArray();
+          if (in.length != mrf.nOfInputs()) {
+            throw new IllegalArgumentException(
+                "Wrong input size: %d expected, %d found".formatted(mrf.nOfInputs(), in.length)
+            );
+          }
+          double[] out = mrf.compute(in);
+          if (out.length != yVarNames.size()) {
+            throw new IllegalArgumentException(
+                "Wrong output size: %d expected, %d found".formatted(yVarNames.size(), in.length)
+            );
+          }
+          return IntStream.range(0, yVarNames.size())
+              .mapToObj(i -> Map.entry(yVarNames.get(i), out[i]))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        },
+        xVarNames,
+        yVarNames,
+        mrf
+    );
   }
 
   default NamedMultivariateRealFunction andThen(NamedMultivariateRealFunction other) {
