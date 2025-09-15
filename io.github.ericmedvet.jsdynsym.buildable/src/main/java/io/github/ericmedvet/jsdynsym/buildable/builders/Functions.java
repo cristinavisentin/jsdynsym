@@ -29,6 +29,8 @@ import io.github.ericmedvet.jsdynsym.control.HomogeneousBiSimulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import java.util.Arrays;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.function.Function;
 
@@ -51,23 +53,11 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, S> NamedFunction<X, SortedMap<Double, S>> simOutcome(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<S>> beforeF,
-      @Param(value = "format", dS = "%s") String format
+  public static <X, C> NamedFunction<X, C> inner(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Composed<C>> beforeF
   ) {
-    Function<Simulation.Outcome<S>, SortedMap<Double, S>> f = Simulation.Outcome::snapshots;
-    return NamedFunction.from(f, "sim.outcome").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> selfBiSimulator(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
-      @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
-      @Param(value = "format", dS = "%s") String format
-  ) {
-    Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s);
-    return NamedFunction.from(f, "self.sim").compose(beforeF);
+    Function<Composed<C>, C> f = Composed::inner;
+    return NamedFunction.from(f, "inner").compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -86,10 +76,51 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, C> NamedFunction<X, C> inner(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Composed<C>> beforeF
+  public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> selfBiSimulator(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
+      @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
+      @Param(value = "format", dS = "%s") String format
   ) {
-    Function<Composed<C>, C> f = Composed::inner;
-    return NamedFunction.from(f, "inner").compose(beforeF);
+    Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s);
+    return NamedFunction.from(f, "self.sim").compose(beforeF);
   }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, S> NamedFunction<X, SortedMap<Double, S>> simOutcome(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Simulation.Outcome<S>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<Simulation.Outcome<S>, SortedMap<Double, S>> f = Simulation.Outcome::snapshots;
+    return NamedFunction.from(f, "sim.outcome").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, List<List<List<Double>>>> weights(
+      @Param(value = "indexOfLayer", dI = 0) int indexOfLayer,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, MultiLayerPerceptron> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<MultiLayerPerceptron, List<List<List<Double>>>> f = mlp -> {
+      int[] neurons = new int[mlp.nOfLayers()];
+      for (int i = 0; i < neurons.length; i++) {
+        neurons[i] = mlp.sizeOfLayer(i);
+      }
+      double[][][] unflat = MultiLayerPerceptron.unflat(mlp.getParams(), neurons);
+      return Arrays.stream(unflat)
+          .map(
+              layerWs -> Arrays.stream(layerWs)
+                  .map(
+                      neuronWs -> Arrays.stream(
+                          neuronWs
+                      ).boxed().toList()
+                  )
+                  .toList()
+          )
+          .toList();
+    };
+    return FormattedNamedFunction.from(f, format, "weights").compose(beforeF);
+  }
+
 }
