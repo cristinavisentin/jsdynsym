@@ -98,7 +98,6 @@ public class Functions {
   @SuppressWarnings("unused")
   @Cacheable
   public static <X> FormattedNamedFunction<X, List<List<List<Double>>>> weights(
-      @Param(value = "indexOfLayer", dI = 0) int indexOfLayer,
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultiLayerPerceptron> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
