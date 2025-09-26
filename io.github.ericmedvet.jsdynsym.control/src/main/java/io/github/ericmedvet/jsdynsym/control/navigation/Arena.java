@@ -19,17 +19,25 @@
  */
 package io.github.ericmedvet.jsdynsym.control.navigation;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jnb.datastructure.Grid.Entry;
 import io.github.ericmedvet.jnb.datastructure.Grid.Key;
 import io.github.ericmedvet.jnb.datastructure.TriFunction;
+import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
+import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron.ActivationFunction;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 public interface Arena {

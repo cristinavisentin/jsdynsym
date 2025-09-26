@@ -75,8 +75,8 @@ public class PointNavigationEnvironment implements NumericalDynamicalSystem<Stat
             configuration.arena.targetYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         new Point(
-            configuration.arena.initialRobotXRange().denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.arena.initialRobotYRange().denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.startXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.startYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         0
     );

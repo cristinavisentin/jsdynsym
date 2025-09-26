@@ -86,8 +86,8 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
             configuration.arena.targetYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         new Point(
-            configuration.arena.initialRobotXRange().denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.arena.initialRobotYRange().denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.startXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.startYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         configuration.initialRobotDirectionRange.denormalize(configuration.randomGenerator.nextDouble()),
         0

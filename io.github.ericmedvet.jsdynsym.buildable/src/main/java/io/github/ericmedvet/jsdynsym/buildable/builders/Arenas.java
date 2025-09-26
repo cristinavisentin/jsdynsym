@@ -26,6 +26,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Grid;
 import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationArena;
+import java.util.regex.Pattern;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.arena")
 public class Arenas {
@@ -54,16 +55,16 @@ public class Arenas {
       @Param("diagonal") boolean diagonal,
       @Param(value = "emptyChar", dS = " ") String emptyString,
       @Param(value = "obstacleChar", dS = "w") String obstacleString,
-      @Param(value = "startingChar", dS = "s") String startingString,
+      @Param(value = "startChar", dS = "s") String startString,
       @Param(value = "targetChar", dS = "t") String targetString,
       @Param(value = "separatorChar", dS = "|") String separatorString
   ) {
     s = s
         .replace(emptyString.charAt(0), NavigationArena.EMPTY_CHAR)
         .replace(obstacleString.charAt(0), NavigationArena.OBSTACLE_CHAR)
-        .replace(startingString.charAt(0), NavigationArena.STARTING_POINT_CHAR)
+        .replace(startString.charAt(0), NavigationArena.STARTING_POINT_CHAR)
         .replace(targetString.charAt(0), NavigationArena.TARGET_POINT_CHAR);
-    String[] lines = s.split(separatorString.substring(0, 1));
+    String[] lines = s.split(Pattern.quote(separatorString.substring(0, 1)));
     Grid<Character> grid = Grid.create(
         lines[0].length(),
         lines.length,

@@ -35,9 +35,9 @@ public interface NavigationArena extends Arena {
   Character STARTING_POINT_CHAR = 's';
   Character TARGET_POINT_CHAR = 't';
 
-  DoubleRange initialRobotXRange();
+  DoubleRange startXRange();
 
-  DoubleRange initialRobotYRange();
+  DoubleRange startYRange();
 
   DoubleRange targetXRange();
 
@@ -45,15 +45,15 @@ public interface NavigationArena extends Arena {
 
   static NavigationArena of(
       Arena arena,
-      DoubleRange initialRobotXRange,
-      DoubleRange initialRobotYRange,
+      DoubleRange startXRange,
+      DoubleRange startYRange,
       DoubleRange targetXRange,
       DoubleRange targetYRange
   ) {
     record HardNavigationArena(
         double xExtent, double yExtent, List<Segment> obstacles,
-        DoubleRange initialRobotXRange,
-        DoubleRange initialRobotYRange,
+        DoubleRange startXRange,
+        DoubleRange startYRange,
         DoubleRange targetXRange,
         DoubleRange targetYRange
     ) implements NavigationArena {
@@ -63,8 +63,8 @@ public interface NavigationArena extends Arena {
         arena.xExtent(),
         arena.yExtent(),
         arena.obstacles(),
-        initialRobotXRange,
-        initialRobotYRange,
+        startXRange,
+        startYRange,
         targetXRange,
         targetYRange
     );
@@ -96,7 +96,7 @@ public interface NavigationArena extends Arena {
           )
       );
     }
-    Key startingPoint = grid.entries()
+    Key startPoint = grid.entries()
         .stream()
         .filter(e -> e.value().equals(STARTING_POINT_CHAR))
         .map(Entry::key)
@@ -110,10 +110,16 @@ public interface NavigationArena extends Arena {
         .orElse(new Key(0, 0));
     return of(
         Arena.fromGrid(grid.map(c -> OBSTACLE_CHAR == c), sideLength, diagonal),
-        new DoubleRange(startingPoint.x() + sideLength / 2d, startingPoint.x() + sideLength / 2d),
-        new DoubleRange(startingPoint.y() + sideLength / 2d, startingPoint.y() + sideLength / 2d),
-        new DoubleRange(targetPoint.x() + sideLength / 2d, targetPoint.x() + sideLength / 2d),
-        new DoubleRange(targetPoint.y() + sideLength / 2d, targetPoint.y() + sideLength / 2d)
+        new DoubleRange((startPoint.x() + 0.5d) * sideLength, (startPoint.x() + 0.5d) * sideLength),
+        new DoubleRange((startPoint.y() + 0.5d) * sideLength, (startPoint.y() + 0.5d) * sideLength),
+        new DoubleRange(
+            (targetPoint.x() + 0.5d) * sideLength,
+            (targetPoint.x() + 0.5d) * sideLength
+        ),
+        new DoubleRange(
+            (targetPoint.y() + 0.5d) * sideLength,
+            (targetPoint.y() + 0.5d) * sideLength
+        )
     );
 
   }
