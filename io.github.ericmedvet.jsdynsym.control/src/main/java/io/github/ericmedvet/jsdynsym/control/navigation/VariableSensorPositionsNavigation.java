@@ -75,11 +75,7 @@ public class VariableSensorPositionsNavigation implements Simulation<Pair<List<D
 
   private NavigationEnvironment.Configuration configuration(List<Double> angles) {
     return new NavigationEnvironment.Configuration(
-        configuration.initialRobotXRange(),
-        configuration.initialRobotYRange(),
         configuration.initialRobotDirectionRange(),
-        configuration.targetXRange(),
-        configuration.targetYRange(),
         configuration.robotRadius(),
         configuration.robotMaxV(),
         angles,

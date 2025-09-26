@@ -23,7 +23,7 @@ package io.github.ericmedvet.jsdynsym.buildable.builders;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
+import io.github.ericmedvet.jsdynsym.control.navigation.NavigationArena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
 import io.github.ericmedvet.jsdynsym.control.navigation.PointNavigationEnvironment;
 import io.github.ericmedvet.jsdynsym.control.pong.PongEnvironment;
@@ -70,35 +70,27 @@ public class Environments {
 
   @SuppressWarnings("unused")
   public static NavigationEnvironment navigation(
-      @Param(value = "name", iS = "nav-{arena}") String name,
-      @Param(value = "initialRobotXRange", dNPM = "m.range(min=0.45;max=0.55)") DoubleRange initialRobotXRange,
-      @Param(value = "initialRobotYRange", dNPM = "m.range(min=0.8;max=0.85)") DoubleRange initialRobotYRange,
+      @Param(value = "name", iS = "nav-{arena.name}") String name,
       @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)") DoubleRange initialRobotDirectionRange,
-      @Param(value = "targetXRange", dNPM = "m.range(min=0.5;max=0.5)") DoubleRange targetXRange,
-      @Param(value = "targetYRange", dNPM = "m.range(min=0.15;max=0.15)") DoubleRange targetYRange,
       @Param(value = "robotRadius", dD = 0.05) double robotRadius,
       @Param(value = "robotMaxV", dD = 0.01) double robotMaxV,
       @Param(value = "sensorsAngleRange", dNPM = "m.range(min=-1.57;max=1.57)") DoubleRange sensorsAngleRange,
       @Param(value = "nOfSensors", dI = 5) int nOfSensors,
       @Param(value = "sensorRange", dD = .5) double sensorRange,
       @Param(value = "senseTarget", dB = true) boolean senseTarget,
-      @Param(value = "arena", dS = "empty") Arena.Prepared arena,
+      @Param(value = "arena", dNPM = "ds.arena.prepared()") NavigationArena arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
     return new NavigationEnvironment(
         new NavigationEnvironment.Configuration(
-            initialRobotXRange,
-            initialRobotYRange,
             initialRobotDirectionRange,
-            targetXRange,
-            targetYRange,
             robotRadius,
             robotMaxV,
             sensorsAngleRange.points(nOfSensors).boxed().toList(),
             sensorRange,
             senseTarget,
-            arena.arena(),
+            arena,
             rescaleInput,
             randomGenerator
         )
@@ -108,25 +100,17 @@ public class Environments {
   @SuppressWarnings("unused")
   public static PointNavigationEnvironment pointNavigation(
       @Param(value = "name", iS = "nav-{arena}") String name,
-      @Param(value = "initialRobotXRange", dNPM = "m.range(min=0.45;max=0.55)") DoubleRange initialRobotXRange,
-      @Param(value = "initialRobotYRange", dNPM = "m.range(min=0.8;max=0.85)") DoubleRange initialRobotYRange,
-      @Param(value = "targetXRange", dNPM = "m.range(min=0.5;max=0.5)") DoubleRange targetXRange,
-      @Param(value = "targetYRange", dNPM = "m.range(min=0.15;max=0.15)") DoubleRange targetYRange,
       @Param(value = "robotMaxV", dD = 0.01) double robotMaxV,
       @Param(value = "collisionBlock", dD = 0.005) double collisionBlock,
-      @Param(value = "arena", dS = "empty") Arena.Prepared arena,
+      @Param("arena") NavigationArena arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
     return new PointNavigationEnvironment(
         new PointNavigationEnvironment.Configuration(
-            initialRobotXRange,
-            initialRobotYRange,
-            targetXRange,
-            targetYRange,
             robotMaxV,
             collisionBlock,
-            arena.arena(),
+            arena,
             rescaleInput,
             randomGenerator
         )

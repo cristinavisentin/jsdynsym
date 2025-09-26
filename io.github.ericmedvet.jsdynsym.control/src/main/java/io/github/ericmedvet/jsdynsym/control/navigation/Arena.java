@@ -19,52 +19,77 @@
  */
 package io.github.ericmedvet.jsdynsym.control.navigation;
 
+import io.github.ericmedvet.jnb.datastructure.Grid;
+import io.github.ericmedvet.jnb.datastructure.Grid.Entry;
+import io.github.ericmedvet.jnb.datastructure.Grid.Key;
+import io.github.ericmedvet.jnb.datastructure.TriFunction;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
 import io.github.ericmedvet.jsdynsym.control.geometry.Segment;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
+public interface Arena {
 
-  public Arena yMirrored() {
-    return new Arena(
-        xExtent,
-        yExtent,
-        obstacles.stream()
+  double xExtent();
+
+  double yExtent();
+
+  List<Segment> obstacles();
+
+  static Arena of(double xExtent, double yExtent, List<Segment> obstacles) {
+    record HardArena(double xExtent, double yExtent, List<Segment> obstacles) implements Arena {
+
+    }
+    return new HardArena(xExtent, yExtent, obstacles);
+  }
+
+  default Arena yMirrored() {
+    return of(
+        xExtent(),
+        yExtent(),
+        obstacles().stream()
             .map(
                 segment -> new Segment(
-                    new Point(xExtent - segment.p1().x(), segment.p1().y()),
-                    new Point(xExtent - segment.p2().x(), segment.p2().y())
+                    new Point(xExtent() - segment.p1().x(), segment.p1().y()),
+                    new Point(xExtent() - segment.p2().x(), segment.p2().y())
                 )
             )
             .toList()
     );
   }
 
-  public Arena xMirrored() {
-    return new Arena(
-        xExtent,
-        yExtent,
-        obstacles.stream()
+  default Arena xMirrored() {
+    return of(
+        xExtent(),
+        yExtent(),
+        obstacles().stream()
             .map(
                 segment -> new Segment(
-                    new Point(segment.p1().x(), yExtent - segment.p1().y()),
-                    new Point(segment.p2().x(), yExtent - segment.p2().y())
+                    new Point(segment.p1().x(), yExtent() - segment.p1().y()),
+                    new Point(segment.p2().x(), yExtent() - segment.p2().y())
                 )
             )
             .toList()
     );
   }
 
-  public enum Prepared {
-    EMPTY(new Arena(1, 1, List.of())), A_BARRIER(
-        new Arena(1, 1, List.of(new Segment(new Point(0.40, 0.3), new Point(0.60, 0.3))))
-    ), B_BARRIER(new Arena(1, 1, List.of(new Segment(new Point(0.35, 0.3), new Point(0.65, 0.3))))), C_BARRIER(
-        new Arena(1, 1, List.of(new Segment(new Point(0.30, 0.3), new Point(0.70, 0.3))))
-    ), D_BARRIER(new Arena(1, 1, List.of(new Segment(new Point(0.25, 0.3), new Point(0.75, 0.3))))), E_BARRIER(
-        new Arena(1, 1, List.of(new Segment(new Point(0.20, 0.3), new Point(0.80, 0.3))))
+  enum Prepared {
+    EMPTY(of(1, 1, List.of())), A_BARRIER(
+        of(1, 1, List.of(new Segment(new Point(0.40, 0.3), new Point(0.60, 0.3))))
+    ), B_BARRIER(
+        of(1, 1, List.of(new Segment(new Point(0.35, 0.3), new Point(0.65, 0.3))))
+    ), C_BARRIER(
+        of(1, 1, List.of(new Segment(new Point(0.30, 0.3), new Point(0.70, 0.3))))
+    ), D_BARRIER(
+        of(1, 1, List.of(new Segment(new Point(0.25, 0.3), new Point(0.75, 0.3))))
+    ), E_BARRIER(
+        of(1, 1, List.of(new Segment(new Point(0.20, 0.3), new Point(0.80, 0.3))))
     ), U_BARRIER(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -74,7 +99,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), EASY_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -83,7 +108,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), FLAT_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -92,7 +117,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), A_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -101,7 +126,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), B_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -110,7 +135,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), C_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -119,7 +144,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), D_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -128,7 +153,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), E_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -137,7 +162,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), DECEPTIVE_MAZE(
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -146,7 +171,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         )
     ), STANDARD(
-        new Arena(
+        of(
             //suitable starting point is 0.15,0.15; suitable target is 0.15,0.9
             1,
             1,
@@ -161,7 +186,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         ).xMirrored()
     ), U_SHAPED(
-        new Arena(
+        of(
             //suitable starting point is 0.15,0.15; suitable target is 0.85,0.15
             1,
             1,
@@ -172,7 +197,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
             )
         ).xMirrored()
     ), SNAKE(
-        new Arena(
+        of(
             //suitable starting point is 0.1,0.1; suitable target is 0.9,0.1
             1,
             1,
@@ -186,7 +211,7 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
         ).xMirrored()
     ), Y_MAZE(
         //suitable starting point is 0.5,0.1; suitable target is 0.5,0.7
-        new Arena(
+        of(
             1,
             1,
             List.of(
@@ -208,16 +233,99 @@ public record Arena(double xExtent, double yExtent, List<Segment> obstacles) {
     }
   }
 
-  public List<Segment> boundaries() {
+  default List<Segment> boundaries() {
     return List.of(
-        new Segment(new Point(0, 0), new Point(xExtent, 0)),
-        new Segment(new Point(0, 0), new Point(0, yExtent)),
-        new Segment(new Point(xExtent, yExtent), new Point(xExtent, 0)),
-        new Segment(new Point(xExtent, yExtent), new Point(0, yExtent))
+        new Segment(new Point(0, 0), new Point(xExtent(), 0)),
+        new Segment(new Point(0, 0), new Point(0, yExtent())),
+        new Segment(new Point(xExtent(), yExtent()), new Point(xExtent(), 0)),
+        new Segment(new Point(xExtent(), yExtent()), new Point(0, yExtent()))
     );
   }
 
-  public List<Segment> segments() {
-    return Stream.concat(boundaries().stream(), obstacles.stream()).toList();
+  default List<Segment> segments() {
+    return Stream.concat(boundaries().stream(), obstacles().stream()).toList();
   }
+
+  static Arena fromGrid(Grid<Boolean> grid, double sideLength, boolean diagonal) {
+    Set<List<Key>> lines = new HashSet<>();
+    Predicate<Key> kp = k -> grid.isValid(k) && grid.get(k);
+    grid.entries().stream().filter(Entry::value).forEach(e -> {
+      Set<List<Key>> localLines = new HashSet<>();
+      localLines.add(Stream.iterate(e.key(), kp, k -> k.translated(1, 0)).toList());
+      localLines.add(Stream.iterate(e.key(), kp, k -> k.translated(0, 1)).toList());
+      if (diagonal) {
+        localLines.add(Stream.iterate(e.key(), kp, k -> k.translated(1, 1)).toList());
+        localLines.add(Stream.iterate(e.key(), kp, k -> k.translated(-1, 1)).toList());
+      }
+      localLines.forEach(l -> {
+        if (lines.stream().noneMatch(ol -> new HashSet<>(ol).containsAll(l))) {
+          List<List<Key>> toRemoveLines = lines.stream().filter(l::containsAll).toList();
+          toRemoveLines.forEach(lines::remove);
+          lines.add(l);
+        }
+      });
+    });
+    TriFunction<Key, Integer, Integer, Point> k2p = (k, ox, oy) -> new Point(
+        (k.x() + 0.5d + ox / 2d) * sideLength,
+        (k.y() + 0.5d + oy / 2d) * sideLength
+    );
+    Predicate<Key> isBoundary = k -> k.x() == 0 || k.x() == (grid.w() - 1) || k.y() == 0 || k.y() == (grid.h() - 1);
+    Function<List<Key>, Segment> l2s = l -> {
+      //one point
+      if (l.size() == 1) {
+        return new Segment(
+            k2p.apply(l.getFirst(), -1, 0),
+            k2p.apply(l.getFirst(), 1, 0)
+        );
+      }
+      //horizontal
+      if (l.getFirst().y() == l.getLast().y()) {
+        return new Segment(
+            k2p.apply(l.getFirst(), isBoundary.test(l.getFirst()) ? -1 : 0, 0),
+            k2p.apply(l.getLast(), isBoundary.test(l.getLast()) ? 1 : 0, 0)
+        );
+      }
+      //vertical
+      if (l.getFirst().x() == l.getLast().x()) {
+        return new Segment(
+            k2p.apply(l.getFirst(), 0, isBoundary.test(l.getFirst()) ? -1 : 0),
+            k2p.apply(l.getLast(), 0, isBoundary.test(l.getLast()) ? 1 : 0)
+        );
+      }
+      //nw->se
+      if (l.getFirst().x() < l.getLast().x()) {
+        return new Segment(
+            k2p.apply(
+                l.getFirst(),
+                isBoundary.test(l.getFirst()) ? -1 : 0,
+                isBoundary.test(l.getFirst()) ? -1 : 0
+            ),
+            k2p.apply(
+                l.getLast(),
+                isBoundary.test(l.getLast()) ? 1 : 0,
+                isBoundary.test(l.getLast()) ? 1 : 0
+            )
+        );
+      }
+      //ne->sw
+      return new Segment(
+          k2p.apply(
+              l.getFirst(),
+              isBoundary.test(l.getFirst()) ? 1 : 0,
+              isBoundary.test(l.getFirst()) ? -1 : 0
+          ),
+          k2p.apply(
+              l.getLast(),
+              isBoundary.test(l.getLast()) ? -1 : 0,
+              isBoundary.test(l.getLast()) ? 1 : 0
+          )
+      );
+    };
+    return of(
+        grid.w() * sideLength,
+        grid.h() * sideLength,
+        lines.stream().map(l2s).toList()
+    );
+  }
+
 }

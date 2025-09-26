@@ -23,7 +23,7 @@ import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
+import io.github.ericmedvet.jsdynsym.control.navigation.NavigationArena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
 import io.github.ericmedvet.jsdynsym.control.navigation.VariableSensorPositionsNavigation;
 import java.util.List;
@@ -38,17 +38,13 @@ public class Simulations {
   @Cacheable
   public static VariableSensorPositionsNavigation variableSensorPositionsNavigation(
       @Param(value = "name", iS = "vs[{nOfSensors}]-nav-{arena}") String name,
-      @Param(value = "initialRobotXRange", dNPM = "m.range(min=0.45;max=0.55)") DoubleRange initialRobotXRange,
-      @Param(value = "initialRobotYRange", dNPM = "m.range(min=0.8;max=0.85)") DoubleRange initialRobotYRange,
       @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)") DoubleRange initialRobotDirectionRange,
-      @Param(value = "targetXRange", dNPM = "m.range(min=0.5;max=0.5)") DoubleRange targetXRange,
-      @Param(value = "targetYRange", dNPM = "m.range(min=0.15;max=0.15)") DoubleRange targetYRange,
       @Param(value = "robotRadius", dD = 0.05) double robotRadius,
       @Param(value = "robotMaxV", dD = 0.01) double robotMaxV,
       @Param(value = "nOfSensors", dI = 5) int nOfSensors,
       @Param(value = "sensorRange", dD = .5) double sensorRange,
       @Param(value = "senseTarget", dB = true) boolean senseTarget,
-      @Param(value = "arena", dS = "empty") Arena.Prepared arena,
+      @Param(value = "arena", dNPM = "ds.arena.prepared()") NavigationArena arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param(value = "sortAngles", dB = true) boolean sortAngles,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
@@ -58,17 +54,13 @@ public class Simulations {
   ) {
     return new VariableSensorPositionsNavigation(
         new NavigationEnvironment.Configuration(
-            initialRobotXRange,
-            initialRobotYRange,
             initialRobotDirectionRange,
-            targetXRange,
-            targetYRange,
             robotRadius,
             robotMaxV,
             List.of(),
             sensorRange,
             senseTarget,
-            arena.arena(),
+            arena,
             rescaleInput,
             randomGenerator
         ),

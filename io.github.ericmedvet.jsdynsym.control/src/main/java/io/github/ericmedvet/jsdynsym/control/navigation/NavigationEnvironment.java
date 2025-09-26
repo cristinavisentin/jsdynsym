@@ -35,17 +35,13 @@ import java.util.random.RandomGenerator;
 public class NavigationEnvironment implements NumericalDynamicalSystem<State>, Environment<double[], double[], State, NumericalDynamicalSystem<?>> {
 
   public record Configuration(
-      DoubleRange initialRobotXRange,
-      DoubleRange initialRobotYRange,
       DoubleRange initialRobotDirectionRange,
-      DoubleRange targetXRange,
-      DoubleRange targetYRange,
       double robotRadius,
       double robotMaxV,
       List<Double> sensorAngles,
       double sensorRange,
       boolean senseTarget,
-      Arena arena,
+      NavigationArena arena,
       boolean rescaleInput,
       RandomGenerator randomGenerator
   ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {}
@@ -86,12 +82,12 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
     state = new State(
         configuration,
         new Point(
-            configuration.targetXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.targetYRange.denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.targetXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.targetYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         new Point(
-            configuration.initialRobotXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.initialRobotYRange.denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.initialRobotXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.initialRobotYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         configuration.initialRobotDirectionRange.denormalize(configuration.randomGenerator.nextDouble()),
         0

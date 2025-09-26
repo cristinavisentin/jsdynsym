@@ -32,13 +32,9 @@ import java.util.random.RandomGenerator;
 public class PointNavigationEnvironment implements NumericalDynamicalSystem<State>, Environment<double[], double[], State, NumericalDynamicalSystem<?>> {
 
   public record Configuration(
-      DoubleRange initialRobotXRange,
-      DoubleRange initialRobotYRange,
-      DoubleRange targetXRange,
-      DoubleRange targetYRange,
       double robotMaxV,
       double collisionBlock,
-      Arena arena,
+      NavigationArena arena,
       boolean rescaleInput,
       RandomGenerator randomGenerator
   ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {}
@@ -75,12 +71,12 @@ public class PointNavigationEnvironment implements NumericalDynamicalSystem<Stat
     state = new State(
         configuration,
         new Point(
-            configuration.targetXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.targetYRange.denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.targetXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.targetYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         new Point(
-            configuration.initialRobotXRange.denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.initialRobotYRange.denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.initialRobotXRange().denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.initialRobotYRange().denormalize(configuration.randomGenerator.nextDouble())
         ),
         0
     );
