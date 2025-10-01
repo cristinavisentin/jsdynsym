@@ -23,10 +23,14 @@ package io.github.ericmedvet.jsdynsym.buildable.builders;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.buildable.util.Naming;
+import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationArena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
+import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment.State;
 import io.github.ericmedvet.jsdynsym.control.navigation.PointNavigationEnvironment;
 import io.github.ericmedvet.jsdynsym.control.pong.PongEnvironment;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import java.util.random.RandomGenerator;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.environment|env|e")
@@ -69,7 +73,7 @@ public class Environments {
   }
 
   @SuppressWarnings("unused")
-  public static NavigationEnvironment navigation(
+  public static Environment<double[], double[], State, NumericalDynamicalSystem<?>> navigation(
       @Param(value = "name", iS = "nav-{arena.name}") String name,
       @Param(value = "initialRobotDirectionRange", dNPM = "m.range(min=0;max=0)") DoubleRange initialRobotDirectionRange,
       @Param(value = "robotRadius", dD = 0.05) double robotRadius,
@@ -82,23 +86,26 @@ public class Environments {
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
-    return new NavigationEnvironment(
-        new NavigationEnvironment.Configuration(
-            initialRobotDirectionRange,
-            robotRadius,
-            robotMaxV,
-            sensorsAngleRange.points(nOfSensors).boxed().toList(),
-            sensorRange,
-            senseTarget,
-            arena,
-            rescaleInput,
-            randomGenerator
+    return Naming.named(
+        name,
+        new NavigationEnvironment(
+            new NavigationEnvironment.Configuration(
+                initialRobotDirectionRange,
+                robotRadius,
+                robotMaxV,
+                sensorsAngleRange.points(nOfSensors).boxed().toList(),
+                sensorRange,
+                senseTarget,
+                arena,
+                rescaleInput,
+                randomGenerator
+            )
         )
     );
   }
 
   @SuppressWarnings("unused")
-  public static PointNavigationEnvironment pointNavigation(
+  public static Environment<double[], double[], PointNavigationEnvironment.State, NumericalDynamicalSystem<?>> pointNavigation(
       @Param(value = "name", iS = "nav-{arena}") String name,
       @Param(value = "robotMaxV", dD = 0.01) double robotMaxV,
       @Param(value = "collisionBlock", dD = 0.005) double collisionBlock,
@@ -106,13 +113,16 @@ public class Environments {
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
-    return new PointNavigationEnvironment(
-        new PointNavigationEnvironment.Configuration(
-            robotMaxV,
-            collisionBlock,
-            arena,
-            rescaleInput,
-            randomGenerator
+    return Naming.named(
+        name,
+        new PointNavigationEnvironment(
+            new PointNavigationEnvironment.Configuration(
+                robotMaxV,
+                collisionBlock,
+                arena,
+                rescaleInput,
+                randomGenerator
+            )
         )
     );
   }

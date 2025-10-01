@@ -97,6 +97,17 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X, SS, O extends Simulation.Outcome<SS>, S extends Simulation<T, SS, O>, T> Function<X, O> simulate(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, T> beforeF,
+      @Param("simulation") S simulation,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<T, O> f = simulation::simulate;
+    return FormattedNamedFunction.from(f, format, "sim[%s]".formatted(simulation)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <X> FormattedNamedFunction<X, List<List<List<Double>>>> weights(
       @Param(value = "of", dNPM = "f.identity()") Function<X, MultiLayerPerceptron> beforeF,
       @Param(value = "format", dS = "%s") String format
