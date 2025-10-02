@@ -26,6 +26,7 @@ import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.buildable.util.Naming;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
@@ -50,6 +51,6 @@ public class SingleAgentTasks {
   ) {
     @SuppressWarnings("unchecked") Supplier<Environment<O, A, S, C>> supplier = () -> (Environment<O, A, S, C>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-    return SingleAgentTask.fromEnvironment(supplier, stopCondition, tRange, dT);
+    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition, tRange, dT));
   }
 }

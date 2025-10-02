@@ -39,6 +39,7 @@ import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import java.util.Optional;
 
 public class Naming {
 
@@ -88,6 +89,11 @@ public class Naming {
   ) {
     return new Simulation<>() {
       @Override
+      public Optional<T> example() {
+        return simulation.example();
+      }
+
+      @Override
       public O simulate(T t) {
         return simulation.simulate(t);
       }
@@ -104,6 +110,11 @@ public class Naming {
       SingleAgentTask<C, O, A, S> singleAgentTask
   ) {
     return new SingleAgentTask<>() {
+      @Override
+      public Optional<C> example() {
+        return singleAgentTask.example();
+      }
+
       @Override
       public Outcome<Step<O, A, S>> simulate(C c) {
         return singleAgentTask.simulate(c);
