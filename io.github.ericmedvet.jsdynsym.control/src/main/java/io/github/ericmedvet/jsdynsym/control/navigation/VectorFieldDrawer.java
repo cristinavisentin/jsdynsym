@@ -137,7 +137,7 @@ public class VectorFieldDrawer implements Drawer<NumericalTimeInvariantStateless
         cH / (1 + 2 * configuration.marginRate) / arena.yExtent()
     );
     AffineTransform previousTransform = g.getTransform();
-    AffineTransform transform = AffineTransform.getScaleInstance(scale, scale);
+    AffineTransform transform = (AffineTransform) previousTransform.clone();
     transform.translate(
         (cX / scale + cW / scale - arena.xExtent()) / 2d,
         (cY / scale + cH / scale - arena.yExtent()) / 2d

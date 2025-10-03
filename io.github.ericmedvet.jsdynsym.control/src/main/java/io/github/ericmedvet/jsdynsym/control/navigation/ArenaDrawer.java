@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jsdynsym.control.navigation;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.control.navigation.Arena.Prepared;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.util.GraphicsUtils;
 import java.awt.BasicStroke;
@@ -28,6 +29,7 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 public class ArenaDrawer implements Drawer<Arena> {
 
@@ -91,17 +93,18 @@ public class ArenaDrawer implements Drawer<Arena> {
   }
 
   protected AffineTransform setTransform(Graphics2D g, Arena arena) {
-    double cX = g.getClipBounds().x;
-    double cY = g.getClipBounds().y;
-    double cW = g.getClipBounds().width;
+    double cX = g.getClipBounds().getX();
+    double cY = g.getClipBounds().getY();
+    double cW = g.getClipBounds().getWidth();
     double cH = g.getClipBounds().getHeight();
     // compute transformation
     double scale = Math.min(
-        cW / (1 + 2 * configuration.marginRate) / arena.xExtent(),
-        cH / (1 + 2 * configuration.marginRate) / arena.yExtent()
+        cW / (1d + 2d * configuration.marginRate) / arena.xExtent(),
+        cH / (1d + 2d * configuration.marginRate) / arena.yExtent()
     );
     AffineTransform previousTransform = g.getTransform();
-    AffineTransform transform = AffineTransform.getScaleInstance(scale, scale);
+    AffineTransform transform = (AffineTransform) previousTransform.clone();
+    transform.scale(scale, scale);
     transform.translate(
         (cX / scale + cW / scale - arena.xExtent()) / 2d,
         (cY / scale + cH / scale - arena.yExtent()) / 2d
@@ -141,5 +144,20 @@ public class ArenaDrawer implements Drawer<Arena> {
         (int) (arena.xExtent() > arena.yExtent() ? DEFAULT_SIDE_LENGTH : DEFAULT_SIDE_LENGTH * arena.yExtent() / arena
             .xExtent())
     );
+  }
+
+  public static void main(String[] args) {
+    new ArenaDrawer(Configuration.DEFAULT).multi(Arrangement.HORIZONTAL).show(List.of(
+        Prepared.SNAKE.arena(),
+        Prepared.Y_MAZE.arena(),
+        Prepared.STANDARD.arena(),
+        Prepared.U_BARRIER.arena()
+    ));
+    new ArenaDrawer(Configuration.DEFAULT).multi(Arrangement.VERTICAL).show(List.of(
+        Prepared.SNAKE.arena(),
+        Prepared.Y_MAZE.arena(),
+        Prepared.STANDARD.arena(),
+        Prepared.U_BARRIER.arena()
+    ));
   }
 }
