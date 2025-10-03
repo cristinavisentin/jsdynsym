@@ -27,7 +27,7 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
-import io.github.ericmedvet.jviz.core.drawer.ImageBuilder;
+import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -67,7 +67,7 @@ public class Main {
     PointNavigationDrawer d = new PointNavigationDrawer(
         PointNavigationDrawer.Configuration.DEFAULT
     );
-    d.show(new ImageBuilder.ImageInfo(500, 500), outcome);
+    d.show(new Drawer.ImageInfo(500, 500), outcome);
     Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>>, Double>) nb
         .build("ds.e.n.finalTimePlusD()");
     System.out.println(fitness.apply(outcome));
@@ -89,7 +89,7 @@ public class Main {
         Arena.Prepared.E_MAZE.arena(),
         VectorFieldDrawer.Configuration.DEFAULT
     );
-    vfd.show(new ImageBuilder.ImageInfo(500, 500), mlp);
+    vfd.show(new Drawer.ImageInfo(500, 500), mlp);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 10), 0.1);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task

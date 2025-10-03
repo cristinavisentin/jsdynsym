@@ -23,6 +23,7 @@ import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SimulationOutcomeDrawer;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.geometry.Point;
+import io.github.ericmedvet.jviz.core.drawer.Drawer.ImageInfo;
 import io.github.ericmedvet.jviz.core.util.GraphicsUtils;
 import java.awt.*;
 import java.awt.geom.*;
