@@ -35,9 +35,8 @@ public interface SimulationOutcomeDrawer<S> extends Drawer<Simulation.Outcome<S>
 
   @Override
   default void draw(Graphics2D g, Outcome<S> sOutcome) {
-    Drawer<SortedMap<Double, S>> lastDrawer = (ig, map) -> drawSingle(ig, map.lastKey(), map.get(map.lastKey()));
-    Drawer<SortedMap<Double, S>> allDrawer = this::drawAll;
-    lastDrawer.andThen(allDrawer).draw(g, sOutcome.snapshots());
+    drawSingle(g, sOutcome.snapshots().lastKey(), sOutcome.snapshots().lastEntry().getValue());
+    drawAll(g, sOutcome.snapshots());
   }
 
   default void drawAll(Graphics2D g, SortedMap<Double, S> ss) {

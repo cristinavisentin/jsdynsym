@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jsdynsym.control.navigation;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jsdynsym.control.navigation.Arena.Prepared;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.util.GraphicsUtils;
 import java.awt.BasicStroke;
@@ -29,7 +28,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.List;
 
 public class ArenaDrawer implements Drawer<Arena> {
 
@@ -50,7 +48,7 @@ public class ArenaDrawer implements Drawer<Arena> {
         Color.RED.darker(),
         Color.GREEN.darker(),
         Color.BLACK,
-        2,
+        3,
         0.5,
         10,
         0.01
@@ -146,18 +144,4 @@ public class ArenaDrawer implements Drawer<Arena> {
     );
   }
 
-  public static void main(String[] args) {
-    new ArenaDrawer(Configuration.DEFAULT).multi(Arrangement.HORIZONTAL).show(List.of(
-        Prepared.SNAKE.arena(),
-        Prepared.Y_MAZE.arena(),
-        Prepared.STANDARD.arena(),
-        Prepared.U_BARRIER.arena()
-    ));
-    new ArenaDrawer(Configuration.DEFAULT).multi(Arrangement.VERTICAL).show(List.of(
-        Prepared.SNAKE.arena(),
-        Prepared.Y_MAZE.arena(),
-        Prepared.STANDARD.arena(),
-        Prepared.U_BARRIER.arena()
-    ));
-  }
 }

@@ -56,6 +56,7 @@ public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask
       double sensorsThickness,
       double sensorsFillAlpha,
       IOType ioType,
+      boolean drawSensors,
       ArenaDrawer.Configuration arenaConfiguration
   ) {
 
@@ -75,11 +76,20 @@ public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask
         1,
         0.5,
         IOType.GRAPHIC,
+        true,
         ArenaDrawer.Configuration.DEFAULT
     );
   }
 
-  private static void drawRobot(Graphics2D g, Color c, double alpha, double th, Point p, double a, double r) {
+  private static void drawRobot(
+      Graphics2D g,
+      Color c,
+      double alpha,
+      double th,
+      Point p,
+      double a,
+      double r
+  ) {
     g.setStroke(new BasicStroke((float) th));
     Shape shape = new Ellipse2D.Double(p.x() - r, p.y() - r, 2d * r, 2d * r);
     g.setColor(GraphicsUtils.alphaed(c, alpha));
@@ -165,7 +175,9 @@ public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask
       double w = g.getFontMetrics().stringWidth("o");
       double h = g.getFontMetrics().getHeight() * .75;
       IntStream.range(0, in.length).forEach(i -> {
-        double nV = DoubleRange.UNIT.clip(rescaled ? DoubleRange.SYMMETRIC_UNIT.normalize(in[i]) : in[i]);
+        double nV = DoubleRange.UNIT.clip(
+            rescaled ? DoubleRange.SYMMETRIC_UNIT.normalize(in[i]) : in[i]
+        );
         double x = x0 + w * 1.5 * i;
         g.setColor(c);
         g.draw(new Rectangle2D.Double(x, y2 - h, w, h));
@@ -178,7 +190,9 @@ public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask
       g.drawString("out:", 5, 5 + g.getFontMetrics().getHeight() * 3);
       double y3 = 5 + g.getFontMetrics().getHeight() * 3;
       IntStream.range(0, out.length).forEach(i -> {
-        double nV = DoubleRange.UNIT.clip(rescaled ? DoubleRange.SYMMETRIC_UNIT.normalize(out[i]) : out[i]);
+        double nV = DoubleRange.UNIT.clip(
+            rescaled ? DoubleRange.SYMMETRIC_UNIT.normalize(out[i]) : out[i]
+        );
         double x = x0 + w * 1.5 * i;
         g.setColor(c);
         g.draw(new Rectangle2D.Double(x, y3 - h, w, h));
@@ -209,15 +223,17 @@ public class NavigationDrawer implements SimulationOutcomeDrawer<SingleAgentTask
         step.state().robotDirection(),
         step.state().configuration().robotRadius()
     );
-    drawSensors(
-        g,
-        configuration.sensorsColor,
-        step.state().robotPosition(),
-        step.state().robotDirection(),
-        step.state().configuration().sensorAngles(),
-        step.state().configuration().sensorRange(),
-        configuration.sensorsThickness / g.getTransform().getScaleX()
-    );
+    if (configuration.drawSensors) {
+      drawSensors(
+          g,
+          configuration.sensorsColor,
+          step.state().robotPosition(),
+          step.state().robotDirection(),
+          step.state().configuration().sensorAngles(),
+          step.state().configuration().sensorRange(),
+          configuration.sensorsThickness / g.getTransform().getScaleX()
+      );
+    }
     // draw target
     drawLandmark(
         g,

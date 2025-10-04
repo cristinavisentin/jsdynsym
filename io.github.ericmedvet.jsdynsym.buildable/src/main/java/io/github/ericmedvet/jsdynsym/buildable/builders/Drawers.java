@@ -31,24 +31,62 @@ import io.github.ericmedvet.jsdynsym.control.pong.PongDrawer;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.drawer|d")
 public class Drawers {
+
   private Drawers() {
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static NavigationDrawer navigation() {
-    return new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
+  public static NavigationDrawer navigation(
+      @Param(value = "ioType", dS = "graphic") NavigationDrawer.Configuration.IOType ioType,
+      @Param(value = "showSensors", dB = true) boolean showSensors
+  ) {
+    return new NavigationDrawer(
+        new NavigationDrawer.Configuration(
+            NavigationDrawer.Configuration.DEFAULT.robotColor(),
+            NavigationDrawer.Configuration.DEFAULT.infoColor(),
+            NavigationDrawer.Configuration.DEFAULT.sensorsColor(),
+            NavigationDrawer.Configuration.DEFAULT.landmarkThickness(),
+            NavigationDrawer.Configuration.DEFAULT.landmarkSize(),
+            NavigationDrawer.Configuration.DEFAULT.robotThickness(),
+            NavigationDrawer.Configuration.DEFAULT.robotFillAlpha(),
+            NavigationDrawer.Configuration.DEFAULT.trajectoryThickness(),
+            NavigationDrawer.Configuration.DEFAULT.sensorsThickness(),
+            NavigationDrawer.Configuration.DEFAULT.sensorsFillAlpha(),
+            ioType,
+            showSensors,
+            NavigationDrawer.Configuration.DEFAULT.arenaConfiguration()
+        )
+    );
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static PointNavigationDrawer pointNavigation() {
-    return new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT);
+  public static PointNavigationDrawer pointNavigation(
+      @Param(value = "ioType", dS = "graphic") NavigationDrawer.Configuration.IOType ioType
+  ) {
+    return new PointNavigationDrawer(
+        new PointNavigationDrawer.Configuration(
+            PointNavigationDrawer.Configuration.DEFAULT.robotColor(),
+            PointNavigationDrawer.Configuration.DEFAULT.infoColor(),
+            PointNavigationDrawer.Configuration.DEFAULT.robotThickness(),
+            PointNavigationDrawer.Configuration.DEFAULT.robotFillAlpha(),
+            PointNavigationDrawer.Configuration.DEFAULT.landmarkThickness(),
+            PointNavigationDrawer.Configuration.DEFAULT.landmarkSize(),
+            PointNavigationDrawer.Configuration.DEFAULT.robotDotSize(),
+            PointNavigationDrawer.Configuration.DEFAULT.trajectoryThickness(),
+            PointNavigationDrawer.Configuration.DEFAULT.sensorsFillAlpha(),
+            ioType,
+            PointNavigationDrawer.Configuration.DEFAULT.arenaConfiguration()
+        )
+    );
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static VectorFieldDrawer vectorField(@Param(value = "arena", dNPM = "empty") Arena.Prepared arena) {
+  public static VectorFieldDrawer vectorField(
+      @Param(value = "arena", dNPM = "empty") Arena.Prepared arena
+  ) {
     return new VectorFieldDrawer(arena.arena(), VectorFieldDrawer.Configuration.DEFAULT);
   }
 
