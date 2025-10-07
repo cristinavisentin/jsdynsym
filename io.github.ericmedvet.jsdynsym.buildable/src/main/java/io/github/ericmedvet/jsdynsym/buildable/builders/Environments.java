@@ -84,6 +84,7 @@ public class Environments {
       @Param(value = "senseTarget", dB = true) boolean senseTarget,
       @Param(value = "arena", dNPM = "ds.arena.prepared()") NavigationArena arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
+      @Param("relativeV") boolean relativeSpeed,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
     return Naming.named(
@@ -98,6 +99,7 @@ public class Environments {
                 senseTarget,
                 arena,
                 rescaleInput,
+                relativeSpeed,
                 randomGenerator
             )
         )

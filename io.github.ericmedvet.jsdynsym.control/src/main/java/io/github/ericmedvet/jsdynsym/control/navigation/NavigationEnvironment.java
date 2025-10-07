@@ -43,12 +43,14 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
       boolean senseTarget,
       NavigationArena arena,
       boolean rescaleInput,
+      boolean relativeSpeed,
       RandomGenerator randomGenerator
   ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {
 
   }
 
   public record State(
+      double t,
       Configuration configuration,
       Point targetPosition,
       Point robotPosition,
@@ -84,6 +86,7 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
   @Override
   public void reset() {
     state = new State(
+        0d,
         configuration,
         new Point(
             configuration.arena.targetXRange()
@@ -119,25 +122,28 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
         configuration.robotRadius,
         configuration.sensorRange
     );
+    double dT = t - state.t;
     // apply action
-    double v1 = DoubleRange.SYMMETRIC_UNIT.clip(action[0]) * configuration.robotMaxV;
-    double v2 = DoubleRange.SYMMETRIC_UNIT.clip(action[1]) * configuration.robotMaxV;
+    double maxV = configuration.robotMaxV * (configuration.relativeSpeed ? dT : 1d);
+    double v1 = DoubleRange.SYMMETRIC_UNIT.clip(action[0]) * maxV;
+    double v2 = DoubleRange.SYMMETRIC_UNIT.clip(action[1]) * maxV;
     // compute new pose
     Point newRobotP = state.robotPosition.sum(
         new Point(state.robotDirection).scale((v1 + v2) / 2d)
     );
-    double deltaA = Math.asin((v2 - v1) / 2d / configuration.robotRadius);
+    double deltaA = Math.asin(((v2 - v1) / 2d % configuration.robotRadius) / configuration.robotRadius);
     // check collision and update pose
     double minD = segments.stream()
         .mapToDouble(newRobotP::distance)
         .min()
         .orElseThrow();
     boolean collision = minD <= configuration.robotRadius;
-    if (!collision && minD < 2d * (1d + configuration.robotMaxV)) {
+    if (!collision && minD < 5d * maxV) { // the comparison with minD is an optimization
       Segment robotPath = new Segment(state.robotPosition, newRobotP);
       collision = segments.stream().anyMatch(os -> os.intersect(robotPath));
     }
     state = new State(
+        t,
         configuration,
         state.targetPosition,
         collision ? state.robotPosition : newRobotP,

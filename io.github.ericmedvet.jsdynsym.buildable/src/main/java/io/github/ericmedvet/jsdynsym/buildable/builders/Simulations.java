@@ -46,6 +46,7 @@ public class Simulations {
       @Param(value = "senseTarget", dB = true) boolean senseTarget,
       @Param(value = "arena", dNPM = "ds.arena.prepared()") NavigationArena arena,
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
+      @Param("relativeV") boolean relativeSpeed,
       @Param(value = "sortAngles", dB = true) boolean sortAngles,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
       @Param(value = "dT", dD = 0.1) double dT,
@@ -62,6 +63,7 @@ public class Simulations {
             senseTarget,
             arena,
             rescaleInput,
+            relativeSpeed,
             randomGenerator
         ),
         nOfSensors,

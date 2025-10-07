@@ -83,6 +83,7 @@ public class VariableSensorPositionsNavigation implements Simulation<Pair<List<D
         configuration.senseTarget(),
         configuration.arena(),
         configuration.rescaleInput(),
+        configuration.relativeSpeed(),
         configuration.randomGenerator()
     );
   }

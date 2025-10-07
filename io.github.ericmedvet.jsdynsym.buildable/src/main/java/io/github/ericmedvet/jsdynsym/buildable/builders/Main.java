@@ -22,17 +22,20 @@ package io.github.ericmedvet.jsdynsym.buildable.builders;
 
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
+import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.DoubleStream;
 
 public class Main {
 
@@ -101,15 +104,27 @@ public class Main {
 
   public static void navigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    NavigationEnvironment environment = (NavigationEnvironment) nb.build(
-        "ds.e.navigation(arena = snake)"
-    );
+    Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                  arena = ds.arena.prepared(
+                    name = u_barrier;
+                    initialRobotXRange = m.range(min=0.5;max=0.5);
+                    initialRobotYRange = m.range(min=0.8;max=0.8)
+                  );
+                  relativeV = true;
+                  robotMaxV = 0.1;
+                  robotRadius = 0.01
+                )
+                """
+        );
     @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
-        .build("ds.num.mlp()"))
-        .apply(environment.nOfOutputs(), environment.nOfInputs());
-    mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
+        .build("ds.num.mlp(innerLayers = [16; 16])"))
+        .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
+    mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 30), 0.1);
+        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 30), 1);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
         mlp
     );
@@ -117,6 +132,17 @@ public class Main {
     @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
         .build("ds.e.n.arenaCoverage()");
     System.out.println(fitness.apply(outcome));
-    d.show(outcome);
+    Function<Double, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> tResF = dT -> SingleAgentTask
+        .fromEnvironment(
+            () -> environment,
+            s -> false,
+            new DoubleRange(0, 30),
+            dT
+        )
+        .simulate(mlp);
+    d.multi(Arrangement.HORIZONTAL)
+        .show(
+            DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
+        );
   }
 }
