@@ -20,6 +20,8 @@
 
 package io.github.ericmedvet.jsdynsym.control.geometry;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+
 public record Segment(Point p1, Point p2) {
 
   public double direction() {
@@ -46,11 +48,38 @@ public record Segment(Point p1, Point p2) {
         .x() * other.p2.y() - other.p1.y() * other.p2.x())) / denominator;
     Point intersection = new Point(px, py);
     // check if the intersection point lies on both segments
-    if (inPointInBoundingBox(intersection, precision) && other.inPointInBoundingBox(intersection, precision)) {
+    if (inPointInBoundingBox(intersection, precision) && other.inPointInBoundingBox(
+        intersection,
+        precision
+    )) {
       return intersection;
     } else {
       return null;
     }
+  }
+
+  public boolean intersect(Segment other) {
+    Point v1 = p2().diff(p1());
+    Point v2 = other.p2().diff(other.p1());
+    if (v1.magnitude() == 0 || v2.magnitude() == 0) {
+      return false;
+    }
+    double cramerDet = v1.y() * v2.x() - v1.x() * v2.y();
+    if (cramerDet == 0) {
+      if (Math.abs(other.p2().diff(p1()).direction()) != Math.abs(p2().diff(p1()).direction())) {
+        return false;
+      }
+      if (v1.x() > 0 == other.p2().x() > p2().x()) {
+        return DoubleRange.UNIT.contains((other.p2().x() - p1().x()) / v1.x());
+      }
+      return DoubleRange.UNIT.contains((p2().x() - other.p1().x()) / v2.x());
+    }
+    Point pointDiff = other.p1().diff(p1());
+    return DoubleRange.UNIT.contains((pointDiff.y() * v2.x() - pointDiff.x() * v2.y()) / cramerDet) && DoubleRange.UNIT
+        .contains(
+            (pointDiff.y() * v1.x() - pointDiff
+                .x() * v1.y()) / cramerDet
+        );
   }
 
   public boolean inPointInBoundingBox(Point point, double precision) {

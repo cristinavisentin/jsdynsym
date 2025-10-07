@@ -44,7 +44,9 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
       NavigationArena arena,
       boolean rescaleInput,
       RandomGenerator randomGenerator
-  ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {}
+  ) implements io.github.ericmedvet.jsdynsym.control.navigation.Configuration {
+
+  }
 
   public record State(
       Configuration configuration,
@@ -52,7 +54,9 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
       Point robotPosition,
       double robotDirection,
       int nOfCollisions
-  ) implements io.github.ericmedvet.jsdynsym.control.navigation.State {}
+  ) implements io.github.ericmedvet.jsdynsym.control.navigation.State {
+
+  }
 
   private final Configuration configuration;
   private State state;
@@ -82,14 +86,20 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
     state = new State(
         configuration,
         new Point(
-            configuration.arena.targetXRange().denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.arena.targetYRange().denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.targetXRange()
+                .denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.targetYRange()
+                .denormalize(configuration.randomGenerator.nextDouble())
         ),
         new Point(
-            configuration.arena.startXRange().denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.arena.startYRange().denormalize(configuration.randomGenerator.nextDouble())
+            configuration.arena.startXRange()
+                .denormalize(configuration.randomGenerator.nextDouble()),
+            configuration.arena.startYRange()
+                .denormalize(configuration.randomGenerator.nextDouble())
         ),
-        configuration.initialRobotDirectionRange.denormalize(configuration.randomGenerator.nextDouble()),
+        configuration.initialRobotDirectionRange.denormalize(
+            configuration.randomGenerator.nextDouble()
+        ),
         0
     );
   }
@@ -105,21 +115,34 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
     }
     // prepare
     List<Segment> segments = configuration.arena.segments();
-    DoubleRange sensorsRange = new DoubleRange(configuration.robotRadius, configuration.sensorRange);
+    DoubleRange sensorsRange = new DoubleRange(
+        configuration.robotRadius,
+        configuration.sensorRange
+    );
     // apply action
     double v1 = DoubleRange.SYMMETRIC_UNIT.clip(action[0]) * configuration.robotMaxV;
     double v2 = DoubleRange.SYMMETRIC_UNIT.clip(action[1]) * configuration.robotMaxV;
     // compute new pose
-    Point newRobotP = state.robotPosition.sum(new Point(state.robotDirection).scale((v1 + v2) / 2d));
+    Point newRobotP = state.robotPosition.sum(
+        new Point(state.robotDirection).scale((v1 + v2) / 2d)
+    );
     double deltaA = Math.asin((v2 - v1) / 2d / configuration.robotRadius);
     // check collision and update pose
-    double minD = segments.stream().mapToDouble(newRobotP::distance).min().orElseThrow();
+    double minD = segments.stream()
+        .mapToDouble(newRobotP::distance)
+        .min()
+        .orElseThrow();
+    boolean collision = minD <= configuration.robotRadius;
+    if (!collision && minD < 2d * (1d + configuration.robotMaxV)) {
+      Segment robotPath = new Segment(state.robotPosition, newRobotP);
+      collision = segments.stream().anyMatch(os -> os.intersect(robotPath));
+    }
     state = new State(
         configuration,
         state.targetPosition,
-        (minD > configuration.robotRadius) ? newRobotP : state.robotPosition,
+        collision ? state.robotPosition : newRobotP,
         state.robotDirection + deltaA,
-        state.nOfCollisions + ((minD > configuration.robotRadius) ? 0 : 1)
+        state.nOfCollisions + (collision ? 0 : 1)
     );
     // compute observation
     double[] sInputs = configuration.sensorAngles.stream()
@@ -128,7 +151,9 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
           return segments.stream()
               .map(sl::interception)
               .filter(Optional::isPresent)
-              .mapToDouble(op -> sensorsRange.normalize(op.orElseThrow().distance(state.robotPosition)))
+              .mapToDouble(
+                  op -> sensorsRange.normalize(op.orElseThrow().distance(state.robotPosition))
+              )
               .min()
               .orElse(Double.POSITIVE_INFINITY);
         })
