@@ -32,27 +32,23 @@ public class VariableSensorPositionsNavigation implements Simulation<Pair<List<D
 
   private final NavigationEnvironment.Configuration configuration;
   private final int nOfSensors;
-  private final DoubleRange tRange;
-  private final double dT;
   private final boolean sortSensorAngles;
 
   public VariableSensorPositionsNavigation(
       NavigationEnvironment.Configuration configuration,
       int nOfSensors,
-      DoubleRange tRange,
-      double dT,
       boolean sortSensorAngles
   ) {
     this.configuration = configuration;
     this.nOfSensors = nOfSensors;
-    this.tRange = tRange;
-    this.dT = dT;
     this.sortSensorAngles = sortSensorAngles;
   }
 
   @Override
   public Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> simulate(
-      Pair<List<Double>, NumericalDynamicalSystem<?>> pair
+      Pair<List<Double>, NumericalDynamicalSystem<?>> pair,
+      double dT,
+      DoubleRange tRange
   ) {
     if (pair.first().size() != nOfSensors) {
       throw new IllegalArgumentException(
@@ -66,11 +62,9 @@ public class VariableSensorPositionsNavigation implements Simulation<Pair<List<D
                 pair.first().stream().sorted().toList()
             )
         ),
-        s -> false,
-        tRange,
-        dT
+        s -> false
     )
-        .simulate(pair.second());
+        .simulate(pair.second(), dT, tRange);
   }
 
   private NavigationEnvironment.Configuration configuration(List<Double> angles) {

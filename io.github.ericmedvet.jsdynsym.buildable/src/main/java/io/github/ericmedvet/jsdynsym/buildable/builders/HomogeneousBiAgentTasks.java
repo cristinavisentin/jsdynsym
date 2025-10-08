@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jsdynsym.buildable.builders;
 
 import io.github.ericmedvet.jnb.core.*;
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.*;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import java.util.function.Predicate;
@@ -38,13 +37,11 @@ public class HomogeneousBiAgentTasks {
       @Param(value = "name", iS = "{environment.name}[{tRange.min};{tRange.max}]") String name,
       @Param("environment") HomogeneousBiEnvironment<O, A, S, C> environment,
       @Param("stopCondition") Predicate<S> stopCondition,
-      @Param("tRange") DoubleRange tRange,
-      @Param("dT") double dT,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
     @SuppressWarnings("unchecked") Supplier<HomogeneousBiEnvironment<O, A, S, C>> supplier = () -> (HomogeneousBiEnvironment<O, A, S, C>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-    return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(supplier, stopCondition, tRange, dT);
+    return HomogeneousBiAgentTask.fromHomogenousBiEnvironment(supplier, stopCondition);
   }
 }

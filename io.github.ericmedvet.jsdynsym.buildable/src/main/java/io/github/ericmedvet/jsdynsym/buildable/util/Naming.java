@@ -35,6 +35,7 @@
 
 package io.github.ericmedvet.jsdynsym.buildable.util;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
@@ -94,8 +95,8 @@ public class Naming {
       }
 
       @Override
-      public O simulate(T t) {
-        return simulation.simulate(t);
+      public O simulate(T t, double dT, DoubleRange tRange) {
+        return simulation.simulate(t, dT, tRange);
       }
 
       @Override
@@ -116,8 +117,8 @@ public class Naming {
       }
 
       @Override
-      public Outcome<Step<O, A, S>> simulate(C c) {
-        return singleAgentTask.simulate(c);
+      public Outcome<Step<O, A, S>> simulate(C c, double dT, DoubleRange tRange) {
+        return singleAgentTask.simulate(c, dT, tRange);
       }
 
       @Override

@@ -37,13 +37,11 @@ public interface HomogeneousBiAgentTask<C extends DynamicalSystem<O, A, ?>, O, A
       Supplier<? extends DynamicalSystem<Pair<A, A>, Pair<O, O>, S>> biEnvironmentSupplier,
       O initialObservation,
       C exampleAgent,
-      Predicate<S> stopCondition,
-      DoubleRange tRange,
-      double dT
+      Predicate<S> stopCondition
   ) {
-    return new HomogeneousBiAgentTask<C, O, A, S>() {
+    return new HomogeneousBiAgentTask<>() {
       @Override
-      public Outcome<Step<O, A, S>> simulate(C agent1, C agent2) {
+      public Outcome<Step<O, A, S>> simulate(C agent1, C agent2, double dT, DoubleRange tRange) {
         DynamicalSystem<Pair<A, A>, Pair<O, O>, S> biEnvironment = biEnvironmentSupplier.get();
         biEnvironment.reset();
         agent1.reset();
@@ -75,17 +73,13 @@ public interface HomogeneousBiAgentTask<C extends DynamicalSystem<O, A, ?>, O, A
 
   static <C extends DynamicalSystem<O, A, ?>, O, A, S> HomogeneousBiAgentTask<C, O, A, S> fromHomogenousBiEnvironment(
       Supplier<HomogeneousBiEnvironment<O, A, S, C>> biEnvironmentSupplier,
-      Predicate<S> stopCondition,
-      DoubleRange tRange,
-      double dT
+      Predicate<S> stopCondition
   ) {
     return fromHomogenousBiEnvironment(
         biEnvironmentSupplier,
         biEnvironmentSupplier.get().defaultObservation(),
         biEnvironmentSupplier.get().exampleAgent(),
-        stopCondition,
-        tRange,
-        dT
+        stopCondition
     );
   }
 }

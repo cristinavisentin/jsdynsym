@@ -48,10 +48,7 @@ public class Simulations {
       @Param(value = "rescaleInput", dB = true) boolean rescaleInput,
       @Param("relativeV") boolean relativeSpeed,
       @Param(value = "sortAngles", dB = true) boolean sortAngles,
-      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
-      @Param(value = "dT", dD = 0.1) double dT,
-      @Param(value = "initialT", dD = 0) double initialT,
-      @Param(value = "finalT", dD = 60) double finalT
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
     return new VariableSensorPositionsNavigation(
         new NavigationEnvironment.Configuration(
@@ -67,8 +64,6 @@ public class Simulations {
             randomGenerator
         ),
         nOfSensors,
-        new DoubleRange(initialT, finalT),
-        dT,
         sortAngles
     );
   }

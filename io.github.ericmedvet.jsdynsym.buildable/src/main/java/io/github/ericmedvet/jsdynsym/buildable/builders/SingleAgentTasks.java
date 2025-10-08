@@ -25,7 +25,6 @@ import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
-import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.buildable.util.Naming;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
@@ -44,13 +43,11 @@ public class SingleAgentTasks {
       @Param(value = "name", iS = "{environment.name}[{tRange.min};{tRange.max}]") String name,
       @Param("environment") Environment<O, A, S, C> environment,
       @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<S> stopCondition,
-      @Param("tRange") DoubleRange tRange,
-      @Param("dT") double dT,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
     @SuppressWarnings("unchecked") Supplier<Environment<O, A, S, C>> supplier = () -> (Environment<O, A, S, C>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition, tRange, dT));
+    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition));
   }
 }

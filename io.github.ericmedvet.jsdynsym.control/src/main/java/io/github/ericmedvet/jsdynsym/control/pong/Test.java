@@ -36,12 +36,10 @@ public class Test {
     HomogeneousBiAgentTask<NumericalDynamicalSystem<?>, double[], double[], PongEnvironment.State> dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask
         .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
-            s -> s.lRacketState().score() + s.rRacketState().score() >= 101,
-            new DoubleRange(0, 20),
-            0.05
+            s -> s.lRacketState().score() + s.rRacketState().score() >= 101
         );
     Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = dynamicalSystemStateHomogeneousBiAgentTask
-        .simulate(new Pair<>(new PongAgent(1), new PongAgent(1)));
+        .simulate(new Pair<>(new PongAgent(1), new PongAgent(1)), 0.05, new DoubleRange(0, 20));
     System.out.println(
         "L_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())
@@ -83,9 +81,7 @@ public class Test {
     HomogeneousBiAgentTask<NumericalDynamicalSystem<?>, double[], double[], PongEnvironment.State> task = HomogeneousBiAgentTask
         .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
-            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
-            new DoubleRange(0, finalTime),
-            dT
+            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore
         );
     try (FileWriter scoresWriter = new FileWriter(
         scoresCsvFilePath
@@ -114,7 +110,7 @@ public class Test {
           for (int r = 0; r < repetitions; r++) {
             long startTime = System.nanoTime();
             Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = task
-                .simulate(agentI, agentJ);
+                .simulate(agentI, agentJ, dT, new DoubleRange(0, finalTime));
             long endTime = System.nanoTime();
 
             var snapshots = outcome.snapshots();
@@ -154,9 +150,7 @@ public class Test {
     HomogeneousBiAgentTask<NumericalDynamicalSystem<?>, double[], double[], PongEnvironment.State> task = HomogeneousBiAgentTask
         .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
-            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
-            new DoubleRange(0, finalTime),
-            dT
+            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore
         );
     try (FileWriter writer = new FileWriter(csvFilePath)) {
       writer.write("Agent vs Agent;");
@@ -168,7 +162,7 @@ public class Test {
         writer.write("Agent " + agentsSpeedI.toString() + ";");
         for (NumericalDynamicalSystem<?> agentsSpeedJ : agentsSpeedsDumpingConstants) {
           Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = task
-              .simulate(agentsSpeedI, agentsSpeedJ);
+              .simulate(agentsSpeedI, agentsSpeedJ, dT, new DoubleRange(0, finalTime));
           String score = getFinalScore(outcome);
           writer.write(score + ";");
         }
@@ -189,12 +183,10 @@ public class Test {
     HomogeneousBiAgentTask<NumericalDynamicalSystem<?>, double[], double[], PongEnvironment.State> dynamicalSystemStateHomogeneousBiAgentTask = HomogeneousBiAgentTask
         .fromHomogenousBiEnvironment(
             () -> new PongEnvironment(PongEnvironment.Configuration.DEFAULT),
-            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore,
-            new DoubleRange(0, finalTime),
-            dT
+            s -> s.lRacketState().score() + s.rRacketState().score() >= finalScore
         );
     Simulation.Outcome<HomogeneousBiAgentTask.Step<double[], double[], PongEnvironment.State>> outcome = dynamicalSystemStateHomogeneousBiAgentTask
-        .simulate(agentsSpeedsDumpingConstants);
+        .simulate(agentsSpeedsDumpingConstants, dT, new DoubleRange(0, finalTime));
     System.out.println(
         "L_Score: " + outcome.snapshots()
             .get(outcome.snapshots().lastKey())

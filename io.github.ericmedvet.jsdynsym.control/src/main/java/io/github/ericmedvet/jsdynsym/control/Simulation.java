@@ -19,6 +19,7 @@
  */
 package io.github.ericmedvet.jsdynsym.control;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import java.util.Optional;
 import java.util.SortedMap;
 
@@ -32,7 +33,7 @@ public interface Simulation<T, S, O extends Simulation.Outcome<S>> {
     }
   }
 
-  O simulate(T t);
+  O simulate(T t, double dT, DoubleRange tRange);
 
   default Optional<T> example() {
     return Optional.empty();

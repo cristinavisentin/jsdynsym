@@ -19,16 +19,17 @@
  */
 package io.github.ericmedvet.jsdynsym.control;
 
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.Pair;
 import java.util.Optional;
 
 public interface BiSimulation<T1, T2, S, O extends Simulation.Outcome<S>> extends Simulation<Pair<T1, T2>, S, O> {
 
-  O simulate(T1 t1, T2 t2);
+  O simulate(T1 t1, T2 t2, double dT, DoubleRange tRange);
 
   @Override
-  default O simulate(Pair<T1, T2> tPair) {
-    return simulate(tPair.first(), tPair.second());
+  default O simulate(Pair<T1, T2> tPair, double dT, DoubleRange tRange) {
+    return simulate(tPair.first(), tPair.second(), dT, tRange);
   }
 
   default Optional<T1> example1() {

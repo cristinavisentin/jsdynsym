@@ -23,6 +23,7 @@ package io.github.ericmedvet.jsdynsym.buildable.builders;
 import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
+import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiSimulation;
@@ -67,10 +68,12 @@ public class Functions {
       @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
       @Param("opponent") S opponent,
       @Param(value = "home", dB = true) boolean home,
+      @Param("tRange") DoubleRange tRange,
+      @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(s, opponent) : biSimulation
-        .simulate(opponent, s);
+    Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(s, opponent, dT, tRange) : biSimulation
+        .simulate(opponent, s, dT, tRange);
     return NamedFunction.from(f, "opponent.sim").compose(beforeF);
   }
 
@@ -79,9 +82,11 @@ public class Functions {
   public static <X, S, B extends Simulation.Outcome<SS>, SS> NamedFunction<X, Simulation.Outcome<SS>> selfBiSimulator(
       @Param(value = "of", dNPM = "f.identity()") Function<X, S> beforeF,
       @Param("simulation") HomogeneousBiSimulation<S, SS, B> biSimulation,
+      @Param("tRange") DoubleRange tRange,
+      @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s);
+    Function<S, Simulation.Outcome<SS>> f = s -> biSimulation.simulate(s, s, dT, tRange);
     return NamedFunction.from(f, "self.sim").compose(beforeF);
   }
 
@@ -100,9 +105,11 @@ public class Functions {
   public static <X, SS, O extends Simulation.Outcome<SS>, S extends Simulation<T, SS, O>, T> Function<X, O> simulate(
       @Param(value = "of", dNPM = "f.identity()") Function<X, T> beforeF,
       @Param("simulation") S simulation,
+      @Param("tRange") DoubleRange tRange,
+      @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<T, O> f = simulation::simulate;
+    Function<T, O> f = t -> simulation.simulate(t, dT, tRange);
     return FormattedNamedFunction.from(f, format, "sim[%s]".formatted(simulation)).compose(beforeF);
   }
 

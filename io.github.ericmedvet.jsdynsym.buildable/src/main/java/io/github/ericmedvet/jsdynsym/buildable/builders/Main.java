@@ -61,12 +61,10 @@ public class Main {
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(
             () -> environment,
-            s -> s.robotPosition().distance(s.targetPosition()) < .01,
-            new DoubleRange(0, 100),
-            0.1
+            s -> s.robotPosition().distance(s.targetPosition()) < .01
         );
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
-        .simulate(mlp);
+        .simulate(mlp, 0.1, new DoubleRange(0, 100));
     PointNavigationDrawer d = new PointNavigationDrawer(
         PointNavigationDrawer.Configuration.DEFAULT
     );
@@ -94,9 +92,9 @@ public class Main {
     );
     vfd.show(new Drawer.ImageInfo(500, 500), mlp);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 10), 0.1);
+        .fromEnvironment(() -> environment, s -> false);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
-        .simulate(mlp);
+        .simulate(mlp, 0.1, new DoubleRange(0, 10));
     new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT)
         .videoBuilder()
         .save(new File("../point-navigation.mp4"), outcome);
@@ -124,9 +122,11 @@ public class Main {
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(() -> environment, s -> false, new DoubleRange(0, 30), 1);
+        .fromEnvironment(() -> environment, s -> false);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
-        mlp
+        mlp,
+        1,
+        new DoubleRange(0, 30)
     );
     NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
     @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
@@ -135,11 +135,9 @@ public class Main {
     Function<Double, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> tResF = dT -> SingleAgentTask
         .fromEnvironment(
             () -> environment,
-            s -> false,
-            new DoubleRange(0, 30),
-            dT
+            s -> false
         )
-        .simulate(mlp);
+        .simulate(mlp, dT, new DoubleRange(0, 30));
     d.multi(Arrangement.HORIZONTAL)
         .show(
             DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
