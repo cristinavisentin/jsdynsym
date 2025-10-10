@@ -40,7 +40,7 @@ public class SingleAgentTasks {
 
   @SuppressWarnings("unused")
   public static <C extends DynamicalSystem<O, A, ?>, O, A, S> SingleAgentTask<C, O, A, S> fromEnvironment(
-      @Param(value = "name", iS = "{environment.name}[{tRange.min};{tRange.max}]") String name,
+      @Param(value = "name", iS = "{environment.name}") String name,
       @Param("environment") Environment<O, A, S, C> environment,
       @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<S> stopCondition,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
