@@ -43,11 +43,12 @@ public class SingleAgentTasks {
       @Param(value = "name", iS = "{environment.name}") String name,
       @Param("environment") Environment<O, A, S, C> environment,
       @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<S> stopCondition,
+      @Param(value = "resetAgent", dB = true) boolean resetAgent,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
     @SuppressWarnings("unchecked") Supplier<Environment<O, A, S, C>> supplier = () -> (Environment<O, A, S, C>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition));
+    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition, resetAgent));
   }
 }

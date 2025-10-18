@@ -62,7 +62,8 @@ public class VariableSensorPositionsNavigation implements Simulation<Pair<List<D
                 pair.first().stream().sorted().toList()
             )
         ),
-        s -> false
+        s -> false,
+        true
     )
         .simulate(pair.second(), dT, tRange);
   }

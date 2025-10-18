@@ -54,8 +54,9 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
       Configuration configuration,
       Point targetPosition,
       Point robotPosition,
+      Point robotPreviousPosition,
       double robotDirection,
-      int nOfCollisions
+      boolean hasCollided
   ) implements io.github.ericmedvet.jsdynsym.control.navigation.State {
 
   }
@@ -85,6 +86,12 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
 
   @Override
   public void reset() {
+    Point robotPosition = new Point(
+        configuration.arena.startXRange()
+            .denormalize(configuration.randomGenerator.nextDouble()),
+        configuration.arena.startYRange()
+            .denormalize(configuration.randomGenerator.nextDouble())
+    );
     state = new State(
         0d,
         configuration,
@@ -94,16 +101,12 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
             configuration.arena.targetYRange()
                 .denormalize(configuration.randomGenerator.nextDouble())
         ),
-        new Point(
-            configuration.arena.startXRange()
-                .denormalize(configuration.randomGenerator.nextDouble()),
-            configuration.arena.startYRange()
-                .denormalize(configuration.randomGenerator.nextDouble())
-        ),
+        robotPosition,
+        robotPosition,
         configuration.initialRobotDirectionRange.denormalize(
             configuration.randomGenerator.nextDouble()
         ),
-        0
+        false
     );
   }
 
@@ -147,8 +150,9 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
         configuration,
         state.targetPosition,
         collision ? state.robotPosition : newRobotP,
+        state.robotPosition,
         state.robotDirection + deltaA,
-        state.nOfCollisions + (collision ? 0 : 1)
+        collision
     );
     // compute observation
     double[] sInputs = configuration.sensorAngles.stream()

@@ -37,14 +37,17 @@ public interface SingleAgentTask<C extends DynamicalSystem<O, A, ?>, O, A, S> ex
       Supplier<? extends DynamicalSystem<A, O, S>> environmentSupplier,
       O initialObservation,
       C exampleAgent,
-      Predicate<S> stopCondition
+      Predicate<S> stopCondition,
+      boolean resetAgent
   ) {
     return new SingleAgentTask<>() {
       @Override
       public Outcome<Step<O, A, S>> simulate(C agent, double dT, DoubleRange tRange) {
         DynamicalSystem<A, O, S> environment = environmentSupplier.get();
         environment.reset();
-        agent.reset();
+        if (resetAgent) {
+          agent.reset();
+        }
         double t = tRange.min();
         Map<Double, Step<O, A, S>> steps = new HashMap<>();
         O observation = initialObservation;
@@ -66,13 +69,15 @@ public interface SingleAgentTask<C extends DynamicalSystem<O, A, ?>, O, A, S> ex
 
   static <C extends DynamicalSystem<O, A, ?>, O, A, S> SingleAgentTask<C, O, A, S> fromEnvironment(
       Supplier<Environment<O, A, S, C>> environmentSupplier,
-      Predicate<S> stopCondition
+      Predicate<S> stopCondition,
+      boolean resetAgent
   ) {
     return fromEnvironment(
         environmentSupplier,
         environmentSupplier.get().defaultObservation(),
         environmentSupplier.get().exampleAgent(),
-        stopCondition
+        stopCondition,
+        resetAgent
     );
   }
 

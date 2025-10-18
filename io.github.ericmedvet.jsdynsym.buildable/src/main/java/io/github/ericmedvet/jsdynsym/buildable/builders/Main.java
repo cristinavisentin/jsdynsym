@@ -25,9 +25,11 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
 import java.io.File;
@@ -61,7 +63,8 @@ public class Main {
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(
             () -> environment,
-            s -> s.robotPosition().distance(s.targetPosition()) < .01
+            s -> s.robotPosition().distance(s.targetPosition()) < .01,
+            true
         );
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
         .simulate(mlp, 0.1, new DoubleRange(0, 100));
@@ -92,7 +95,7 @@ public class Main {
     );
     vfd.show(new Drawer.ImageInfo(500, 500), mlp);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], PointNavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(() -> environment, s -> false);
+        .fromEnvironment(() -> environment, s -> false, true);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], PointNavigationEnvironment.State>> outcome = task
         .simulate(mlp, 0.1, new DoubleRange(0, 10));
     new PointNavigationDrawer(PointNavigationDrawer.Configuration.DEFAULT)
@@ -102,7 +105,7 @@ public class Main {
 
   public static void navigation() {
     NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
         .build(
             """
                 ds.e.navigation(
@@ -122,7 +125,7 @@ public class Main {
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
-        .fromEnvironment(() -> environment, s -> false);
+        .fromEnvironment(() -> environment, s -> false, true);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
         mlp,
         1,
@@ -135,12 +138,52 @@ public class Main {
     Function<Double, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> tResF = dT -> SingleAgentTask
         .fromEnvironment(
             () -> environment,
-            s -> false
+            s -> false,
+            true
         )
         .simulate(mlp, dT, new DoubleRange(0, 30));
     d.multi(Arrangement.HORIZONTAL)
         .show(
             DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
         );
+  }
+
+  private static void rlNavigation() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                  arena = ds.arena.prepared(
+                    name = u_barrier;
+                    initialRobotXRange = m.range(min=0.5;max=0.5);
+                    initialRobotYRange = m.range(min=0.8;max=0.8)
+                  );
+                  relativeV = true;
+                  robotMaxV = 0.1;
+                  robotRadius = 0.01
+                )
+                """
+        );
+    double targetProximityRadius = 0.1;
+    double targetProximityReward = 1;
+    double collisionPenalty = 0.01;
+    SingleRLAgentTask<ReinforcementLearningAgent<double[], double[], ?>, double[], double[], NavigationEnvironment.State> rlTask = SingleRLAgentTask
+        .fromEnvironment(
+            () -> environment,
+            environment.defaultObservation(),
+            null,
+            s -> false,
+            false,
+            (s, a) -> {
+              double currentDistance = s.robotPosition().distance(s.targetPosition());
+              double previousDistance = s.robotPreviousPosition().distance(s.targetPosition());
+              double reward = previousDistance - currentDistance;
+              reward = reward + (currentDistance < targetProximityRadius ? targetProximityReward : 0d);
+              reward = reward + (s.hasCollided() ? collisionPenalty : 0d);
+              return reward;
+            }
+        );
+    // TODO test an RL agent, without resetting
   }
 }

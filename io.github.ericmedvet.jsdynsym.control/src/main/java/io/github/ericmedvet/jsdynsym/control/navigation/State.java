@@ -28,5 +28,7 @@ public interface State {
 
   Point robotPosition();
 
-  int nOfCollisions();
+  Point robotPreviousPosition();
+
+  boolean hasCollided();
 }
