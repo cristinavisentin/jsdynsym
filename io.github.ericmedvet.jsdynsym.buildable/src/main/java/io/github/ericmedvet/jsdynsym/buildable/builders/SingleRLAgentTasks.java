@@ -17,7 +17,6 @@
  * limitations under the License.
  * =========================LICENSE_END==================================
  */
-
 package io.github.ericmedvet.jsdynsym.buildable.builders;
 
 import io.github.ericmedvet.jnb.core.Cacheable;
@@ -28,29 +27,37 @@ import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jsdynsym.buildable.util.Naming;
 import io.github.ericmedvet.jsdynsym.control.Environment;
-import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
-import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.ToDoubleBiFunction;
 
-@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.singleAgentTask|saTask|sat")
-public class SingleAgentTasks {
+@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.singleRLAgentTask|saRLTask|srlat")
+public class SingleRLAgentTasks {
 
-  private SingleAgentTasks() {
+  private SingleRLAgentTasks() {
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <C extends DynamicalSystem<O, A, ?>, O, A, S> SingleAgentTask<C, O, A, S> fromEnvironment(
+  public static <S> SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], S> fromNumericalEnvironment(
       @Param(value = "name", iS = "{environment.name}") String name,
-      @Param("environment") Environment<O, A, S, C> environment,
+      @Param("environment") Environment<double[], double[], S, NumericalDynamicalSystem<?>> environment,
       @Param(value = "stopCondition", dNPM = "predicate.not(condition = predicate.always())") Predicate<S> stopCondition,
-      @Param(value = "resetAgent", dB = true) boolean resetAgent,
+      @Param(value = "resetAgent") boolean resetAgent,
+      @Param("reward") Function<S, Double> rewardFunction,
       @Param(value = "", injection = Param.Injection.BUILDER) NamedBuilder<?> nb,
       @Param(value = "", injection = Param.Injection.MAP) ParamMap map
   ) {
-    @SuppressWarnings("unchecked") Supplier<Environment<O, A, S, C>> supplier = () -> (Environment<O, A, S, C>) nb
+    @SuppressWarnings("unchecked") Supplier<Environment<double[], double[], S, NumericalDynamicalSystem<?>>> supplier = () -> (Environment<double[], double[], S, NumericalDynamicalSystem<?>>) nb
         .build((NamedParamMap) map.value("environment", ParamMap.Type.NAMED_PARAM_MAP));
-    return Naming.named(name, SingleAgentTask.fromEnvironment(supplier, stopCondition, resetAgent));
+    ToDoubleBiFunction<S, double[]> actualRewardFunction = (s, action) -> rewardFunction.apply(s);
+    return Naming.named(
+        name,
+        SingleRLAgentTask.fromNumericalEnvironment(supplier, stopCondition, resetAgent, actualRewardFunction)
+    );
   }
 }

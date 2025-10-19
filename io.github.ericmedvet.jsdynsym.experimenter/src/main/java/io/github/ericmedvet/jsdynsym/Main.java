@@ -18,18 +18,17 @@
  * =========================LICENSE_END==================================
  */
 
-package io.github.ericmedvet.jsdynsym.buildable.builders;
+package io.github.ericmedvet.jsdynsym;
 
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.buildable.builders.NumericalDynamicalSystems.Builder;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
-import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
-import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
 import java.io.File;
@@ -55,7 +54,7 @@ public class Main {
     PointNavigationEnvironment environment = (PointNavigationEnvironment) nb.build(
         "ds.e.pointNavigation(arena = E_MAZE;initialRobotXRange = m.range(min = 0.5; max = 0.55);" + "initialRobotYRange = m.range(min = 0.75; max = 0.75);robotMaxV = 0.05)"
     );
-    MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb.build(
+    MultiLayerPerceptron mlp = ((Builder<MultiLayerPerceptron, ?>) nb.build(
         "ds.num.mlp(innerLayerRatio = 2.0)"
     ))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
@@ -85,7 +84,7 @@ public class Main {
     PointNavigationEnvironment environment = (PointNavigationEnvironment) nb.build(
         "ds.e.pointNavigation(arena = E_MAZE)"
     );
-    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((Builder<MultiLayerPerceptron, ?>) nb
         .build("ds.num.mlp()"))
         .apply(environment.nOfOutputs(), environment.nOfInputs());
     mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
@@ -120,7 +119,7 @@ public class Main {
                 )
                 """
         );
-    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((NumericalDynamicalSystems.Builder<MultiLayerPerceptron, ?>) nb
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((Builder<MultiLayerPerceptron, ?>) nb
         .build("ds.num.mlp(innerLayers = [16; 16])"))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
@@ -148,42 +147,4 @@ public class Main {
         );
   }
 
-  private static void rlNavigation() {
-    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
-    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
-        .build(
-            """
-                ds.e.navigation(
-                  arena = ds.arena.prepared(
-                    name = u_barrier;
-                    initialRobotXRange = m.range(min=0.5;max=0.5);
-                    initialRobotYRange = m.range(min=0.8;max=0.8)
-                  );
-                  relativeV = true;
-                  robotMaxV = 0.1;
-                  robotRadius = 0.01
-                )
-                """
-        );
-    double targetProximityRadius = 0.1;
-    double targetProximityReward = 1;
-    double collisionPenalty = 0.01;
-    SingleRLAgentTask<ReinforcementLearningAgent<double[], double[], ?>, double[], double[], NavigationEnvironment.State> rlTask = SingleRLAgentTask
-        .fromEnvironment(
-            () -> environment,
-            environment.defaultObservation(),
-            null,
-            s -> false,
-            false,
-            (s, a) -> {
-              double currentDistance = s.robotPosition().distance(s.targetPosition());
-              double previousDistance = s.robotPreviousPosition().distance(s.targetPosition());
-              double reward = previousDistance - currentDistance;
-              reward = reward + (currentDistance < targetProximityRadius ? targetProximityReward : 0d);
-              reward = reward + (s.hasCollided() ? collisionPenalty : 0d);
-              return reward;
-            }
-        );
-    // TODO test an RL agent, without resetting
-  }
 }

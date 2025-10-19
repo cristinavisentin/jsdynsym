@@ -1,0 +1,47 @@
+$environment = ds.e.navigation(
+  arena = ds.arena.prepared(
+  name = u_barrier;
+    initialRobotXRange = m.range(min = 0.45; max = 0.55);
+    initialRobotYRange = m.range(min = 0.7; max = 0.8)
+  );
+  relativeV = true;
+  robotMaxV = 0.1;
+  robotRadius = 0.01
+)
+
+rl.experiment(
+  runs = (agent = (randomGenerator = (seed = [1:1:10]) * [m.defaultRG()])
+  * (actorLearningRate = [0.0001; 0.0005])
+  * (criticLearningRate = [0.001; 0.005; 0.01])
+  * [
+    ds.rl.linearActorCritic()
+  ]) * [
+    rl.run(
+      tasks = [
+        ds.srlat.fromNumericalEnvironment(
+          environment = $environment;
+          reward = ds.e.nav.reward.reaching()
+        )
+      ];
+      dT = 0.1;
+      tRange = m.range(min = 0; max = 30);
+      stopCriterion = predicate.gt(t = 250; f = f.size())
+    )
+  ];
+  listeners = [
+    rl.l.console();
+    ea.l.onExpDone(
+      of = ea.plot.multi.xy(
+        xSubplot = rl.f.runString(name = none; s = "_");
+        ySubplot = rl.f.runString(name = none; s = "_");
+        line = rl.f.runString(name = agent; s = "{run.agent.name}");
+        x = rl.f.cumulativeSteps();
+        y = ds.f.cumulatedReward(of = rl.f.outcome())
+      );
+      consumers = [rl.c.saver(
+        path = "../../Documenti/experiments/{name}/{startTime}/cum-reward.svg";
+        of = ea.f.imagePlotter(type = svg)
+      )]
+    )
+  ]
+)

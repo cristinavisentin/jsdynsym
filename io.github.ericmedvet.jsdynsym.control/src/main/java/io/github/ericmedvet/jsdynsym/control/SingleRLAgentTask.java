@@ -21,6 +21,8 @@ package io.github.ericmedvet.jsdynsym.control;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import java.util.HashMap;
@@ -75,6 +77,22 @@ public interface SingleRLAgentTask<C extends ReinforcementLearningAgent<O, A, ?>
         return Optional.of(exampleAgent);
       }
     };
+  }
+
+  static <S> SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], S> fromNumericalEnvironment(
+      Supplier<? extends Environment<double[], double[], S, NumericalDynamicalSystem<?>>> environmentSupplier,
+      Predicate<S> stopCondition,
+      boolean resetAgent,
+      ToDoubleBiFunction<S, double[]> rewardFunction
+  ) {
+    return fromEnvironment(
+        environmentSupplier,
+        environmentSupplier.get().defaultObservation(),
+        NumericalReinforcementLearningAgent.from(environmentSupplier.get().exampleAgent()),
+        stopCondition,
+        resetAgent,
+        rewardFunction
+    );
   }
 
 }

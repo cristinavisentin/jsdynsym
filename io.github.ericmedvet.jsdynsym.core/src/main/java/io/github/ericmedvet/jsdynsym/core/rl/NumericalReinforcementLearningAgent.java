@@ -20,6 +20,8 @@
 
 package io.github.ericmedvet.jsdynsym.core.rl;
 
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+
 public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLearningAgent<double[], double[], S> {
 
   int nOfInputs();
@@ -38,4 +40,39 @@ public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLea
       );
     }
   }
+
+  static <S> NumericalReinforcementLearningAgent<S> from(NumericalDynamicalSystem<S> dynamicalSystem) {
+    return new NumericalReinforcementLearningAgent<>() {
+      @Override
+      public int nOfInputs() {
+        return dynamicalSystem.nOfInputs();
+      }
+
+      @Override
+      public int nOfOutputs() {
+        return dynamicalSystem.nOfOutputs();
+      }
+
+      @Override
+      public double[] step(double t, double[] input, double reward) {
+        return dynamicalSystem.step(t, input);
+      }
+
+      @Override
+      public S getState() {
+        return dynamicalSystem.getState();
+      }
+
+      @Override
+      public void reset() {
+        dynamicalSystem.reset();
+      }
+
+      @Override
+      public String toString() {
+        return dynamicalSystem.toString();
+      }
+    };
+  }
+
 }

@@ -28,8 +28,12 @@ import io.github.ericmedvet.jnb.datastructure.FormattedNamedFunction;
 import io.github.ericmedvet.jnb.datastructure.NamedFunction;
 import io.github.ericmedvet.jsdynsym.control.HomogeneousBiSimulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
+import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
+import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
@@ -37,6 +41,7 @@ import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.function|f")
 public class Functions {
+
   private Functions() {
   }
 
@@ -72,7 +77,12 @@ public class Functions {
       @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(s, opponent, dT, tRange) : biSimulation
+    Function<S, Simulation.Outcome<SS>> f = s -> home ? biSimulation.simulate(
+        s,
+        opponent,
+        dT,
+        tRange
+    ) : biSimulation
         .simulate(opponent, s, dT, tRange);
     return NamedFunction.from(f, "opponent.sim").compose(beforeF);
   }
@@ -138,6 +148,20 @@ public class Functions {
           .toList();
     };
     return FormattedNamedFunction.from(f, format, "weights").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> cumulatedReward(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Outcome<SingleAgentTask.Step<RewardedInput<?>, ?, ?>>> beforeF,
+      @Param(value = "format", dS = "%+6.3f") String format
+  ) {
+    Function<Outcome<Step<RewardedInput<?>, ?, ?>>, Double> f = o -> o.snapshots()
+        .values()
+        .stream()
+        .mapToDouble(step -> step.observation().reward())
+        .sum();
+    return FormattedNamedFunction.from(f, format, "cumulated.reward").compose(beforeF);
   }
 
 }

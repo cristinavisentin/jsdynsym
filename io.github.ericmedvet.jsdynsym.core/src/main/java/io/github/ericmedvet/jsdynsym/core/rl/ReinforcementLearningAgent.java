@@ -31,4 +31,28 @@ public interface ReinforcementLearningAgent<I, O, S> extends DynamicalSystem<Rei
   default O step(double t, RewardedInput<I> rewardedInput) {
     return step(t, rewardedInput.input(), rewardedInput.reward());
   }
+
+  static <I, O, S> ReinforcementLearningAgent<I, O, S> from(DynamicalSystem<I, O, S> dynamicalSystem) {
+    return new ReinforcementLearningAgent<>() {
+      @Override
+      public O step(double t, I input, double reward) {
+        return dynamicalSystem.step(t, input);
+      }
+
+      @Override
+      public S getState() {
+        return dynamicalSystem.getState();
+      }
+
+      @Override
+      public void reset() {
+        dynamicalSystem.reset();
+      }
+
+      @Override
+      public String toString() {
+        return dynamicalSystem.toString();
+      }
+    };
+  }
 }

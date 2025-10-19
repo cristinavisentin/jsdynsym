@@ -39,7 +39,10 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
+import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import java.util.Optional;
 
 public class Naming {
@@ -119,6 +122,32 @@ public class Naming {
       @Override
       public Outcome<Step<O, A, S>> simulate(C c, double dT, DoubleRange tRange) {
         return singleAgentTask.simulate(c, dT, tRange);
+      }
+
+      @Override
+      public String toString() {
+        return name;
+      }
+    };
+  }
+
+  public static <C extends ReinforcementLearningAgent<O, A, ?>, O, A, S> SingleRLAgentTask<C, O, A, S> named(
+      String name,
+      SingleRLAgentTask<C, O, A, S> singleRLAgentTask
+  ) {
+    return new SingleRLAgentTask<>() {
+      @Override
+      public Outcome<Step<RewardedInput<O>, A, S>> simulate(
+          C agent,
+          double dT,
+          DoubleRange tRange
+      ) {
+        return singleRLAgentTask.simulate(agent, dT, tRange);
+      }
+
+      @Override
+      public Optional<C> example() {
+        return singleRLAgentTask.example();
       }
 
       @Override
