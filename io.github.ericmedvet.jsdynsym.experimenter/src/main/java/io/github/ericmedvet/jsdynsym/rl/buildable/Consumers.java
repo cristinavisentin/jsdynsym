@@ -41,7 +41,7 @@ public class Consumers {
   public static <X, O> TriConsumer<X, Run<?, ?, ?, ?, ?, ?>, Experiment> saver(
       @Param(value = "of", dNPM = "f.identity()") Function<X, O> f,
       @Param(value = "overwrite") boolean overwrite,
-      @Param(value = "path", dS = "run-{run.index:%04d}") String filePathTemplate,
+      @Param(value = "path", dS = "run-{run.nOfEpisodes:%04d}") String filePathTemplate,
       @Param(value = "suffix", dS = "") String suffix
   ) {
     return Naming.named(

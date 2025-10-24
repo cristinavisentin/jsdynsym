@@ -108,7 +108,7 @@ public class Starter {
       jc.parse(args);
       if (configuration.runFoldIndex < 0 || configuration.runFoldIndex >= configuration.nOfRunFolds) {
         L.severe(
-            "Fold index %d out of bounds [0, %d]".formatted(
+            "Fold nOfEpisodes %d out of bounds [0, %d]".formatted(
                 configuration.runFoldIndex,
                 configuration.nOfRunFolds - 1
             )

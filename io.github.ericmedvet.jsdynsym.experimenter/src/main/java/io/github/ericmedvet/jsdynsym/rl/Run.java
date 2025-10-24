@@ -29,8 +29,13 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -42,45 +47,44 @@ public record Run<C extends ReinforcementLearningAgent<O, A, AS>, O, A, AS, T ex
     @Param("tasks") List<? extends T> tasks,
     @Param("dT") double dT,
     @Param("tRange") DoubleRange tRange,
-    @Param("stopCriterion") Predicate<List<Outcome<Step<RewardedInput<O>, A, TS>>>> stopCriterion,
+    @Param("stopCriterion") Predicate<State<O, A, TS>> stopCriterion,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map
 ) {
 
-  public record Iteration<O, A, TS>(
-      int index,
-      int cumulativeSteps,
-      Outcome<Step<RewardedInput<O>, A, TS>> outcome
-  ) {}
+  public record State<O, A, TS>(
+      int nOfEpisodes,
+      int nOfSteps,
+      long elapsedMillis,
+      Outcome<Step<RewardedInput<O>, A, TS>> lastOutcome
+  ) {
 
-  public List<Outcome<Step<RewardedInput<O>, A, TS>>> run(
-      Listener<Iteration<O, A, TS>> listener
+  }
+
+  public Outcome<Step<RewardedInput<O>, A, TS>> run(
+      Listener<State<O, A, TS>> listener
   ) throws RunException {
-    List<Outcome<Step<RewardedInput<O>, A, TS>>> outcomes = new ArrayList<>();
+    Instant startingT = Instant.now();
     C exampleAgent = tasks.getFirst()
         .example()
         .orElseThrow(() -> new RunException("Task has no example agent"));
     C agent = agentSupplier.apply(exampleAgent);
-    int indexOfTask = 0;
-    int cumulativeSteps = 0;
+    State<O, A, TS> state = new State<>(0, 0, 0, null);
     try {
-      while (!stopCriterion.test(outcomes)) {
-        T task = tasks.get(indexOfTask % tasks.size());
+      while (Objects.isNull(state.lastOutcome) || !stopCriterion.test(state)) {
+        T task = tasks.get(state.nOfEpisodes % tasks.size());
         Outcome<Step<RewardedInput<O>, A, TS>> outcome = task.simulate(agent, dT, tRange);
-        cumulativeSteps = cumulativeSteps + outcome.snapshots().size();
-        listener.listen(
-            new Iteration<>(
-                indexOfTask,
-                cumulativeSteps,
-                outcome
-            )
+        state = new State<>(
+            state.nOfEpisodes + 1,
+            state.nOfSteps + outcome.snapshots().size(),
+            Duration.between(startingT, Instant.now()).toMillis(),
+            outcome
         );
-        outcomes.add(outcome);
-        indexOfTask = indexOfTask + 1;
+        listener.listen(state);
       }
     } finally {
       listener.done();
     }
-    return outcomes;
+    return state.lastOutcome;
   }
 
 }

@@ -23,6 +23,7 @@ import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
+import io.github.ericmedvet.jsdynsym.rl.Run.State;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
@@ -35,7 +36,7 @@ public record Experiment(
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map,
     @Param(
         value = "listeners", dNPMs = {
-        }) List<BiFunction<Experiment, ExecutorService, ListenerFactory<? super Run.Iteration<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
+        }) List<BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
 ){
 
 }

@@ -28,7 +28,7 @@ import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import io.github.ericmedvet.jsdynsym.rl.Run;
-import io.github.ericmedvet.jsdynsym.rl.Run.Iteration;
+import io.github.ericmedvet.jsdynsym.rl.Run.State;
 import io.github.ericmedvet.jsdynsym.rl.Utils;
 import java.util.function.Function;
 
@@ -68,34 +68,46 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Outcome<Step<RewardedInput<O>, A, S>>> outcome(
-      @Param(value = "name", iS = "outcome") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Run.Iteration<O, A, S>> beforeF,
+  public static <X, O, A, S> NamedFunction<X, Outcome<Step<RewardedInput<O>, A, S>>> lastOutcome(
+      @Param(value = "name", iS = "last.outcome") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<Run.Iteration<O, A, S>, Outcome<Step<RewardedInput<O>, A, S>>> f = Iteration::outcome;
+    Function<State<O, A, S>, Outcome<Step<RewardedInput<O>, A, S>>> f = State::lastOutcome;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Integer> index(
-      @Param(value = "name", iS = "index") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Run.Iteration<O, A, S>> beforeF,
+  public static <X, O, A, S> NamedFunction<X, Integer> nOfEpisodes(
+      @Param(value = "name", iS = "n.episodes") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
       @Param(value = "format", dS = "%4d") String format
   ) {
-    Function<Run.Iteration<O, A, S>, Integer> f = Iteration::index;
+    Function<State<O, A, S>, Integer> f = State::nOfEpisodes;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Integer> cumulativeSteps(
-      @Param(value = "name", iS = "cumulative.steps") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Run.Iteration<O, A, S>> beforeF,
+  public static <X, O, A, S> NamedFunction<X, Integer> nOfSteps(
+      @Param(value = "name", iS = "n.steps") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
       @Param(value = "format", dS = "%6d") String format
   ) {
-    Function<Run.Iteration<O, A, S>, Integer> f = Iteration::cumulativeSteps;
+    Function<State<O, A, S>, Integer> f = State::nOfSteps;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> elapsedSecs(
+      @Param(value = "name", iS = "elapsed.secs") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?, ?>> beforeF,
+      @Param(value = "format", dS = "%6.1f") String format
+  ) {
+    Function<State<?, ?, ?>, Double> f = s -> s.elapsedMillis() / 1000d;
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
+  }
+
 }

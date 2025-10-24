@@ -25,6 +25,7 @@ import io.github.ericmedvet.jnb.core.ProjectInfoProvider;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
+import io.github.ericmedvet.jsdynsym.rl.Run.State;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -49,19 +50,19 @@ public class Experimenter {
 
   public void run(Experiment experiment, boolean verbose) {
     ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
-    record RunOutcome(Run<?, ?, ?, ?, ?, ?> run, Future<List<Outcome<Step<RewardedInput<?>, ?, ?>>>> future) {}
+    record RunOutcome(Run<?, ?, ?, ?, ?, ?> run, Future<Outcome<Step<RewardedInput<?>, ?, ?>>> future) {}
     // prepare listeners
-    @SuppressWarnings("unchecked") List<? extends ListenerFactory<Run.Iteration<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> factories = experiment
+    @SuppressWarnings("unchecked") List<? extends ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> factories = experiment
         .listeners()
         .stream()
         .map(
-            builder -> (ListenerFactory<Run.Iteration<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>) builder.apply(
+            builder -> (ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>) builder.apply(
                 experiment,
                 listenerExecutorService
             )
         )
         .toList();
-    ListenerFactory<Run.Iteration<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = ListenerFactory.all(
+    ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = ListenerFactory.all(
         factories
     );
     // submit jobs
@@ -70,20 +71,18 @@ public class Experimenter {
         .map(run -> new RunOutcome(run, runExecutorService.submit(() -> {
           L.fine("Starting run %d of %d ".formatted(run.index() + 1, experiment.runs().size()));
           Instant startingT = Instant.now();
-          @SuppressWarnings({"unchecked", "rawtypes"}) List<Outcome<Step<RewardedInput<?>, ?, ?>>> outcomes = run.run(
+          @SuppressWarnings({"unchecked", "rawtypes"}) Outcome<Step<RewardedInput<?>, ?, ?>> outcome = run.run(
               (Listener) factory.build(run)
           );
-          double elapsedT = Duration.between(startingT, Instant.now()).toMillis() / 1000d;
           L.fine(
               String.format(
-                  "Run %d of %d done in %.2fs with %d episodes",
+                  "Run %d of %d done in %.2fs",
                   run.index() + 1,
                   experiment.runs().size(),
-                  elapsedT,
-                  outcomes.size()
+                  Duration.between(startingT, Instant.now()).toMillis() / 1000d
               )
           );
-          return outcomes;
+          return outcome;
         })))
         .toList();
     // wait for results

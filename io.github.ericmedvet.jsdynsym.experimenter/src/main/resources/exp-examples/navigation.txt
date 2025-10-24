@@ -9,10 +9,25 @@ $environment = ds.e.navigation(
   robotRadius = 0.01
 )
 
+$cumRewardPlot = ea.l.onExpDone(
+  of = ea.plot.multi.xy(
+    xSubplot = rl.f.runString(name = none; s = "_");
+    ySubplot = rl.f.runString(name = none; s = "_");
+    line = rl.f.runString(name = agent; s = "{run.agent.name}");
+    x = rl.f.nOfEpisodes();
+    y = ds.f.cumulatedReward(of = rl.f.lastOutcome())
+  );
+  consumers = [rl.c.saver(
+    path = "../../Documenti/experiments/{name}/{startTime}/cum-reward.svg";
+    of = ea.f.imagePlotter(type = svg)
+  )];
+  eCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 100)
+)
+
 rl.experiment(
-  runs = (agent = (randomGenerator = (seed = [1:1:1]) * [m.defaultRG()])
-  * (actorLearningRate = [0.0001; 0.0005])
-  * (criticLearningRate = [0.001; 0.005; 0.01])
+  runs = (agent = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
+  * (actorLearningRate = [0.0001; 0.0005; 0.00025])
+  * (criticLearningRate = [0.005; 0.001; 0.005])
   * [
     ds.rl.linearActorCritic()
   ]) * [
@@ -24,24 +39,16 @@ rl.experiment(
         )
       ];
       dT = 0.1;
-      tRange = m.range(min = 0; max = 15);
-      stopCriterion = predicate.gt(t = 5000; f = f.size())
+      tRange = m.range(min = 0; max = 30);
+      stopCriterion = predicate.gt(t = 10000; f = rl.f.nOfEpisodes())
     )
   ];
   listeners = [
-    rl.l.console();
-    ea.l.onExpDone(
-      of = ea.plot.multi.xy(
-        xSubplot = rl.f.runString(name = none; s = "_");
-        ySubplot = rl.f.runString(name = none; s = "_");
-        line = rl.f.runString(name = agent; s = "{run.agent.name}");
-        x = rl.f.cumulativeSteps();
-        y = ds.f.cumulatedReward(of = rl.f.outcome())
-      );
-      consumers = [rl.c.saver(
-        path = "../../Documenti/experiments/{name}/{startTime}/cum-reward.svg";
-        of = ea.f.imagePlotter(type = svg)
-      )]
-    )
+    rl.l.console(
+      functions = [ea.f.timestamp()];
+      episodeCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 100);
+      onlyLast = true
+    );
+    $cumRewardPlot
   ]
 )
