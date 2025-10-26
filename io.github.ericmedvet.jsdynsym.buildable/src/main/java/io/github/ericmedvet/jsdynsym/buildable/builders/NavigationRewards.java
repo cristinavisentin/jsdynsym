@@ -27,9 +27,9 @@ import io.github.ericmedvet.jsdynsym.control.navigation.State;
 import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.environment|env|e.navigation|nav|n.reward")
-public class NevigationRewards {
+public class NavigationRewards {
 
-  private NevigationRewards() {
+  private NavigationRewards() {
   }
 
   @SuppressWarnings("unused")
