@@ -20,21 +20,27 @@
 package io.github.ericmedvet.jsdynsym.core.rl;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.rl.LinearActorCritic.State;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
 
-public class LinearActorCritic implements NumericalTimeInvariantReinforcementLearningAgent<State> {
+public class LinearActorCritic implements NumericalTimeInvariantReinforcementLearningAgent<State>, FrozenableNumericalRLAgent<State> {
 
   public record State(double[][] actorWeights, double[] criticWeights) {
+
   }
 
   // hyperparameters
   private final double actorLearningRate;
   private final double criticLearningRate;
+  private final double actorWeightDecay;
+  private final double criticWeightDecay;
   private final double discountFactor;
   private final double explorationNoise;
+  private final DoubleRange gradLogProbRange;
   private final DoubleRange initialWeightRange;
   private final int nOfInputs;
   private final int nOfOutputs;
@@ -50,15 +56,21 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
       int nOfOutputs,
       double actorLearningRate,
       double criticLearningRate,
+      double actorWeightDecay,
+      double criticWeightDecay,
       double discountFactor,
       double explorationNoise,
+      double maxGradLogProb,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator
   ) {
     this.actorLearningRate = actorLearningRate;
     this.criticLearningRate = criticLearningRate;
+    this.actorWeightDecay = actorWeightDecay;
+    this.criticWeightDecay = criticWeightDecay;
     this.discountFactor = discountFactor;
     this.explorationNoise = explorationNoise;
+    gradLogProbRange = new DoubleRange(-maxGradLogProb, maxGradLogProb);
     this.initialWeightRange = initialWeightRange;
     this.nOfInputs = nOfInputs;
     this.nOfOutputs = nOfOutputs;
@@ -84,20 +96,30 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
       );
     }
     // learn
-    if (Objects.nonNull(lastAction) && Objects.nonNull(lastObservation)) {
+    if (Objects.nonNull(lastAction) && Objects.nonNull(lastObservation) && !Double.isNaN(reward)) {
       double vLast = dotProduct(state.criticWeights, lastObservation);
       double vCurrent = dotProduct(state.criticWeights, observation);
       double tdError = reward + discountFactor * vCurrent - vLast;
       for (int i = 0; i < state.criticWeights.length; i++) {
-        state.criticWeights[i] = state.criticWeights[i] + criticLearningRate * tdError * lastObservation[i];
+        double decay = criticLearningRate * criticWeightDecay * state.criticWeights[i];
+        state.criticWeights[i] = state.criticWeights[i] + criticLearningRate * tdError * lastObservation[i] - decay;
       }
       double[] meanAction = product(state.actorWeights, observation);
       double invSigmaSq = 1d / (explorationNoise * explorationNoise);
       for (int j = 0; j < nOfOutputs; j++) {
         double actionDifference = lastAction[j] - meanAction[j];
         for (int i = 0; i < nOfInputs; i++) {
-          double gradLogProb = actionDifference * invSigmaSq * lastObservation[i];
-          state.actorWeights[j][i] = state.actorWeights[j][i] + actorLearningRate * tdError * gradLogProb;
+          double gradLogProb = gradLogProbRange.clip(actionDifference * invSigmaSq * lastObservation[i]);
+          double decay = actorLearningRate * actorWeightDecay * state.actorWeights[j][i];
+          state.actorWeights[j][i] = state.actorWeights[j][i] + actorLearningRate * tdError * gradLogProb - decay;
+
+          // TODO remove
+          if (Double.isInfinite(state.actorWeights[j][i]) || Double.isNaN(
+              state.actorWeights[j][i]
+          )) {
+            System.out.println("A weights inf!");
+          }
+
         }
       }
     }
@@ -151,5 +173,14 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
       o[j] = dotProduct(m[j], v);
     }
     return o;
+  }
+
+  @Override
+  public NumericalStatelessSystem frozen() {
+    return MultivariateRealFunction.from(
+        observation -> product(state.actorWeights, observation),
+        nOfInputs,
+        nOfOutputs
+    );
   }
 }
