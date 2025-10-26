@@ -1,12 +1,16 @@
+$dT = 0.1
+$tRange = m.range(min = 0; max = 120)
+
 $environment = ds.e.navigation(
   arena = ds.arena.prepared(
-  name = u_barrier;
+  name = empty;
     initialRobotXRange = m.range(min = 0.45; max = 0.55);
     initialRobotYRange = m.range(min = 0.7; max = 0.8)
   );
   relativeV = true;
-  robotMaxV = 0.1;
-  robotRadius = 0.01
+  robotMaxV = 0.2;
+  robotRadius = 0.025;
+  sensorRange = 1
 )
 
 $cumRewardPlot = ea.l.onExpDone(
@@ -24,10 +28,29 @@ $cumRewardPlot = ea.l.onExpDone(
   eCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 100)
 )
 
+$trajPlot = ea.l.onRunDone(
+  of = ea.acc.last();
+  preprocessor = ea.f.toImage(
+    drawer = ds.d.navigation();
+    of = ds.f.simulate(
+      of = ds.f.frozen(of = rl.f.agent());
+      simulation = ds.sat.fromEnvironment(
+        environment = $environment
+      );
+      dT = $dT;
+      tRange = $tRange
+    );
+    type = svg
+  );
+  consumers = [rl.c.saver(
+    path = "../../Documenti/experiments/{name}/{startTime}/{run.agent.name}/traj-{run.agent.randomGenerator.seed:%02d}.svg"
+  )]
+)
+
 rl.experiment(
   runs = (agent = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
   * (actorLearningRate = [0.0001; 0.0005; 0.00025])
-  * (criticLearningRate = [0.005; 0.001; 0.005])
+  * (criticLearningRate = [0.0005; 0.001; 0.005])
   * [
     ds.rl.linearActorCritic()
   ]) * [
@@ -38,17 +61,18 @@ rl.experiment(
           reward = ds.e.nav.reward.reaching()
         )
       ];
-      dT = 0.1;
-      tRange = m.range(min = 0; max = 30);
+      dT = $dT;
+      tRange = $tRange;
       stopCriterion = predicate.gt(t = 10000; f = rl.f.nOfEpisodes())
     )
   ];
   listeners = [
     rl.l.console(
       functions = [ea.f.timestamp()];
-      episodeCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 100);
-      onlyLast = true
+      episodeCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 1000);
+      onlyLast = false
     );
-    $cumRewardPlot
+    $cumRewardPlot;
+    $trajPlot
   ]
 )

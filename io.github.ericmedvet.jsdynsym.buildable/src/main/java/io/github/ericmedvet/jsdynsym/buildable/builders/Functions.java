@@ -31,8 +31,10 @@ import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
+import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.rl.FrozenableRLAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +49,20 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
+  public static <X> FormattedNamedFunction<X, Double> cumulatedReward(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Outcome<SingleAgentTask.Step<RewardedInput<?>, ?, ?>>> beforeF,
+      @Param(value = "format", dS = "%+6.3f") String format
+  ) {
+    Function<Outcome<Step<RewardedInput<?>, ?, ?>>, Double> f = o -> o.snapshots()
+        .values()
+        .stream()
+        .mapToDouble(step -> step.observation().reward())
+        .sum();
+    return FormattedNamedFunction.from(f, format, "cumulated.reward").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
   public static <X> FormattedNamedFunction<X, Double> doubleOp(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Double> beforeF,
       @Param(value = "activationF", dS = "identity") MultiLayerPerceptron.ActivationFunction activationF,
@@ -55,6 +71,17 @@ public class Functions {
     Function<Double, Double> f = activationF::applyAsDouble;
     return FormattedNamedFunction.from(f, format, activationF.name().toLowerCase())
         .compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, I, O> FormattedNamedFunction<X, StatelessSystem<I, O>> frozen(
+      @Param(value = "name", dS = "frozen") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, FrozenableRLAgent<I, O, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<FrozenableRLAgent<I, O, ?>, StatelessSystem<I, O>> f = FrozenableRLAgent::frozen;
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
@@ -119,7 +146,9 @@ public class Functions {
       @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<T, O> f = t -> simulation.simulate(t, dT, tRange);
+    Function<T, O> f = t -> {
+      return simulation.simulate(t, dT, tRange);
+    };
     return FormattedNamedFunction.from(f, format, "sim[%s]".formatted(simulation)).compose(beforeF);
   }
 
@@ -148,20 +177,6 @@ public class Functions {
           .toList();
     };
     return FormattedNamedFunction.from(f, format, "weights").compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X> FormattedNamedFunction<X, Double> cumulatedReward(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Outcome<SingleAgentTask.Step<RewardedInput<?>, ?, ?>>> beforeF,
-      @Param(value = "format", dS = "%+6.3f") String format
-  ) {
-    Function<Outcome<Step<RewardedInput<?>, ?, ?>>, Double> f = o -> o.snapshots()
-        .values()
-        .stream()
-        .mapToDouble(step -> step.observation().reward())
-        .sum();
-    return FormattedNamedFunction.from(f, format, "cumulated.reward").compose(beforeF);
   }
 
 }

@@ -40,8 +40,11 @@ public class RLAgents {
       @Param(value = "name", iS = "lAC[alr={actorLearningRate};clr={criticLearningRate};en={explorationNoise}]") String name,
       @Param(value = "actorLearningRate", dD = 0.0001) double actorLearningRate,
       @Param(value = "criticLearningRate", dD = 0.001) double criticLearningRate,
+      @Param(value = "actorWeightDecay", dD = 0.00001) double actorWeightDecay,
+      @Param(value = "criticWeightDecay", dD = 0.0001) double criticWeightDecay,
       @Param(value = "discountFactor", dD = 0.99) double discountFactor,
       @Param(value = "explorationNoise", dD = 0.1) double explorationNoise,
+      @Param(value = "maxGradLogProb", dD = 10) double maxGradLogProb,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.2;max=0.2)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
   ) {
@@ -50,8 +53,11 @@ public class RLAgents {
         exampleAgent.nOfOutputs(),
         actorLearningRate,
         criticLearningRate,
+        actorWeightDecay,
+        criticWeightDecay,
         discountFactor,
         explorationNoise,
+        maxGradLogProb,
         initialWeightRange,
         randomGenerator
     );

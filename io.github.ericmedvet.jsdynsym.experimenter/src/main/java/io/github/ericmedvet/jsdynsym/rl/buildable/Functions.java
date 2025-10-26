@@ -68,34 +68,45 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Outcome<Step<RewardedInput<O>, A, S>>> lastOutcome(
+  public static <X, C, O, A, S> NamedFunction<X, Outcome<Step<RewardedInput<O>, A, S>>> lastOutcome(
       @Param(value = "name", iS = "last.outcome") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<C, O, A, S>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<State<O, A, S>, Outcome<Step<RewardedInput<O>, A, S>>> f = State::lastOutcome;
+    Function<State<C, O, A, S>, Outcome<Step<RewardedInput<O>, A, S>>> f = State::lastOutcome;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Integer> nOfEpisodes(
+  public static <X, C, O, A, S> NamedFunction<X, C> agent(
+      @Param(value = "name", iS = "agent") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<C, O, A, S>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<State<C, O, A, S>, C> f = State::agent;
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, C, O, A, S> NamedFunction<X, Integer> nOfEpisodes(
       @Param(value = "name", iS = "n.episodes") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
-      @Param(value = "format", dS = "%4d") String format
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<C, O, A, S>> beforeF,
+      @Param(value = "format", dS = "%5d") String format
   ) {
-    Function<State<O, A, S>, Integer> f = State::nOfEpisodes;
+    Function<State<C, O, A, S>, Integer> f = State::nOfEpisodes;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, O, A, S> NamedFunction<X, Integer> nOfSteps(
+  public static <X> NamedFunction<X, Integer> nOfSteps(
       @Param(value = "name", iS = "n.steps") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<O, A, S>> beforeF,
-      @Param(value = "format", dS = "%6d") String format
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?, ?, ?>> beforeF,
+      @Param(value = "format", dS = "%7d") String format
   ) {
-    Function<State<O, A, S>, Integer> f = State::nOfSteps;
+    Function<State<?, ?, ?, ?>, Integer> f = State::nOfSteps;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
@@ -103,10 +114,10 @@ public class Functions {
   @Cacheable
   public static <X> FormattedNamedFunction<X, Double> elapsedSecs(
       @Param(value = "name", iS = "elapsed.secs") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?, ?>> beforeF,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, State<?, ?, ?, ?>> beforeF,
       @Param(value = "format", dS = "%6.1f") String format
   ) {
-    Function<State<?, ?, ?>, Double> f = s -> s.elapsedMillis() / 1000d;
+    Function<State<?, ?, ?, ?>, Double> f = s -> s.elapsedMillis() / 1000d;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
