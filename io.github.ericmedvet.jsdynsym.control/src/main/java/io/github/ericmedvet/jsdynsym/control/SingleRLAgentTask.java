@@ -58,7 +58,7 @@ public interface SingleRLAgentTask<C extends ReinforcementLearningAgent<O, A, ?>
         double t = tRange.min();
         Map<Double, Step<RewardedInput<O>, A, S>> steps = new HashMap<>();
         O observation = initialObservation;
-        double reward = 0;
+        double reward = Double.NaN;
         while (t <= tRange.max() && !stopCondition.test(environment.getState())) {
           A action = agent.step(t, observation, reward);
           observation = environment.step(t, action);
