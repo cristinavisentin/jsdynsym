@@ -130,11 +130,15 @@ public class NavigationEnvironment implements NumericalDynamicalSystem<State>, E
     double maxV = configuration.robotMaxV * (configuration.relativeSpeed ? dT : 1d);
     double v1 = DoubleRange.SYMMETRIC_UNIT.clip(action[0]) * maxV;
     double v2 = DoubleRange.SYMMETRIC_UNIT.clip(action[1]) * maxV;
+    v1 = Double.isNaN(v1) ? 0 : v1;
+    v2 = Double.isNaN(v2) ? 0 : v2;
     // compute new pose
     Point newRobotP = state.robotPosition.sum(
         new Point(state.robotDirection).scale((v1 + v2) / 2d)
     );
-    double deltaA = Math.asin(((v2 - v1) / 2d % configuration.robotRadius) / configuration.robotRadius);
+    double deltaA = Math.asin(
+        ((v2 - v1) / 2d % configuration.robotRadius) / configuration.robotRadius
+    );
     // check collision and update pose
     double minD = segments.stream()
         .mapToDouble(newRobotP::distance)
