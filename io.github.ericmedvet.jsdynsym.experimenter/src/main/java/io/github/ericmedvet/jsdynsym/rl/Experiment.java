@@ -34,9 +34,7 @@ public record Experiment(
     @Param(value = "startTime", dS = "") String startTime,
     @Param("runs") List<Run<?, ?, ?, ?, ?, ?>> runs,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map,
-    @Param(
-        value = "listeners", dNPMs = {
-        }) List<BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
-){
+    @Param("listeners") List<BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
+) {
 
 }

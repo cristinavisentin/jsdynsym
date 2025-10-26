@@ -44,28 +44,29 @@ public record Run<C extends ReinforcementLearningAgent<O, A, AS>, O, A, AS, T ex
     @Param("tasks") List<? extends T> tasks,
     @Param("dT") double dT,
     @Param("tRange") DoubleRange tRange,
-    @Param("stopCriterion") Predicate<State<O, A, TS>> stopCriterion,
+    @Param("stopCriterion") Predicate<State<C, O, A, TS>> stopCriterion,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map
 ) {
 
-  public record State<O, A, TS>(
+  public record State<C, O, A, TS>(
       int nOfEpisodes,
       int nOfSteps,
       long elapsedMillis,
+      C agent,
       Outcome<Step<RewardedInput<O>, A, TS>> lastOutcome
   ) {
 
   }
 
   public Outcome<Step<RewardedInput<O>, A, TS>> run(
-      Listener<State<O, A, TS>> listener
+      Listener<State<C, O, A, TS>> listener
   ) throws RunException {
     Instant startingT = Instant.now();
     C exampleAgent = tasks.getFirst()
         .example()
         .orElseThrow(() -> new RunException("Task has no example agent"));
     C agent = agentSupplier.apply(exampleAgent);
-    State<O, A, TS> state = new State<>(0, 0, 0, null);
+    State<C, O, A, TS> state = new State<>(0, 0, 0, agent, null);
     try {
       while (Objects.isNull(state.lastOutcome) || !stopCriterion.test(state)) {
         T task = tasks.get(state.nOfEpisodes % tasks.size());
@@ -74,6 +75,7 @@ public record Run<C extends ReinforcementLearningAgent<O, A, AS>, O, A, AS, T ex
             state.nOfEpisodes + 1,
             state.nOfSteps + outcome.snapshots().size(),
             Duration.between(startingT, Instant.now()).toMillis(),
+            agent,
             outcome
         );
         listener.listen(state);

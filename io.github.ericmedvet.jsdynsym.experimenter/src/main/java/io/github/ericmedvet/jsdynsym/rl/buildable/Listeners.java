@@ -44,22 +44,22 @@ public class Listeners {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> console(
+  public static BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> console(
       @Param(
-          value = "defaultFunctions", dNPMs = {"rl.f.nOfEpisodes()", "rl.f.nOfSteps()", "rl.f.elapsedSecs()", "ds.f.cumulatedReward(of = rl.f.lastOutcome())"}) List<Function<? super State<?, ?, ?>, ?>> defaultEpisodeFunctions,
-      @Param(value = "functions") List<Function<? super State<?, ?, ?>, ?>> episodeFunctions,
+          value = "defaultFunctions", dNPMs = {"rl.f.nOfEpisodes()", "rl.f.nOfSteps()", "rl.f.elapsedSecs()", "ds.f.cumulatedReward(of = rl.f.lastOutcome())"}) List<Function<? super State<?, ?, ?, ?>, ?>> defaultEpisodeFunctions,
+      @Param(value = "functions") List<Function<? super State<?, ?, ?, ?>, ?>> episodeFunctions,
       @Param(
           value = "defaultRunFunctions", dNPMs = {"rl.f.runKey(key = \"run.agent.name\")"}) List<Function<? super Run<?, ?, ?, ?, ?, ?>, ?>> defaultRunFunctions,
       @Param("runFunctions") List<Function<? super Run<?, ?, ?, ?, ?, ?>, ?>> runFunctions,
       @Param(value = "deferred") boolean deferred,
       @Param(value = "onlyLast", dB = true) boolean onlyLast,
       @Param(value = "runCondition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?, ?, ?>> runPredicate,
-      @Param(value = "episodeCondition", dNPM = "predicate.always()") Predicate<State<?, ?, ?>> episodePredicate,
+      @Param(value = "episodeCondition", dNPM = "predicate.always()") Predicate<State<?, ?, ?, ?>> episodePredicate,
       @Param("logExceptions") boolean logExceptions
 
   ) {
     return (experiment, executor) -> {
-      ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = new TabularPrinter<>(
+      ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = new TabularPrinter<>(
           Stream.of(defaultEpisodeFunctions, episodeFunctions)
               .flatMap(List::stream)
               .toList(),

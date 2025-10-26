@@ -52,17 +52,17 @@ public class Experimenter {
     ProjectInfoProvider.of(getClass()).ifPresent(pi -> L.info("Starting %s".formatted(pi)));
     record RunOutcome(Run<?, ?, ?, ?, ?, ?> run, Future<Outcome<Step<RewardedInput<?>, ?, ?>>> future) {}
     // prepare listeners
-    @SuppressWarnings("unchecked") List<? extends ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> factories = experiment
+    @SuppressWarnings("unchecked") List<? extends ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> factories = experiment
         .listeners()
         .stream()
         .map(
-            builder -> (ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>) builder.apply(
+            builder -> (ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>) builder.apply(
                 experiment,
                 listenerExecutorService
             )
         )
         .toList();
-    ListenerFactory<State<?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = ListenerFactory.all(
+    ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = ListenerFactory.all(
         factories
     );
     // submit jobs
