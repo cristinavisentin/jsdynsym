@@ -28,11 +28,14 @@ import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
@@ -41,8 +44,9 @@ import java.util.stream.DoubleStream;
 public class Main {
 
   public static void main(String[] args) throws IOException {
-    navigation();
+    // navigation();
     // pointNavigation();
+    hebbianNavigation();
   }
 
   @SuppressWarnings("unchecked")
@@ -147,4 +151,69 @@ public class Main {
         );
   }
 
+  public static void hebbianNavigation() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                  arena = ds.arena.prepared(
+                    name = u_barrier;
+                    initialRobotXRange = m.range(min=0.5;max=0.5);
+                    initialRobotYRange = m.range(min=0.8;max=0.8)
+                  );
+                  relativeV = true;
+                  robotMaxV = 0.1;
+                  robotRadius = 0.01
+                )
+                """
+        );
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((Builder<MultiLayerPerceptron, ?>) nb
+        .build("ds.num.mlp(innerLayers = [4])"))
+        .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
+    mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
+
+    Random rand = new Random(42);
+    int[] neurons = new int[]{environment.exampleAgent().nOfInputs(), 4, environment.exampleAgent().nOfOutputs()};
+    double[][][] as = new double[neurons.length - 1][][];
+    double[][][] bs = new double[neurons.length - 1][][];
+    double[][][] cs = new double[neurons.length - 1][][];
+    double[][][] ds = new double[neurons.length - 1][][];
+    double[][][] weights = new double[neurons.length - 1][][];
+    for (int i = 1; i < neurons.length; i++) {
+      as[i - 1] = new double[neurons[i]][];
+      bs[i - 1] = new double[neurons[i]][];
+      cs[i - 1] = new double[neurons[i]][];
+      ds[i - 1] = new double[neurons[i]][];
+      weights[i - 1] = new double[neurons[i]][];
+      for (int j = 0; j < neurons[i]; j++) {
+        as[i - 1][j] = new double[neurons[i - 1] + 1];
+        bs[i - 1][j] = new double[neurons[i - 1] + 1];
+        cs[i - 1][j] = new double[neurons[i - 1] + 1];
+        ds[i - 1][j] = new double[neurons[i - 1] + 1];
+        weights[i - 1][j] = new double[neurons[i - 1] + 1];
+        for (int k = 1; k < neurons[i - 1] + 1; k++) {
+          as[i - 1][j][k] = rand.nextDouble(1);
+          bs[i - 1][j][k] = rand.nextDouble(1);
+          cs[i - 1][j][k] = rand.nextDouble(1);
+          ds[i - 1][j][k] = rand.nextDouble(1);
+          weights[i - 1][j][k - 1] = rand.nextDouble(1);
+          weights[i - 1][j][k] = 0d;
+        }
+      }
+    }
+    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
+        MultiLayerPerceptron.ActivationFunction.TANH,
+        as, bs, cs, ds, weights, neurons, 0.1);
+
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, true);
+    Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
+        hmlp,
+        0.1,
+        new DoubleRange(0, 30)
+    );
+    NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
+    d.show(outcome);
+  }
 }

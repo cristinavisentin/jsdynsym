@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jsdynsym.core.numerical.ann;
 
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantDynamicalSystem;
+
 import java.util.Arrays;
 
 public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynamicalSystem<HebbianMultilayerPerceptron.State> {
@@ -70,7 +71,18 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
     }
     // update weights
     double[][][] newWeights = state.weights;
-    for (int i = 1; i < neurons.length; i++) {
+
+    for (int i = 1; i < newWeights.length; i++) {
+      for (int j = 0; j < newWeights[i].length; j++) {
+        double postActivation = state.activations[i][j];
+        for (int k = 1; k < newWeights[i - 1].length + 1; k++) {
+          double preActivation = state.activations[i - 1][k];
+          newWeights[i][j][k] += learningRate * (as[i][j][k] * preActivation + bs[i][j][k] * postActivation + cs[i][j][k] * preActivation * postActivation + ds[i][j][k]);
+        }
+      }
+    }
+
+/*    for (int i = 1; i < neurons.length; i++) {
       for (int j = 0; j < neurons[i]; j++) {
         double postActivation = state.activations[i][j];
         for (int k = 1; k < neurons[i - 1] + 1; k++) {
@@ -78,7 +90,8 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
           newWeights[i][j][k] += learningRate * (as[i][j][k] * preActivation + bs[i][j][k] * postActivation + cs[i][j][k] * preActivation * postActivation + ds[i][j][k]);
         }
       }
-    }
+    }*/
+
     // compute output
     double[][] newActivations = state.activations;
     newActivations[0] = Arrays.stream(input).map(activationFunction).toArray();
