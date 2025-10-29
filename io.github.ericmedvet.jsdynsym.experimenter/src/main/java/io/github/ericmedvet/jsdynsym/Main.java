@@ -32,7 +32,6 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPercept
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -203,7 +202,14 @@ public class Main {
     }
     NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
         MultiLayerPerceptron.ActivationFunction.TANH,
-        as, bs, cs, ds, weights, neurons, 0.1);
+        as,
+        bs,
+        cs,
+        ds,
+        weights,
+        neurons,
+        0.1
+    );
 
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, true);

@@ -20,7 +20,6 @@
 package io.github.ericmedvet.jsdynsym.core.numerical.ann;
 
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantDynamicalSystem;
-
 import java.util.Arrays;
 
 public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynamicalSystem<HebbianMultilayerPerceptron.State> {
@@ -82,7 +81,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
       }
     }
 
-/*    for (int i = 1; i < neurons.length; i++) {
+    /*    for (int i = 1; i < neurons.length; i++) {
       for (int j = 0; j < neurons[i]; j++) {
         double postActivation = state.activations[i][j];
         for (int k = 1; k < neurons[i - 1] + 1; k++) {
