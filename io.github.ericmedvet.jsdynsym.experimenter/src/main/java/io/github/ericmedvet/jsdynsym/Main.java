@@ -42,7 +42,7 @@ import java.util.stream.DoubleStream;
 public class Main {
 
   public static void main(String[] args) throws IOException {
-    // navigation();
+    //navigation();
     // pointNavigation();
     hebbianNavigation();
   }
@@ -166,40 +166,36 @@ public class Main {
                 )
                 """
         );
-    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((Builder<MultiLayerPerceptron, ?>) nb
-        .build("ds.num.mlp(innerLayers = [4])"))
-        .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
-    mlp.randomize(new Random(), DoubleRange.SYMMETRIC_UNIT);
 
     Random rand = new Random(42);
     int[] neurons = new int[]{environment.exampleAgent().nOfInputs(), 4, environment.exampleAgent().nOfOutputs()};
+    double[][][] weights = new double[neurons.length - 1][][];
     double[][][] as = new double[neurons.length - 1][][];
     double[][][] bs = new double[neurons.length - 1][][];
     double[][][] cs = new double[neurons.length - 1][][];
     double[][][] ds = new double[neurons.length - 1][][];
-    double[][][] weights = new double[neurons.length - 1][][];
     for (int i = 1; i < neurons.length; i++) {
+      weights[i - 1] = new double[neurons[i]][];
       as[i - 1] = new double[neurons[i]][];
       bs[i - 1] = new double[neurons[i]][];
       cs[i - 1] = new double[neurons[i]][];
       ds[i - 1] = new double[neurons[i]][];
-      weights[i - 1] = new double[neurons[i]][];
       for (int j = 0; j < neurons[i]; j++) {
+        weights[i - 1][j] = new double[neurons[i - 1] + 1];
         as[i - 1][j] = new double[neurons[i - 1] + 1];
         bs[i - 1][j] = new double[neurons[i - 1] + 1];
         cs[i - 1][j] = new double[neurons[i - 1] + 1];
         ds[i - 1][j] = new double[neurons[i - 1] + 1];
-        weights[i - 1][j] = new double[neurons[i - 1] + 1];
+        weights[i - 1][j][0] = rand.nextDouble(); // set the bias
         for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          as[i - 1][j][k] = rand.nextDouble(1);
-          bs[i - 1][j][k] = rand.nextDouble(1);
-          cs[i - 1][j][k] = rand.nextDouble(1);
-          ds[i - 1][j][k] = rand.nextDouble(1);
-          weights[i - 1][j][k - 1] = rand.nextDouble(1);
-          weights[i - 1][j][k] = 0d;
+          as[i - 1][j][k] = rand.nextDouble();
+          bs[i - 1][j][k] = rand.nextDouble();
+          cs[i - 1][j][k] = rand.nextDouble();
+          ds[i - 1][j][k] = rand.nextDouble();
         }
       }
     }
+
     NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
         MultiLayerPerceptron.ActivationFunction.TANH,
         as,
