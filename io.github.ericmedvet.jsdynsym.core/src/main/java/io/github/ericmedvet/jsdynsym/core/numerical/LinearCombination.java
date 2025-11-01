@@ -28,19 +28,29 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
 
   private final double[][] m;
   private final double[] q;
+  private final boolean zeroQ;
 
-  public LinearCombination(int nOfInputs, int nOfOutputs) {
+  public LinearCombination(int nOfInputs, int nOfOutputs, boolean zeroQ) {
     this(
         IntStream.range(0, nOfOutputs)
             .mapToObj(i -> new double[nOfInputs])
             .toArray(
                 double[][]::new
             ),
-        new double[nOfOutputs]
+        new double[nOfOutputs],
+        zeroQ
     );
   }
 
+  public LinearCombination(double[][] m) {
+    this(m, new double[m.length], true);
+  }
+
   public LinearCombination(double[][] m, double[] q) {
+    this(m, q, false);
+  }
+
+  private LinearCombination(double[][] m, double[] q, boolean zeroQ) {
     if (Arrays.stream(m).mapToInt(row -> row.length).distinct().count() != 1) {
       throw new IllegalArgumentException(
           "Wrong matrix size, %d columns with non-equal size: %s".formatted(
@@ -57,12 +67,17 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
               m.length,
               m[0].length,
               q.length,
-              m[0].length
+              m.length
           )
       );
     }
     this.m = m;
-    this.q = q;
+    this.zeroQ = zeroQ;
+    if (!zeroQ) {
+      this.q = q;
+    } else {
+      this.q = new double[m.length];
+    }
   }
 
   @Override
@@ -82,15 +97,17 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
   public double[] getParams() {
     int nOfInputs = nOfInputs();
     int nOfOutputs = nOfOutputs();
-    double[] params = new double[nOfInputs * nOfOutputs + nOfOutputs];
+    double[] params = new double[nOfInputs * nOfOutputs + (zeroQ ? 0 : nOfOutputs)];
     int c = 0;
     for (int i = 0; i < nOfOutputs; i = i + 1) {
       for (int j = 0; j < nOfInputs; j = j + 1) {
         params[c++] = m[i][j];
       }
     }
-    for (int j = 0; j < nOfOutputs; j = j + 1) {
-      params[c++] = q[j];
+    if (!zeroQ) {
+      for (int j = 0; j < nOfOutputs; j = j + 1) {
+        params[c++] = q[j];
+      }
     }
     return params;
   }
@@ -99,7 +116,7 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
   public void setParams(double[] params) {
     int nOfInputs = nOfInputs();
     int nOfOutputs = nOfOutputs();
-    if (params.length != nOfInputs * nOfOutputs + nOfOutputs) {
+    if (params.length != nOfInputs * nOfOutputs + (zeroQ ? 0 : nOfOutputs)) {
       throw new IllegalArgumentException(
           "Wrong flat params size: %d found, %dx%d+%d=%d expected".formatted(
               params.length,
@@ -116,8 +133,10 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
         m[i][j] = params[c++];
       }
     }
-    for (int j = 0; j < nOfOutputs; j = j + 1) {
-      q[j] = params[c++];
+    if (zeroQ) {
+      for (int j = 0; j < nOfOutputs; j = j + 1) {
+        q[j] = params[c++];
+      }
     }
   }
 

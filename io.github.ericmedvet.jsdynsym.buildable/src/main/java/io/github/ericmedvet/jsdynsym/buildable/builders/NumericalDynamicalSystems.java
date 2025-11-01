@@ -102,8 +102,10 @@ public class NumericalDynamicalSystems {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Builder<LinearCombination, StatelessSystem.State> linear() {
-    return (xVarNames, yVarNames) -> new LinearCombination(xVarNames.size(), yVarNames.size());
+  public static Builder<LinearCombination, StatelessSystem.State> linear(
+      @Param("zeroQ") boolean zeroQ
+  ) {
+    return (xVarNames, yVarNames) -> new LinearCombination(xVarNames.size(), yVarNames.size(), zeroQ);
   }
 
   @SuppressWarnings("unused")

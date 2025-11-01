@@ -124,7 +124,7 @@ public class Main {
         .build("ds.num.mlp(innerLayers = [16; 16])"))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
-    LinearCombination linear = new LinearCombination(mlp.nOfInputs(), mlp.nOfOutputs());
+    LinearCombination linear = new LinearCombination(mlp.nOfInputs(), mlp.nOfOutputs(), false);
     linear.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
     NumericalDynamicalSystem<?> agent = linear;
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
