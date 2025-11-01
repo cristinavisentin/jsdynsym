@@ -41,24 +41,6 @@ public class NumericalDynamicalSystems {
   private NumericalDynamicalSystems() {
   }
 
-  public interface Builder<F extends NumericalDynamicalSystem<S>, S> extends BiFunction<List<String>, List<String>, F> {
-
-    default F apply(int nOfInputs, int nOfOutputs) {
-      return apply(
-          MultivariateRealFunction.varNames("x", nOfInputs),
-          MultivariateRealFunction.varNames("y", nOfOutputs)
-      );
-    }
-
-    static NumericalDynamicalSystems.Builder<NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem.State> empty() {
-      return (xVarNames, yVarNames) -> NumericalStatelessSystem.from(
-          xVarNames.size(),
-          yVarNames.size(),
-          (t, x) -> new double[yVarNames.size()]
-      );
-    }
-  }
-
   @SuppressWarnings("unused")
   @Cacheable
   public static Builder<DelayedRecurrentNetwork, DelayedRecurrentNetwork.State> drn(
@@ -116,6 +98,12 @@ public class NumericalDynamicalSystems {
         xVarNames.size(),
         yVarNames.size()
     );
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static Builder<LinearCombination, StatelessSystem.State> linear() {
+    return (xVarNames, yVarNames) -> new LinearCombination(xVarNames.size(), yVarNames.size());
   }
 
   @SuppressWarnings("unused")
@@ -216,5 +204,23 @@ public class NumericalDynamicalSystems {
         xVarNames.size(),
         yVarNames.size()
     );
+  }
+
+  public interface Builder<F extends NumericalDynamicalSystem<S>, S> extends BiFunction<List<String>, List<String>, F> {
+
+    static NumericalDynamicalSystems.Builder<NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem.State> empty() {
+      return (xVarNames, yVarNames) -> NumericalStatelessSystem.from(
+          xVarNames.size(),
+          yVarNames.size(),
+          (t, x) -> new double[yVarNames.size()]
+      );
+    }
+
+    default F apply(int nOfInputs, int nOfOutputs) {
+      return apply(
+          MultivariateRealFunction.varNames("x", nOfInputs),
+          MultivariateRealFunction.varNames("y", nOfOutputs)
+      );
+    }
   }
 }

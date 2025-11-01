@@ -27,6 +27,7 @@ import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
+import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
@@ -123,10 +124,13 @@ public class Main {
         .build("ds.num.mlp(innerLayers = [16; 16])"))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     mlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
+    LinearCombination linear = new LinearCombination(mlp.nOfInputs(), mlp.nOfOutputs());
+    linear.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
+    NumericalDynamicalSystem<?> agent = linear;
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, true);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
-        mlp,
+        agent,
         1,
         new DoubleRange(0, 30)
     );
@@ -140,10 +144,10 @@ public class Main {
             s -> false,
             true
         )
-        .simulate(mlp, dT, new DoubleRange(0, 30));
+        .simulate(agent, dT, new DoubleRange(0, 30));
     d.multi(Arrangement.HORIZONTAL)
         .show(
-            DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
+            DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.10).boxed().map(tResF).toList()
         );
   }
 
