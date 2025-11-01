@@ -20,6 +20,7 @@
 package io.github.ericmedvet.jsdynsym.core.rl;
 
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jsdynsym.core.numerical.LinearAlgebraUtils;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.rl.LinearActorCritic.State;
@@ -97,14 +98,14 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
     }
     // learn
     if (Objects.nonNull(lastAction) && Objects.nonNull(lastObservation) && !Double.isNaN(reward)) {
-      double vLast = dotProduct(state.criticWeights, lastObservation);
-      double vCurrent = dotProduct(state.criticWeights, observation);
+      double vLast = LinearAlgebraUtils.dotProduct(state.criticWeights, lastObservation);
+      double vCurrent = LinearAlgebraUtils.dotProduct(state.criticWeights, observation);
       double tdError = reward + discountFactor * vCurrent - vLast;
       for (int i = 0; i < state.criticWeights.length; i++) {
         double decay = criticLearningRate * criticWeightDecay * state.criticWeights[i];
         state.criticWeights[i] = state.criticWeights[i] + criticLearningRate * tdError * lastObservation[i] - decay;
       }
-      double[] meanAction = product(state.actorWeights, observation);
+      double[] meanAction = LinearAlgebraUtils.product(state.actorWeights, observation);
       double invSigmaSq = 1d / (explorationNoise * explorationNoise);
       for (int j = 0; j < nOfOutputs; j++) {
         double actionDifference = lastAction[j] - meanAction[j];
@@ -124,7 +125,7 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
       }
     }
     // compute action
-    double[] action = product(state.actorWeights, observation);
+    double[] action = LinearAlgebraUtils.product(state.actorWeights, observation);
     for (int i = 0; i < action.length; i++) {
       action[i] = action[i] + randomGenerator.nextGaussian() * explorationNoise;
     }
@@ -156,29 +157,10 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
     lastAction = null;
   }
 
-  private static double dotProduct(double[] v1, double[] v2) {
-    if (v1.length != v2.length) {
-      throw new IllegalArgumentException("Vectors must have the same length for dot product.");
-    }
-    double sum = 0d;
-    for (int i = 0; i < v1.length; i++) {
-      sum += v1[i] * v2[i];
-    }
-    return sum;
-  }
-
-  private static double[] product(double[][] m, double[] v) {
-    double[] o = new double[m.length];
-    for (int j = 0; j < o.length; j++) {
-      o[j] = dotProduct(m[j], v);
-    }
-    return o;
-  }
-
   @Override
   public NumericalStatelessSystem frozen() {
     return MultivariateRealFunction.from(
-        observation -> product(state.actorWeights, observation),
+        observation -> LinearAlgebraUtils.product(state.actorWeights, observation),
         nOfInputs,
         nOfOutputs
     );
