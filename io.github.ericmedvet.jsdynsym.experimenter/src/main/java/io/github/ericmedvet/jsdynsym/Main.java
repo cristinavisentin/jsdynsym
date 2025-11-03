@@ -167,7 +167,16 @@ public class Main {
                 """
         );
 
-    Random rand = new Random(42);
+    HebbianMultilayerPerceptron hmlp = new HebbianMultilayerPerceptron(
+        MultiLayerPerceptron.ActivationFunction.TANH,
+        environment.exampleAgent().nOfInputs(),
+        new int[]{16, 16},
+        environment.exampleAgent().nOfOutputs(),
+        0.01
+    );
+    hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
+
+    /*Random rand = new Random(42);
     int[] neurons = new int[]{environment.exampleAgent().nOfInputs(), 4, environment.exampleAgent().nOfOutputs()};
     double[][][] weights = new double[neurons.length - 1][][];
     double[][][] as = new double[neurons.length - 1][][];
@@ -186,7 +195,7 @@ public class Main {
         bs[i - 1][j] = new double[neurons[i - 1] + 1];
         cs[i - 1][j] = new double[neurons[i - 1] + 1];
         ds[i - 1][j] = new double[neurons[i - 1] + 1];
-        weights[i - 1][j][0] = rand.nextDouble(); // set the bias
+        weights[i - 1][j][0] = 1d; // set the bias
         for (int k = 1; k < neurons[i - 1] + 1; k++) {
           as[i - 1][j][k] = rand.nextDouble();
           bs[i - 1][j][k] = rand.nextDouble();
@@ -194,9 +203,9 @@ public class Main {
           ds[i - 1][j][k] = rand.nextDouble();
         }
       }
-    }
+    }*/
 
-    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
+    /*    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
         MultiLayerPerceptron.ActivationFunction.TANH,
         as,
         bs,
@@ -205,7 +214,7 @@ public class Main {
         weights,
         neurons,
         0.1
-    );
+    );*/
 
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, true);
