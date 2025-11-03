@@ -53,7 +53,7 @@ public class LinearAlgebraUtils {
     }
     double[] sum = new double[v1.length];
     for (int i = 0; i < v1.length; i++) {
-      sum[i] = v1[i] * v2[i];
+      sum[i] = v1[i] + v2[i];
     }
     return sum;
   }

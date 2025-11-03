@@ -133,7 +133,7 @@ public class LinearCombination implements MultivariateRealFunction, NumericalPar
         m[i][j] = params[c++];
       }
     }
-    if (zeroQ) {
+    if (!zeroQ) {
       for (int j = 0; j < nOfOutputs; j = j + 1) {
         q[j] = params[c++];
       }
