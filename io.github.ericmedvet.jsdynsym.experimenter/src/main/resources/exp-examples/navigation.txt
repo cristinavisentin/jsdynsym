@@ -3,14 +3,10 @@ $tRange = m.range(min = 0; max = 120)
 
 $environment = ds.e.navigation(
   arena = ds.arena.prepared(
-  name = empty;
-    initialRobotXRange = m.range(min = 0.45; max = 0.55);
-    initialRobotYRange = m.range(min = 0.7; max = 0.8)
-  );
-  relativeV = true;
-  robotMaxV = 0.2;
-  robotRadius = 0.025;
-  sensorRange = 1
+    name = empty;
+    initialRobotXRange = m.range(min=0.5;max=0.5);
+    initialRobotYRange = m.range(min=0.8;max=0.8)
+  )
 )
 
 $cumRewardPlot = ea.l.onExpDone(
@@ -49,8 +45,9 @@ $trajPlot = ea.l.onRunDone(
 
 rl.experiment(
   runs = (agent = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
-  * (actorLearningRate = [0.0001; 0.0005; 0.00025])
-  * (criticLearningRate = [0.0005; 0.001; 0.005])
+  * (explorationNoise = [1])
+  * (actorLearningRate = [0.0005; 0.001])
+  * (criticLearningRate = [0.001; 0.005])
   * [
     ds.rl.linearActorCritic()
   ]) * [
@@ -63,7 +60,7 @@ rl.experiment(
       ];
       dT = $dT;
       tRange = $tRange;
-      stopCriterion = predicate.gt(t = 10000; f = rl.f.nOfEpisodes())
+      stopCriterion = predicate.gt(t = 2500; f = rl.f.nOfEpisodes())
     )
   ];
   listeners = [

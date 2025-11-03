@@ -43,7 +43,7 @@ public class RLAgents {
       @Param(value = "actorWeightDecay", dD = 0.00001) double actorWeightDecay,
       @Param(value = "criticWeightDecay", dD = 0.0001) double criticWeightDecay,
       @Param(value = "discountFactor", dD = 0.99) double discountFactor,
-      @Param(value = "explorationNoise", dD = 0.1) double explorationNoise,
+      @Param(value = "explorationNoise", dD = 1) double explorationNoise,
       @Param(value = "maxGradLogProb", dD = 10) double maxGradLogProb,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.2;max=0.2)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator
