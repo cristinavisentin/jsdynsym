@@ -31,7 +31,7 @@ import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
-import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.rl.FrozenableRLAgent;
@@ -75,12 +75,12 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, I, O> FormattedNamedFunction<X, StatelessSystem<I, O>> frozen(
+  public static <X, I, O> FormattedNamedFunction<X, DynamicalSystem<I, O, ?>> frozen(
       @Param(value = "name", dS = "frozen") String name,
       @Param(value = "of", dNPM = "f.identity()") Function<X, FrozenableRLAgent<I, O, ?>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<FrozenableRLAgent<I, O, ?>, StatelessSystem<I, O>> f = FrozenableRLAgent::frozen;
+    Function<FrozenableRLAgent<I, O, ?>, DynamicalSystem<I, O, ?>> f = FrozenableRLAgent::frozen;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 

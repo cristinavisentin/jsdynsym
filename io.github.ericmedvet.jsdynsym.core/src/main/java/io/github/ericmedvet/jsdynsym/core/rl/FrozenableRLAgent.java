@@ -19,10 +19,10 @@
  */
 package io.github.ericmedvet.jsdynsym.core.rl;
 
-import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
 public interface FrozenableRLAgent<I, O, S> extends ReinforcementLearningAgent<I, O, S> {
 
-  StatelessSystem<I, O> frozen();
+  DynamicalSystem<I, O, ?> frozen();
 
 }

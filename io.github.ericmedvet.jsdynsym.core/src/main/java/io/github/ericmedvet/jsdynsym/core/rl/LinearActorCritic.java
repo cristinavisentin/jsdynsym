@@ -113,14 +113,6 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
           double gradLogProb = gradLogProbRange.clip(actionDifference * invSigmaSq * lastObservation[i]);
           double decay = actorLearningRate * actorWeightDecay * state.actorWeights[j][i];
           state.actorWeights[j][i] = state.actorWeights[j][i] + actorLearningRate * tdError * gradLogProb - decay;
-
-          // TODO remove
-          if (Double.isInfinite(state.actorWeights[j][i]) || Double.isNaN(
-              state.actorWeights[j][i]
-          )) {
-            System.out.println("A weights inf!");
-          }
-
         }
       }
     }
