@@ -44,10 +44,11 @@ $trajPlot = ea.l.onRunDone(
 )
 
 rl.experiment(
-  runs = (agent = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
+  runs = (agent = (randomGenerator = (seed = [1:1:8]) * [m.defaultRG()])
+  * (discountFactor = [0.99])
   * (explorationNoise = [1])
-  * (actorLearningRate = [0.0005; 0.001])
-  * (criticLearningRate = [0.001; 0.005])
+  * (actorLearningRate = [0.0005])
+  * (criticLearningRate = [0.005])
   * [
     ds.rl.linearActorCritic()
   ]) * [
@@ -60,7 +61,7 @@ rl.experiment(
       ];
       dT = $dT;
       tRange = $tRange;
-      stopCriterion = predicate.gt(t = 2500; f = rl.f.nOfEpisodes())
+      stopCriterion = predicate.gt(t = 5000; f = rl.f.nOfEpisodes())
     )
   ];
   listeners = [
