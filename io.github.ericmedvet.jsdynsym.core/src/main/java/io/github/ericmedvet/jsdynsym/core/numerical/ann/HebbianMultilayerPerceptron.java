@@ -113,7 +113,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
     }
     // update weights
     double[][][] newWeights = state.weights;
-    for (int i = 1; i < newWeights.length + 1; i++) {
+    for (int i = 1; i < neurons.length; i++) {
       for (int j = 0; j < newWeights[i - 1].length; j++) {
         double postActivation = state.activations[i][j];
         for (int k = 1; k < newWeights[i - 1][j].length; k++) {

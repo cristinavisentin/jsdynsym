@@ -30,6 +30,7 @@ import io.github.ericmedvet.jsdynsym.core.composed.OutStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.DelayedRecurrentNetwork;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -153,6 +154,48 @@ public class NumericalDynamicalSystems {
             xVarNames.size(),
             innerLayers.stream().mapToInt(i -> i).toArray(),
             yVarNames.size()
+        );
+      }
+    };
+  }
+
+  @Cacheable
+  public static Builder<HebbianMultilayerPerceptron, HebbianMultilayerPerceptron.State> hebbianMlp(
+      @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
+      @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
+      @Param("innerLayers") List<Integer> innerLayers,
+      @Param("learningRate") double learningRate,
+      @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
+  ) {
+    return (xVarNames, yVarNames) -> {
+      if (innerLayers.isEmpty()) {
+        int[] innerNeurons = new int[nOfInnerLayers];
+        int centerSize = (int) Math.max(2, Math.round(xVarNames.size() * innerLayerRatio));
+        if (nOfInnerLayers > 1) {
+          for (int i = 0; i < nOfInnerLayers / 2; i++) {
+            innerNeurons[i] = xVarNames.size() + (centerSize - xVarNames.size()) / (nOfInnerLayers / 2 + 1) * (i + 1);
+          }
+          for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
+            innerNeurons[i] = centerSize + (yVarNames
+                .size() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
+          }
+        } else if (nOfInnerLayers > 0) {
+          innerNeurons[0] = centerSize;
+        }
+        return new HebbianMultilayerPerceptron(
+            activationFunction,
+            xVarNames.size(),
+            innerNeurons,
+            yVarNames.size(),
+            learningRate
+        );
+      } else {
+        return new HebbianMultilayerPerceptron(
+            activationFunction,
+            xVarNames.size(),
+            innerLayers.stream().mapToInt(i -> i).toArray(),
+            yVarNames.size(),
+            learningRate
         );
       }
     };

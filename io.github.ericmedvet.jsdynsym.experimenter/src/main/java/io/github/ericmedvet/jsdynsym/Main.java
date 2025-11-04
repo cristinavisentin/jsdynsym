@@ -42,7 +42,7 @@ import java.util.stream.DoubleStream;
 public class Main {
 
   public static void main(String[] args) throws IOException {
-    //navigation();
+    // navigation();
     // pointNavigation();
     hebbianNavigation();
   }
@@ -167,13 +167,17 @@ public class Main {
                 """
         );
 
-    HebbianMultilayerPerceptron hmlp = new HebbianMultilayerPerceptron(
+    /*HebbianMultilayerPerceptron hmlp = new HebbianMultilayerPerceptron(
         MultiLayerPerceptron.ActivationFunction.TANH,
         environment.exampleAgent().nOfInputs(),
         new int[]{16, 16},
         environment.exampleAgent().nOfOutputs(),
         0.01
-    );
+    );*/
+
+    @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
+        .build("ds.num.hebbianMlp(innerLayers = [16; 16]; learningRate = 0.01)"))
+        .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
 
     /*Random rand = new Random(42);
@@ -204,7 +208,6 @@ public class Main {
         }
       }
     }*/
-
     /*    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
         MultiLayerPerceptron.ActivationFunction.TANH,
         as,
