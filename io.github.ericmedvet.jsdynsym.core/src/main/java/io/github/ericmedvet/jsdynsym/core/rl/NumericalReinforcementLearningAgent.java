@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jsdynsym.core.rl;
 
+import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 
 public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLearningAgent<double[], double[], S> {
@@ -42,37 +43,51 @@ public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLea
   }
 
   static <S> NumericalReinforcementLearningAgent<S> from(NumericalDynamicalSystem<S> dynamicalSystem) {
-    return new NumericalReinforcementLearningAgent<>() {
+    record HardNRLA<S>(
+        NumericalDynamicalSystem<S> numericalDynamicalSystem
+    ) implements NumericalReinforcementLearningAgent<S>, FrozenableNumericalRLAgent<S>, Composed<NumericalDynamicalSystem<S>> {
+
+      @Override
+      public NumericalDynamicalSystem<S> inner() {
+        return numericalDynamicalSystem;
+      }
+
+      @Override
+      public NumericalDynamicalSystem<?> frozen() {
+        return numericalDynamicalSystem;
+      }
+
       @Override
       public int nOfInputs() {
-        return dynamicalSystem.nOfInputs();
+        return numericalDynamicalSystem.nOfInputs();
       }
 
       @Override
       public int nOfOutputs() {
-        return dynamicalSystem.nOfOutputs();
+        return numericalDynamicalSystem.nOfOutputs();
       }
 
       @Override
       public double[] step(double t, double[] input, double reward) {
-        return dynamicalSystem.step(t, input);
+        return numericalDynamicalSystem.step(t, input);
       }
 
       @Override
       public S getState() {
-        return dynamicalSystem.getState();
+        return numericalDynamicalSystem.getState();
       }
 
       @Override
       public void reset() {
-        dynamicalSystem.reset();
+        numericalDynamicalSystem.reset();
       }
 
       @Override
       public String toString() {
-        return dynamicalSystem.toString();
+        return numericalDynamicalSystem.toString();
       }
-    };
+    }
+    return new HardNRLA<>(dynamicalSystem);
   }
 
 }
