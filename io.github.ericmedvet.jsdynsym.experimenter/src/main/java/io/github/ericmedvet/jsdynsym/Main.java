@@ -32,6 +32,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPercept
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -176,7 +177,7 @@ public class Main {
     );*/
 
     @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
-        .build("ds.num.hebbianMlp(innerLayers = [16; 16]; learningRate = 0.01)"))
+        .build("ds.num.hebbianMlp(innerLayers = [4; 4]; learningRate = 0.02)"))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
 
@@ -226,7 +227,23 @@ public class Main {
         0.1,
         new DoubleRange(0, 30)
     );
+    /*NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
+    d.show(outcome);*/
+
     NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
-    d.show(outcome);
+    @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
+        .build("ds.e.n.arenaCoverage()");
+    System.out.println(fitness.apply(outcome));
+    Function<Double, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> tResF = dT -> SingleAgentTask
+        .fromEnvironment(
+            () -> environment,
+            s -> false,
+            true
+        )
+        .simulate(hmlp, dT, new DoubleRange(0, 30));
+    d.multi(Arrangement.HORIZONTAL)
+        .show(
+            DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
+        );
   }
 }
