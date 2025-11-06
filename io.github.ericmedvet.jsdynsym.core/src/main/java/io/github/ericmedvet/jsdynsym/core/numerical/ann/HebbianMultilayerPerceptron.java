@@ -152,11 +152,11 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
   ) {
     double[] flatParams = new double[nOfParams(neurons)];
     int c = 0;
-    for (double[][][] param : new double[][][][]{unflatWeights, unflatAs, unflatBs, unflatCs, unflatDs}) {
-      for (int l = 0; l < param.length; l++) {
-        for (int j = 0; j < param[l].length; j++) {
-          for (int k = 0; k < param[l][j].length; k++) {
-            flatParams[c] = param[l][j][k];
+    for (double[][][] unflatParam : new double[][][][]{unflatWeights, unflatAs, unflatBs, unflatCs, unflatDs}) {
+      for (int l = 0; l < unflatParam.length; l++) {
+        for (int j = 0; j < unflatParam[l].length; j++) {
+          for (int k = 0; k < unflatParam[l][j].length; k++) {
+            flatParams[c] = unflatParam[l][j][k];
             c += 1;
           }
         }
@@ -167,7 +167,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
 
   public static double[][][] unflat(double[] flatParams, int[] neurons, ParamType paramType) {
     int nParams = MultiLayerPerceptron.countWeights(neurons);
-    double[][][] unflatParams = new double[neurons.length - 1][][];
+    double[][][] unflatParam = new double[neurons.length - 1][][];
     int startIndex, stopIndex;
     switch (paramType) {
       case WEIGHTS -> {
@@ -192,18 +192,18 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
       }
       default -> throw new IllegalArgumentException("Invalid paramType: " + paramType);
     }
-    double[] params = Arrays.copyOfRange(flatParams, startIndex, stopIndex);
+    double[] param = Arrays.copyOfRange(flatParams, startIndex, stopIndex);
     int c = 0;
     for (int i = 1; i < neurons.length; i++) {
-      unflatParams[i - 1] = new double[neurons[i]][neurons[i - 1] + 1];
+      unflatParam[i - 1] = new double[neurons[i]][neurons[i - 1] + 1];
       for (int j = 0; j < neurons[i]; j++) {
         for (int k = 0; k < neurons[i - 1] + 1; k++) {
-          unflatParams[i - 1][j][k] = params[c];
+          unflatParam[i - 1][j][k] = param[c];
           c += 1;
         }
       }
     }
-    return unflatParams;
+    return unflatParam;
   }
 
   @Override

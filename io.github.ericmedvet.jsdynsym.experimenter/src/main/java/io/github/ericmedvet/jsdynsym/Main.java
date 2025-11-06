@@ -226,6 +226,7 @@ public class Main {
         0.1,
         new DoubleRange(0, 30)
     );
+
     /*NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
     d.show(outcome);*/
 
