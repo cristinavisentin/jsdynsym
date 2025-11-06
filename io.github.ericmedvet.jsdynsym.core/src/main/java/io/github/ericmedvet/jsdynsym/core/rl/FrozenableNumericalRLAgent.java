@@ -19,10 +19,10 @@
  */
 package io.github.ericmedvet.jsdynsym.core.rl;
 
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 
 public interface FrozenableNumericalRLAgent<S> extends NumericalReinforcementLearningAgent<S>, FrozenableRLAgent<double[], double[], S> {
 
   @Override
-  NumericalStatelessSystem frozen();
+  NumericalDynamicalSystem<?> frozen();
 }

@@ -22,6 +22,7 @@ package io.github.ericmedvet.jsdynsym.core.composed;
 
 import java.util.Optional;
 
+// TODO move to jnb
 public interface Composed<C> {
   C inner();
 

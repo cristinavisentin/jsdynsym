@@ -31,15 +31,18 @@ import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
-import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
+import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.rl.FrozenableRLAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.function|f")
 public class Functions {
@@ -75,12 +78,12 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, I, O> FormattedNamedFunction<X, StatelessSystem<I, O>> frozen(
+  public static <X, I, O> FormattedNamedFunction<X, DynamicalSystem<I, O, ?>> frozen(
       @Param(value = "name", dS = "frozen") String name,
       @Param(value = "of", dNPM = "f.identity()") Function<X, FrozenableRLAgent<I, O, ?>> beforeF,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<FrozenableRLAgent<I, O, ?>, StatelessSystem<I, O>> f = FrozenableRLAgent::frozen;
+    Function<FrozenableRLAgent<I, O, ?>, DynamicalSystem<I, O, ?>> f = FrozenableRLAgent::frozen;
     return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
@@ -146,10 +149,35 @@ public class Functions {
       @Param("dT") double dT,
       @Param(value = "format", dS = "%s") String format
   ) {
-    Function<T, O> f = t -> {
-      return simulation.simulate(t, dT, tRange);
-    };
+    Function<T, O> f = t -> simulation.simulate(t, dT, tRange);
     return FormattedNamedFunction.from(f, format, "sim[%s]".formatted(simulation)).compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, O, A, S> NamedFunction<X, Outcome<SingleAgentTask.Step<O, A, S>>> unwrappedRl(
+      @Param(value = "of", dNPM = "f.identity()") Function<X, Outcome<SingleAgentTask.Step<RewardedInput<O>, A, S>>> beforeF,
+      @Param(value = "name", dS = "unwrapped.rl") String name
+  ) {
+    Function<Outcome<SingleAgentTask.Step<RewardedInput<O>, A, S>>, Outcome<SingleAgentTask.Step<O, A, S>>> f = rlO -> Outcome
+        .of(
+            rlO.snapshots()
+                .entrySet()
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        Entry::getKey,
+                        e -> new Step<>(
+                            e.getValue().observation().input(),
+                            e.getValue().action(),
+                            e.getValue().state()
+                        ),
+                        (s1, s2) -> s1,
+                        TreeMap::new
+                    )
+                )
+        );
+    return NamedFunction.from(f, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")

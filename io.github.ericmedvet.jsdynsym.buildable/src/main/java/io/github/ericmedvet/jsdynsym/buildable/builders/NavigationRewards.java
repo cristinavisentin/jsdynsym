@@ -39,12 +39,13 @@ public class NavigationRewards {
       @Param(value = "targetProximityRadius", dD = 0.1) double targetProximityRadius,
       @Param(value = "targetProximityReward", dD = 1) double targetProximityReward,
       @Param(value = "collisionPenalty", dD = 0.01) double collisionPenalty,
+      @Param(value = "distanceWeight", dD = 0.1) double distanceWeight,
       @Param(value = "format", dS = "%5.3f") String format
   ) {
     Function<State, Double> f = s -> {
       double currentDistance = s.robotPosition().distance(s.targetPosition());
       double previousDistance = s.robotPreviousPosition().distance(s.targetPosition());
-      double reward = previousDistance - currentDistance;
+      double reward = distanceWeight * (previousDistance - currentDistance);
       reward = reward + (currentDistance < targetProximityRadius ? targetProximityReward : 0d);
       reward = reward - (s.hasCollided() ? collisionPenalty : 0d);
       return reward;
@@ -52,7 +53,11 @@ public class NavigationRewards {
     return FormattedNamedFunction.from(
         f,
         format,
-        "reaching[%.2f;%.2f;%.2f]".formatted(targetProximityRadius, targetProximityReward, collisionPenalty)
+        "reaching[%.2f;%.2f;%.2f]".formatted(
+            targetProximityRadius,
+            targetProximityReward,
+            collisionPenalty
+        )
     ).compose(beforeF);
   }
 
