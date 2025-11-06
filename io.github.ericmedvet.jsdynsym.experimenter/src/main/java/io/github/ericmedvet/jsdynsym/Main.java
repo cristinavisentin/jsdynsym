@@ -29,6 +29,7 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
@@ -42,8 +43,9 @@ import java.util.stream.DoubleStream;
 public class Main {
 
   public static void main(String[] args) throws IOException {
-    navigation();
+    // navigation();
     // pointNavigation();
+    hebbianNavigation();
   }
 
   @SuppressWarnings("unchecked")
@@ -151,4 +153,101 @@ public class Main {
         );
   }
 
+  public static void hebbianNavigation() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                  arena = ds.arena.prepared(
+                    name = u_barrier;
+                    initialRobotXRange = m.range(min=0.5;max=0.5);
+                    initialRobotYRange = m.range(min=0.8;max=0.8)
+                  );
+                  relativeV = true;
+                  robotMaxV = 0.1;
+                  robotRadius = 0.01
+                )
+                """
+        );
+
+    /*HebbianMultilayerPerceptron hmlp = new HebbianMultilayerPerceptron(
+        MultiLayerPerceptron.ActivationFunction.TANH,
+        environment.exampleAgent().nOfInputs(),
+        new int[]{16, 16},
+        environment.exampleAgent().nOfOutputs(),
+        0.01
+    );*/
+
+    @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
+        .build("ds.num.hebbianMlp(innerLayers = [4; 4]; learningRate = 0.02)"))
+        .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
+    hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
+
+    /*Random rand = new Random(42);
+    int[] neurons = new int[]{environment.exampleAgent().nOfInputs(), 4, environment.exampleAgent().nOfOutputs()};
+    double[][][] weights = new double[neurons.length - 1][][];
+    double[][][] as = new double[neurons.length - 1][][];
+    double[][][] bs = new double[neurons.length - 1][][];
+    double[][][] cs = new double[neurons.length - 1][][];
+    double[][][] ds = new double[neurons.length - 1][][];
+    for (int i = 1; i < neurons.length; i++) {
+      weights[i - 1] = new double[neurons[i]][];
+      as[i - 1] = new double[neurons[i]][];
+      bs[i - 1] = new double[neurons[i]][];
+      cs[i - 1] = new double[neurons[i]][];
+      ds[i - 1] = new double[neurons[i]][];
+      for (int j = 0; j < neurons[i]; j++) {
+        weights[i - 1][j] = new double[neurons[i - 1] + 1];
+        as[i - 1][j] = new double[neurons[i - 1] + 1];
+        bs[i - 1][j] = new double[neurons[i - 1] + 1];
+        cs[i - 1][j] = new double[neurons[i - 1] + 1];
+        ds[i - 1][j] = new double[neurons[i - 1] + 1];
+        weights[i - 1][j][0] = 1d; // set the bias
+        for (int k = 1; k < neurons[i - 1] + 1; k++) {
+          as[i - 1][j][k] = rand.nextDouble();
+          bs[i - 1][j][k] = rand.nextDouble();
+          cs[i - 1][j][k] = rand.nextDouble();
+          ds[i - 1][j][k] = rand.nextDouble();
+        }
+      }
+    }*/
+    /*    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
+        MultiLayerPerceptron.ActivationFunction.TANH,
+        as,
+        bs,
+        cs,
+        ds,
+        weights,
+        neurons,
+        0.1
+    );*/
+
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, true);
+    Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
+        hmlp,
+        0.1,
+        new DoubleRange(0, 30)
+    );
+
+    /*NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
+    d.show(outcome);*/
+
+    NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
+    @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
+        .build("ds.e.n.arenaCoverage()");
+    System.out.println(fitness.apply(outcome));
+    Function<Double, Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>> tResF = dT -> SingleAgentTask
+        .fromEnvironment(
+            () -> environment,
+            s -> false,
+            true
+        )
+        .simulate(hmlp, dT, new DoubleRange(0, 30));
+    d.multi(Arrangement.HORIZONTAL)
+        .show(
+            DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
+        );
+  }
 }
