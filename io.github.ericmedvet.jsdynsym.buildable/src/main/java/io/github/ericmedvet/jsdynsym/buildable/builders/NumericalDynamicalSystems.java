@@ -149,13 +149,16 @@ public class NumericalDynamicalSystems {
     };
   }
 
+  @SuppressWarnings("unused")
   @Cacheable
   public static Builder<HebbianMultilayerPerceptron, HebbianMultilayerPerceptron.State> hebbianMlp(
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param("innerLayers") List<Integer> innerLayers,
-      @Param("learningRate") double learningRate,
-      @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction
+      @Param(value = "learningRate", dD = 0.01) double learningRate,
+      @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
+      @Param(value = "parametrizationType", dS = "synapse") HebbianMultilayerPerceptron.ParametrizationType parametrizationType,
+      @Param(value = "weightInitializationType", dS = "params") HebbianMultilayerPerceptron.WeightInitializationType weightInitializationType
   ) {
     return (xVarNames, yVarNames) -> {
       if (innerLayers.isEmpty()) {
@@ -177,7 +180,9 @@ public class NumericalDynamicalSystems {
             xVarNames.size(),
             innerNeurons,
             yVarNames.size(),
-            learningRate
+            learningRate,
+            parametrizationType,
+            weightInitializationType
         );
       } else {
         return new HebbianMultilayerPerceptron(
@@ -185,7 +190,9 @@ public class NumericalDynamicalSystems {
             xVarNames.size(),
             innerLayers.stream().mapToInt(i -> i).toArray(),
             yVarNames.size(),
-            learningRate
+            learningRate,
+            parametrizationType,
+            weightInitializationType
         );
       }
     };
