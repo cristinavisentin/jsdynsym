@@ -29,7 +29,7 @@ $trajPlot = ea.l.onRunDone(
   preprocessor = ea.f.toImage(
     drawer = ds.d.navigation();
     of = ds.f.simulate(
-      of = ds.f.frozen(of = rl.f.agent());
+      of = ds.f.nonLearning(of = rl.f.agent());
       simulation = ds.sat.fromEnvironment(
         environment = $environment
       );
