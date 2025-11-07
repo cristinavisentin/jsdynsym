@@ -78,22 +78,22 @@ public class Functions {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static <X, I, O> FormattedNamedFunction<X, DynamicalSystem<I, O, ?>> frozen(
-      @Param(value = "name", dS = "frozen") String name,
-      @Param(value = "of", dNPM = "f.identity()") Function<X, FrozenableRLAgent<I, O, ?>> beforeF,
-      @Param(value = "format", dS = "%s") String format
-  ) {
-    Function<FrozenableRLAgent<I, O, ?>, DynamicalSystem<I, O, ?>> f = FrozenableRLAgent::frozen;
-    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
   public static <X, C> NamedFunction<X, C> inner(
       @Param(value = "of", dNPM = "f.identity()") Function<X, Composed<C>> beforeF
   ) {
     Function<Composed<C>, C> f = Composed::inner;
     return NamedFunction.from(f, "inner").compose(beforeF);
+  }
+
+  @SuppressWarnings("unused")
+  @Cacheable
+  public static <X, I, O> FormattedNamedFunction<X, DynamicalSystem<I, O, ?>> nonLearning(
+      @Param(value = "name", dS = "non.learning") String name,
+      @Param(value = "of", dNPM = "f.identity()") Function<X, FrozenableRLAgent<I, O, ?>> beforeF,
+      @Param(value = "format", dS = "%s") String format
+  ) {
+    Function<FrozenableRLAgent<I, O, ?>, DynamicalSystem<I, O, ?>> f = FrozenableRLAgent::dynamicalSystem;
+    return FormattedNamedFunction.from(f, format, name).compose(beforeF);
   }
 
   @SuppressWarnings("unused")

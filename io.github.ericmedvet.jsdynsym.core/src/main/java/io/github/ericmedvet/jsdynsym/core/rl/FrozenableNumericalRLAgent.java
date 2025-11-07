@@ -24,5 +24,5 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 public interface FrozenableNumericalRLAgent<S> extends NumericalReinforcementLearningAgent<S>, FrozenableRLAgent<double[], double[], S> {
 
   @Override
-  NumericalDynamicalSystem<?> frozen();
+  NumericalDynamicalSystem<?> dynamicalSystem();
 }

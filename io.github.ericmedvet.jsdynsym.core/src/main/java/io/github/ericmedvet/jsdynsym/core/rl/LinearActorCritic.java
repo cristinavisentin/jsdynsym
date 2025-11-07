@@ -24,6 +24,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.LinearAlgebraUtils;
 import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.rl.LinearActorCritic.State;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.random.RandomGenerator;
 import java.util.stream.IntStream;
@@ -150,9 +151,12 @@ public class LinearActorCritic implements NumericalTimeInvariantReinforcementLea
   }
 
   @Override
-  public NumericalStatelessSystem frozen() {
+  public NumericalStatelessSystem dynamicalSystem() {
+    double[][] frozenActorWeights = Arrays.stream(state.actorWeights)
+        .map(v -> Arrays.copyOf(v, v.length))
+        .toArray(double[][]::new);
     return MultivariateRealFunction.from(
-        observation -> LinearAlgebraUtils.product(state.actorWeights, observation),
+        observation -> LinearAlgebraUtils.product(frozenActorWeights, observation),
         nOfInputs,
         nOfOutputs
     );

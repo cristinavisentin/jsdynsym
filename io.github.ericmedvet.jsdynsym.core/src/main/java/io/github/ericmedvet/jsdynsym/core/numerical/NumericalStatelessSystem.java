@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.DoubleUnaryOperator;
 
-public interface NumericalStatelessSystem extends NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem<double[], double[]> {
+public interface NumericalStatelessSystem extends NumericalDynamicalSystem<StatelessSystem.State>, StatelessSystem<double[], double[]>, FrozenableNumericalDynamicalSystem<StatelessSystem.State> {
 
   @SuppressWarnings("unused")
   static NumericalStatelessSystem from(
@@ -89,5 +89,10 @@ public interface NumericalStatelessSystem extends NumericalDynamicalSystem<State
             .map(f)
             .toArray()
     );
+  }
+
+  @Override
+  default NumericalStatelessSystem stateless() {
+    return this;
   }
 }

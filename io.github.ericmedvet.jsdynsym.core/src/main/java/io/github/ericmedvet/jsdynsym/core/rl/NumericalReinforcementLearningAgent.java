@@ -53,7 +53,7 @@ public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLea
       }
 
       @Override
-      public NumericalDynamicalSystem<?> frozen() {
+      public NumericalDynamicalSystem<?> dynamicalSystem() {
         return numericalDynamicalSystem;
       }
 

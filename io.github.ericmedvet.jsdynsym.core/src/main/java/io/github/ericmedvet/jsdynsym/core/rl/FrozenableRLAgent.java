@@ -23,6 +23,6 @@ import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
 public interface FrozenableRLAgent<I, O, S> extends ReinforcementLearningAgent<I, O, S> {
 
-  DynamicalSystem<I, O, ?> frozen();
+  DynamicalSystem<I, O, ?> dynamicalSystem();
 
 }
