@@ -37,8 +37,7 @@ public class Utils {
     if (run != null) {
       map = map.with(
           "run",
-          ParamMap.Type.NAMED_PARAM_MAP,
-          run.map().with("nOfEpisodes", ParamMap.Type.INT, run.index())
+          run.map().with("nOfEpisodes", run.index())
       );
     }
     return Interpolator.interpolate(format, map, "_");
