@@ -32,7 +32,6 @@ import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.DelayedRecurrentNetwork;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
-
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.random.RandomGenerator;
@@ -159,6 +158,7 @@ public class NumericalDynamicalSystems {
       @Param(value = "learningRate", dD = 0.01) double learningRate,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-1;max=1)") DoubleRange initialWeightRange,
+      @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
       @Param(value = "parametrizationType", dS = "synapse") HebbianMultilayerPerceptron.ParametrizationType parametrizationType,
       @Param(value = "weightInitializationType", dS = "params") HebbianMultilayerPerceptron.WeightInitializationType weightInitializationType
   ) {
@@ -184,6 +184,7 @@ public class NumericalDynamicalSystems {
             yVarNames.size(),
             learningRate,
             initialWeightRange,
+            randomGenerator,
             parametrizationType,
             weightInitializationType
         );
@@ -195,6 +196,7 @@ public class NumericalDynamicalSystems {
             yVarNames.size(),
             learningRate,
             initialWeightRange,
+            randomGenerator,
             parametrizationType,
             weightInitializationType
         );

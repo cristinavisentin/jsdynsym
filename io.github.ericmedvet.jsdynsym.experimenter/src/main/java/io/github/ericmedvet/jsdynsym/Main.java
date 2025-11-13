@@ -172,7 +172,9 @@ public class Main {
         );
 
     @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
-        .build("ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = zeros; parametrizationType = neuron)"))
+        .build(
+            "ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = params; parametrizationType = neuron)"
+        ))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
 

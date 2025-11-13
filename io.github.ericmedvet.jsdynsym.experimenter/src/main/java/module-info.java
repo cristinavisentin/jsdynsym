@@ -32,5 +32,4 @@ module io.github.ericmedvet.jsdynsym.experimenter {
   exports io.github.ericmedvet.jsdynsym.rl to jcommander;
 
   opens io.github.ericmedvet.jsdynsym.rl to io.github.ericmedvet.jnb.core;
-  opens io.github.ericmedvet.jsdynsym.rl.buildable to io.github.ericmedvet.jnb.core;
 }
