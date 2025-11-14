@@ -171,57 +171,12 @@ public class Main {
                 """
         );
 
-    /*HebbianMultilayerPerceptron hmlp = new HebbianMultilayerPerceptron(
-        MultiLayerPerceptron.ActivationFunction.TANH,
-        environment.exampleAgent().nOfInputs(),
-        new int[]{16, 16},
-        environment.exampleAgent().nOfOutputs(),
-        0.01
-    );*/
-
     @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
-        .build("ds.num.hebbianMlp(innerLayers = [4; 4]; learningRate = 0.02)"))
+        .build(
+            "ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = params; parametrizationType = neuron)"
+        ))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
-
-    /*Random rand = new Random(42);
-    int[] neurons = new int[]{environment.exampleAgent().nOfInputs(), 4, environment.exampleAgent().nOfOutputs()};
-    double[][][] weights = new double[neurons.length - 1][][];
-    double[][][] as = new double[neurons.length - 1][][];
-    double[][][] bs = new double[neurons.length - 1][][];
-    double[][][] cs = new double[neurons.length - 1][][];
-    double[][][] ds = new double[neurons.length - 1][][];
-    for (int i = 1; i < neurons.length; i++) {
-      weights[i - 1] = new double[neurons[i]][];
-      as[i - 1] = new double[neurons[i]][];
-      bs[i - 1] = new double[neurons[i]][];
-      cs[i - 1] = new double[neurons[i]][];
-      ds[i - 1] = new double[neurons[i]][];
-      for (int j = 0; j < neurons[i]; j++) {
-        weights[i - 1][j] = new double[neurons[i - 1] + 1];
-        as[i - 1][j] = new double[neurons[i - 1] + 1];
-        bs[i - 1][j] = new double[neurons[i - 1] + 1];
-        cs[i - 1][j] = new double[neurons[i - 1] + 1];
-        ds[i - 1][j] = new double[neurons[i - 1] + 1];
-        weights[i - 1][j][0] = 1d; // set the bias
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          as[i - 1][j][k] = rand.nextDouble();
-          bs[i - 1][j][k] = rand.nextDouble();
-          cs[i - 1][j][k] = rand.nextDouble();
-          ds[i - 1][j][k] = rand.nextDouble();
-        }
-      }
-    }*/
-    /*    NumericalDynamicalSystem<?> hmlp = new HebbianMultilayerPerceptron(
-        MultiLayerPerceptron.ActivationFunction.TANH,
-        as,
-        bs,
-        cs,
-        ds,
-        weights,
-        neurons,
-        0.1
-    );*/
 
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, true);
@@ -230,9 +185,6 @@ public class Main {
         0.1,
         new DoubleRange(0, 30)
     );
-
-    /*NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
-    d.show(outcome);*/
 
     NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
     @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb

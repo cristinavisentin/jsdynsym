@@ -26,4 +26,5 @@ module io.github.ericmedvet.jsdynsym.core {
   exports io.github.ericmedvet.jsdynsym.core.numerical.named;
 
   requires io.github.ericmedvet.jnb.datastructure;
+  requires java.desktop;
 }
