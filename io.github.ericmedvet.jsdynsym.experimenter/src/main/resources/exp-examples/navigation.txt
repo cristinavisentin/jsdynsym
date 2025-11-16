@@ -1,3 +1,5 @@
+$basePath = ''../../Documenti/experiments/{^^.name}/{^^.startTime}/''
+
 $dT = 0.1
 $tRange = m.range(min = 0; max = 120)
 
@@ -9,24 +11,24 @@ $environment = ds.e.navigation(
   )
 )
 
-$cumRewardPlot = ea.l.onExpDone(
-  of = ea.plot.multi.xy(
-    xSubplot = rl.f.runString(name = none; s = "_");
-    ySubplot = rl.f.runString(name = none; s = "_");
-    line = rl.f.runString(name = agent; s = "{run.agent.name}");
+$cumRewardPlot = listener.onDone(
+  of = viz.plot.multi.xy(
+    xSubplot = f.interpolated(s = "arena={tasks[0].environment.arena.name}");
+    ySubplot = f.interpolated(s = "_");
+    line = f.interpolated(name = agent; s = "{agent.name}");
     x = rl.f.nOfEpisodes();
     y = ds.f.cumulatedReward(of = rl.f.lastOutcome())
   );
-  consumers = [rl.c.saver(
-    path = "../../Documenti/experiments/{name}/{startTime}/cum-reward.svg";
-    of = ea.f.imagePlotter(type = svg)
+  consumers = [consumer.saver(
+    path = $basePath + "cum-reward.svg";
+    of = viz.f.imagePlotter(type = svg)
   )];
   eCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 100)
 )
 
-$trajPlot = ea.l.onRunDone(
-  of = ea.acc.last();
-  preprocessor = ea.f.toImage(
+$trajPlot = listener.onKDone(
+  of = accumulator.last();
+  preprocessor = viz.f.toImage(
     drawer = ds.d.navigation();
     of = ds.f.simulate(
       of = ds.f.nonLearning(of = rl.f.agent());
@@ -38,13 +40,13 @@ $trajPlot = ea.l.onRunDone(
     );
     type = svg
   );
-  consumers = [rl.c.saver(
-    path = "../../Documenti/experiments/{name}/{startTime}/{run.agent.name}/traj-{run.agent.randomGenerator.seed:%02d}.svg"
+  consumers = [consumer.saver(
+    path = $basePath + "{agent.name}/traj-{agent.randomGenerator.seed:%02d}.svg"
   )]
 )
 
 rl.experiment(
-  runs = (agent = (randomGenerator = (seed = [1:1:8]) * [m.defaultRG()])
+  runs = (agent = (randomGenerator = (seed = [1:1:5]) * [m.defaultRG()])
   * (discountFactor = [0.99])
   * (explorationNoise = [1])
   * (actorLearningRate = [0.0005])
@@ -61,13 +63,13 @@ rl.experiment(
       ];
       dT = $dT;
       tRange = $tRange;
-      stopCriterion = predicate.gt(t = 5000; f = rl.f.nOfEpisodes())
+      stopCriterion = predicate.gt(t = 2000; f = rl.f.nOfEpisodes())
     )
   ];
   listeners = [
     rl.l.console(
-      functions = [ea.f.timestamp()];
-      episodeCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 1000);
+      eFunctions = [f.timestamp()];
+      eCondition = predicate.divisibleBy(f = rl.f.nOfEpisodes(); divisor = 500);
       onlyLast = false
     );
     $cumRewardPlot;

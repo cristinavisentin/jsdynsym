@@ -22,11 +22,11 @@ package io.github.ericmedvet.jsdynsym.rl;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import io.github.ericmedvet.jgea.core.util.Misc;
 import io.github.ericmedvet.jnb.core.BuilderException;
 import io.github.ericmedvet.jnb.core.NamedBuilder;
 import io.github.ericmedvet.jnb.core.NamedParamMap;
 import io.github.ericmedvet.jnb.core.parsing.StringParser;
+import io.github.ericmedvet.jnb.datastructure.Utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -205,7 +205,7 @@ public class Starter {
       experiment = new Experiment(
           experiment.name(),
           experiment.startTime(),
-          Misc.fold(experiment.runs(), configuration.runFoldIndex, configuration.nOfRunFolds),
+          Utils.fold(experiment.runs(), configuration.runFoldIndex, configuration.nOfRunFolds),
           experiment.map(),
           experiment.listeners()
       );

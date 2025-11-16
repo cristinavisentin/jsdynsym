@@ -19,69 +19,29 @@
  */
 package io.github.ericmedvet.jsdynsym.rl.buildable;
 
-import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
-import io.github.ericmedvet.jgea.core.listener.TabularPrinter;
-import io.github.ericmedvet.jnb.core.Cacheable;
+import io.github.ericmedvet.jnb.core.Alias;
 import io.github.ericmedvet.jnb.core.Discoverable;
-import io.github.ericmedvet.jnb.core.Param;
-import io.github.ericmedvet.jnb.datastructure.FormattedFunction;
-import io.github.ericmedvet.jsdynsym.rl.Experiment;
-import io.github.ericmedvet.jsdynsym.rl.Run;
-import io.github.ericmedvet.jsdynsym.rl.Run.State;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 @Discoverable(prefixTemplate = "rl.listener|l")
+@Alias(
+    name = "console", value = // spotless:off
+    """       
+       listener.console(
+         defaultEFunctions = [
+           rl.f.nOfEpisodes();
+           rl.f.nOfSteps();
+           rl.f.elapsedSecs();
+           ds.f.cumulatedReward(of = rl.f.lastOutcome())
+         ];
+         defaultKFunctions = [
+           f.interpolated(s = "{agent.name}")
+         ]
+       )
+       """ // spotless:on
+)
 public class Listeners {
 
   private Listeners() {
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>> console(
-      @Param(
-          value = "defaultFunctions", dNPMs = {"rl.f.nOfEpisodes()", "rl.f.nOfSteps()", "rl.f.elapsedSecs()", "ds.f.cumulatedReward(of = rl.f.lastOutcome())"}) List<Function<? super State<?, ?, ?, ?>, ?>> defaultEpisodeFunctions,
-      @Param(value = "functions") List<Function<? super State<?, ?, ?, ?>, ?>> episodeFunctions,
-      @Param(
-          value = "defaultRunFunctions", dNPMs = {"rl.f.runKey(key = \"run.agent.name\")"}) List<Function<? super Run<?, ?, ?, ?, ?, ?>, ?>> defaultRunFunctions,
-      @Param("runFunctions") List<Function<? super Run<?, ?, ?, ?, ?, ?>, ?>> runFunctions,
-      @Param(value = "deferred") boolean deferred,
-      @Param(value = "onlyLast", dB = true) boolean onlyLast,
-      @Param(value = "runCondition", dNPM = "predicate.always()") Predicate<Run<?, ?, ?, ?, ?, ?>> runPredicate,
-      @Param(value = "episodeCondition", dNPM = "predicate.always()") Predicate<State<?, ?, ?, ?>> episodePredicate,
-      @Param("logExceptions") boolean logExceptions
-
-  ) {
-    return (experiment, executor) -> {
-      ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>> factory = new TabularPrinter<>(
-          Stream.of(defaultEpisodeFunctions, episodeFunctions)
-              .flatMap(List::stream)
-              .toList(),
-          Stream.concat(defaultRunFunctions.stream(), runFunctions.stream())
-              .map(f -> reformatToFit(f, experiment.runs()))
-              .toList(),
-          logExceptions
-      );
-      if (deferred) {
-        factory = factory.deferred(executor);
-      }
-      if (onlyLast) {
-        factory = factory.onLast();
-      }
-      return factory.conditional(runPredicate, episodePredicate);
-    };
-  }
-
-  private static <T, R> Function<T, R> reformatToFit(Function<T, R> f, Collection<?> ts) {
-    //noinspection unchecked
-    return FormattedFunction.from(f)
-        .reformattedToFit(ts.stream().map(t -> (T) t).toList());
   }
 
 }

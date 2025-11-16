@@ -19,11 +19,12 @@
  */
 package io.github.ericmedvet.jsdynsym.rl;
 
-import io.github.ericmedvet.jgea.core.listener.Listener;
 import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.Mappable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
+import io.github.ericmedvet.jnb.datastructure.Listener;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
@@ -46,7 +47,7 @@ public record Run<C extends ReinforcementLearningAgent<O, A, AS>, O, A, AS, T ex
     @Param("tRange") DoubleRange tRange,
     @Param("stopCriterion") Predicate<State<C, O, A, TS>> stopCriterion,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map
-) {
+) implements Mappable {
 
   public record State<C, O, A, TS>(
       int nOfEpisodes,
