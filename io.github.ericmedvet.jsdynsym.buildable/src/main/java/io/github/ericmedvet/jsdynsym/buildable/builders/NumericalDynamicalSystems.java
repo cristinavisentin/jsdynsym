@@ -157,7 +157,7 @@ public class NumericalDynamicalSystems {
       @Param("innerLayers") List<Integer> innerLayers,
       @Param(value = "learningRate", dD = 0.01) double learningRate,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
-      @Param(value = "initialWeightRange", dNPM = "m.range(min=-1;max=1)") DoubleRange initialWeightRange,
+      @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.1;max=0.1)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
       @Param(value = "parametrizationType", dS = "synapse") HebbianMultilayerPerceptron.ParametrizationType parametrizationType,
       @Param(value = "weightInitializationType", dS = "params") HebbianMultilayerPerceptron.WeightInitializationType weightInitializationType
