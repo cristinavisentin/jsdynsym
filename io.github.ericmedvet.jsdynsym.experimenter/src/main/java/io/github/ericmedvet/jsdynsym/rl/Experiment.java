@@ -19,14 +19,15 @@
  */
 package io.github.ericmedvet.jsdynsym.rl;
 
-import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jnb.core.Discoverable;
+import io.github.ericmedvet.jnb.core.Mappable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.core.ParamMap;
+import io.github.ericmedvet.jnb.datastructure.ListenerFactory;
 import io.github.ericmedvet.jsdynsym.rl.Run.State;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @Discoverable(prefixTemplate = "rl")
 public record Experiment(
@@ -34,7 +35,7 @@ public record Experiment(
     @Param(value = "startTime", dS = "") String startTime,
     @Param("runs") List<Run<?, ?, ?, ?, ?, ?>> runs,
     @Param(value = "", injection = Param.Injection.MAP_WITH_DEFAULTS) ParamMap map,
-    @Param("listeners") List<BiFunction<Experiment, ExecutorService, ListenerFactory<? super State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
-) {
+    @Param("listeners") List<Function<ExecutorService, ListenerFactory<? super State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>>> listeners
+) implements Mappable {
 
 }

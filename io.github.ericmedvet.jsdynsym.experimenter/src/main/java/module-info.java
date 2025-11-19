@@ -19,17 +19,16 @@
  */
 module io.github.ericmedvet.jsdynsym.experimenter {
   requires io.github.ericmedvet.jsdynsym.core;
-  requires io.github.ericmedvet.jgea.core;
   requires io.github.ericmedvet.jnb.core;
   requires io.github.ericmedvet.jnb.datastructure;
   requires io.github.ericmedvet.jsdynsym.control;
   requires io.github.ericmedvet.jsdynsym.buildable;
   requires io.github.ericmedvet.jviz.core;
-  requires io.github.ericmedvet.jgea.experimenter;
   requires jcommander;
   requires java.logging;
 
   exports io.github.ericmedvet.jsdynsym.rl to jcommander;
 
   opens io.github.ericmedvet.jsdynsym.rl to io.github.ericmedvet.jnb.core;
+  opens io.github.ericmedvet.jsdynsym.rl.buildable to io.github.ericmedvet.jnb.core;
 }

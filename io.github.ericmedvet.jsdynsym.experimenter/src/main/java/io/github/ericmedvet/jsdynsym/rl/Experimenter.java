@@ -19,9 +19,9 @@
  */
 package io.github.ericmedvet.jsdynsym.rl;
 
-import io.github.ericmedvet.jgea.core.listener.Listener;
-import io.github.ericmedvet.jgea.core.listener.ListenerFactory;
 import io.github.ericmedvet.jnb.core.ProjectInfoProvider;
+import io.github.ericmedvet.jnb.datastructure.Listener;
+import io.github.ericmedvet.jnb.datastructure.ListenerFactory;
 import io.github.ericmedvet.jsdynsym.control.Simulation.Outcome;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
@@ -57,7 +57,6 @@ public class Experimenter {
         .stream()
         .map(
             builder -> (ListenerFactory<State<?, ?, ?, ?>, Run<?, ?, ?, ?, ?, ?>>) builder.apply(
-                experiment,
                 listenerExecutorService
             )
         )

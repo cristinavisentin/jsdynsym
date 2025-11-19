@@ -47,7 +47,7 @@ public class NumericalDynamicalSystems {
   public static Builder<DelayedRecurrentNetwork, DelayedRecurrentNetwork.State> drn(
       @Param(value = "timeRange", dNPM = "m.range(min=0;max=1)") DoubleRange timeRange,
       @Param(value = "innerNeuronsRatio", dD = 1d) double innerNeuronsRatio,
-      @Param("innerNeurons") int innerNeurons,
+      @Param(value = "innerNeurons", dD = 0) int innerNeurons,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "threshold", dD = 0.1d) double threshold,
       @Param(value = "timeResolution", dD = 0.16666d) double timeResolution
