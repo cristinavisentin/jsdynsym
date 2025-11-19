@@ -234,7 +234,6 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
         }
       }
     }
-
     // compute output
     double[][] newActivations = state.activations;
     newActivations[0] = Arrays.stream(input).map(activationFunction).toArray();
@@ -248,7 +247,6 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
         newActivations[i][j] = activationFunction.applyAsDouble(sum);
       }
     }
-
     // update state
     state = new State(newWeights, newActivations);
     return newActivations[neurons.length - 1];
@@ -275,7 +273,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
         initialWeights,
         Arrays.stream(neurons).mapToObj(double[]::new).toArray(double[][]::new)
     );
-    if (weightInitializationType.equals(WeightInitializationType.PARAMS)) {
+    if (weightInitializationType.equals(WeightInitializationType.RANDOM)) {
       for (int i = 1; i < neurons.length; i++) {
         for (int j = 0; j < neurons[i]; j++) {
           for (int k = 0; k < neurons[i - 1] + 1; k++) {
