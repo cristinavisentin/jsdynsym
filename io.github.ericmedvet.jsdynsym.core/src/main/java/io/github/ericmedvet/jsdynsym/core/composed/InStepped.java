@@ -20,6 +20,7 @@
 
 package io.github.ericmedvet.jsdynsym.core.composed;
 
+import io.github.ericmedvet.jnb.datastructure.AbstractComposed;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
 public class InStepped<I, O, S> extends AbstractComposed<DynamicalSystem<I, O, S>> implements DynamicalSystem<I, O, Stepped.State<S>> {

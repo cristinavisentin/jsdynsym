@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jsdynsym.core.numerical;
 
-import io.github.ericmedvet.jsdynsym.core.composed.AbstractComposed;
+import io.github.ericmedvet.jnb.datastructure.AbstractComposed;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.SortedMap;

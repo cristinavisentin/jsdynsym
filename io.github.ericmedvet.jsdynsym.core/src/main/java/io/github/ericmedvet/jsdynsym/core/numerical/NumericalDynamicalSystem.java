@@ -24,7 +24,7 @@ import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 
 public interface NumericalDynamicalSystem<S> extends DynamicalSystem<double[], double[], S> {
 
-  interface Composed<S> extends NumericalDynamicalSystem<S>, io.github.ericmedvet.jsdynsym.core.composed.Composed<NumericalDynamicalSystem<S>> {}
+  interface Composed<S> extends NumericalDynamicalSystem<S>, io.github.ericmedvet.jnb.datastructure.Composed<NumericalDynamicalSystem<S>> {}
 
   int nOfInputs();
 
@@ -35,7 +35,7 @@ public interface NumericalDynamicalSystem<S> extends DynamicalSystem<double[], d
       int nOfInputs,
       int nOfOutputs
   ) {
-    if (inner instanceof io.github.ericmedvet.jsdynsym.core.composed.Composed<?> composed) {
+    if (inner instanceof io.github.ericmedvet.jnb.datastructure.Composed<?> composed) {
       return new Composed<>() {
         @Override
         public S1 getState() {

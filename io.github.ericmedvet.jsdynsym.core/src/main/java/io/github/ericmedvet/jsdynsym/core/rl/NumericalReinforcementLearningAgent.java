@@ -20,7 +20,7 @@
 
 package io.github.ericmedvet.jsdynsym.core.rl;
 
-import io.github.ericmedvet.jsdynsym.core.composed.Composed;
+import io.github.ericmedvet.jnb.datastructure.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 
 public interface NumericalReinforcementLearningAgent<S> extends ReinforcementLearningAgent<double[], double[], S> {

@@ -34,7 +34,6 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask.Step;
 import io.github.ericmedvet.jsdynsym.core.DynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.FrozenableDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.StatelessSystem;
-import io.github.ericmedvet.jsdynsym.core.composed.Composed;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.rl.FrozenableRLAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.ReinforcementLearningAgent.RewardedInput;
@@ -76,15 +75,6 @@ public class Functions {
     Function<Double, Double> f = activationF::applyAsDouble;
     return FormattedNamedFunction.from(f, format, activationF.name().toLowerCase())
         .compose(beforeF);
-  }
-
-  @SuppressWarnings("unused")
-  @Cacheable
-  public static <X, C> NamedFunction<X, C> inner(
-      @Param(value = "of", dNPM = "f.identity()") Function<X, Composed<C>> beforeF
-  ) {
-    Function<Composed<C>, C> f = Composed::inner;
-    return NamedFunction.from(f, "inner").compose(beforeF);
   }
 
   @SuppressWarnings("unused")

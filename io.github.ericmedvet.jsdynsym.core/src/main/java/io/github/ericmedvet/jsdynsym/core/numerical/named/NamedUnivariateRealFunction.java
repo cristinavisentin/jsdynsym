@@ -45,7 +45,7 @@ public interface NamedUnivariateRealFunction extends NamedMultivariateRealFuncti
         List<String> xVarNames,
         String yVarName,
         I inner
-    ) implements io.github.ericmedvet.jsdynsym.core.composed.Composed<I>, NamedUnivariateRealFunction {
+    ) implements io.github.ericmedvet.jnb.datastructure.Composed<I>, NamedUnivariateRealFunction {
 
       @Override
       public double computeAsDouble(Map<String, Double> input) {

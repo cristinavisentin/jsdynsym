@@ -50,7 +50,7 @@ public interface NamedMultivariateRealFunction extends MultivariateRealFunction 
         List<String> xVarNames,
         List<String> yVarNames,
         I inner
-    ) implements io.github.ericmedvet.jsdynsym.core.composed.Composed<I>, NamedMultivariateRealFunction {
+    ) implements io.github.ericmedvet.jnb.datastructure.Composed<I>, NamedMultivariateRealFunction {
 
       @Override
       public Map<String, Double> compute(Map<String, Double> input) {
