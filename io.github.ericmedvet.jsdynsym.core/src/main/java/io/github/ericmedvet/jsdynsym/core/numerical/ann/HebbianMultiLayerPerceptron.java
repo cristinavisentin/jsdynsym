@@ -29,7 +29,7 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynamicalSystem<HebbianMultilayerPerceptron.State>, NumericalParametrized<HebbianMultilayerPerceptron>, FrozenableNumericalDynamicalSystem<HebbianMultilayerPerceptron.State> {
+public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynamicalSystem<HebbianMultiLayerPerceptron.State>, NumericalParametrized<HebbianMultiLayerPerceptron>, FrozenableNumericalDynamicalSystem<HebbianMultiLayerPerceptron.State> {
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
   private final double[][][] as;
   private final double[][][] bs;
@@ -44,7 +44,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
   private final RandomGenerator randomGenerator;
   private State state;
 
-  public HebbianMultilayerPerceptron(
+  public HebbianMultiLayerPerceptron(
       MultiLayerPerceptron.ActivationFunction activationFunction,
       double[][][] as,
       double[][][] bs,
@@ -74,7 +74,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
     reset();
   }
 
-  public HebbianMultilayerPerceptron(
+  public HebbianMultiLayerPerceptron(
       MultiLayerPerceptron.ActivationFunction activationFunction,
       int nOfInput,
       int[] innerNeurons,
@@ -100,7 +100,7 @@ public class HebbianMultilayerPerceptron implements NumericalTimeInvariantDynami
     setParams(params);
   }
 
-  public HebbianMultilayerPerceptron(
+  public HebbianMultiLayerPerceptron(
       MultiLayerPerceptron.ActivationFunction activationFunction,
       int nOfInput,
       int[] innerNeurons,

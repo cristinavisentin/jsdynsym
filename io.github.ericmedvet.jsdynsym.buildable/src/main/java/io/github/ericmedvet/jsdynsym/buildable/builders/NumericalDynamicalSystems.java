@@ -30,7 +30,7 @@ import io.github.ericmedvet.jsdynsym.core.composed.OutStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
 import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.DelayedRecurrentNetwork;
-import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -151,7 +151,7 @@ public class NumericalDynamicalSystems {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Builder<HebbianMultilayerPerceptron, HebbianMultilayerPerceptron.State> hebbianMlp(
+  public static Builder<HebbianMultiLayerPerceptron, HebbianMultiLayerPerceptron.State> hebbianMlp(
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param("innerLayers") List<Integer> innerLayers,
@@ -159,8 +159,8 @@ public class NumericalDynamicalSystems {
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.1;max=0.1)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
-      @Param(value = "parametrizationType", dS = "synapse") HebbianMultilayerPerceptron.ParametrizationType parametrizationType,
-      @Param(value = "weightInitializationType", dS = "params") HebbianMultilayerPerceptron.WeightInitializationType weightInitializationType
+      @Param(value = "parametrizationType", dS = "synapse") HebbianMultiLayerPerceptron.ParametrizationType parametrizationType,
+      @Param(value = "weightInitializationType", dS = "params") HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType
   ) {
     return (xVarNames, yVarNames) -> {
       if (innerLayers.isEmpty()) {
@@ -177,7 +177,7 @@ public class NumericalDynamicalSystems {
         } else if (nOfInnerLayers > 0) {
           innerNeurons[0] = centerSize;
         }
-        return new HebbianMultilayerPerceptron(
+        return new HebbianMultiLayerPerceptron(
             activationFunction,
             xVarNames.size(),
             innerNeurons,
@@ -189,7 +189,7 @@ public class NumericalDynamicalSystems {
             weightInitializationType
         );
       } else {
-        return new HebbianMultilayerPerceptron(
+        return new HebbianMultiLayerPerceptron(
             activationFunction,
             xVarNames.size(),
             innerLayers.stream().mapToInt(i -> i).toArray(),
