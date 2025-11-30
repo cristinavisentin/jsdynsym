@@ -136,7 +136,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     };
   }
 
-  private static double[][][] emptyArray(int[] neurons) {
+  public static double[][][] emptyArray(int[] neurons) {
     return MultiLayerPerceptron.unflat(new double[MultiLayerPerceptron.countWeights(neurons)], neurons);
   }
 
