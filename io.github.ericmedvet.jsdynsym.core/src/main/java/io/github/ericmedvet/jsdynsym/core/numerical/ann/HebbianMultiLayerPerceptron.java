@@ -216,6 +216,32 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     return concatenated;
   }
 
+  private static double[][][] deepCopy(double[][][] src, int[] neurons) {
+    double[][][] copy = emptyArray(neurons);
+    for (int i = 0; i < src.length; i++) {
+      for (int j = 0; j < src[i].length; j++) {
+        copy[i][j] = Arrays.copyOf(src[i][j], src[i][j].length);
+      }
+    }
+    return copy;
+  }
+
+  private static double[][][] randomWeights(
+      int[] neurons,
+      DoubleRange initialWeightRange,
+      RandomGenerator randomGenerator
+  ) {
+    double[][][] randomWeights = emptyArray(neurons);
+    for (int i = 1; i < neurons.length; i++) {
+      for (int j = 0; j < neurons[i]; j++) {
+        for (int k = 0; k < neurons[i - 1] + 1; k++) {
+          randomWeights[i - 1][j][k] = initialWeightRange.denormalize(randomGenerator.nextDouble());
+        }
+      }
+    }
+    return randomWeights;
+  }
+
   @Override
   public double[] step(double[] input) {
     if (input.length != neurons[0]) {
@@ -270,20 +296,16 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
   @Override
   public void reset() {
     state = new State(
-        deepCopy(initialWeights),
+        switch (weightInitializationType) {
+          case PARAMS -> deepCopy(initialWeights, neurons);
+          case RANDOM -> {
+            set(randomWeights(neurons, initialWeightRange, randomGenerator), initialWeights);
+            yield deepCopy(initialWeights, neurons);
+          }
+          case ZEROS -> emptyArray(neurons);
+        },
         Arrays.stream(neurons).mapToObj(double[]::new).toArray(double[][]::new)
     );
-  }
-
-  private double[][][] deepCopy(double[][][] src) {
-    double[][][] copy = new double[src.length][][];
-    for (int i = 0; i < src.length; i++) {
-      copy[i] = new double[src[i].length][];
-      for (int j = 0; j < src[i].length; j++) {
-        copy[i][j] = Arrays.copyOf(src[i][j], src[i][j].length);
-      }
-    }
-    return copy;
   }
 
   @Override
@@ -313,14 +335,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
           unflat(ParametrizationType.SYNAPSE, Arrays.copyOfRange(params, 4 * n, params.length), neurons),
           initialWeights
       );
-    } else if (weightInitializationType.equals(WeightInitializationType.RANDOM)) {
-      for (int i = 1; i < neurons.length; i++) {
-        for (int j = 0; j < neurons[i]; j++) {
-          for (int k = 0; k < neurons[i - 1] + 1; k++) {
-            initialWeights[i - 1][j][k] = initialWeightRange.denormalize(randomGenerator.nextDouble());
-          }
-        }
-      }
     }
     reset();
   }
