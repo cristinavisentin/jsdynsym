@@ -29,8 +29,19 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.random.RandomGenerator;
+import java.util.stream.Collectors;
 
 public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforcementLearningAgent<FreeFormPlasticMLPRLAgent.State>, Parametrized<FreeFormPlasticMLPRLAgent, NamedUnivariateRealFunction>, FrozenableNumericalRLAgent<FreeFormPlasticMLPRLAgent.State> {
+  private static final String AVERAGE = "Average";
+  private static final String STD_DEV = "Std_Dev";
+  private static final String CURRENT = "Current";
+  private static final String TREND = "Trend";
+  private static final String ACTIVATION = "Activation";
+  private static final String REWARD = "Reward";
+  private static final String AGE = "Age";
+  private static final String PRE_SYNAPTIC_NEURON_INDEX = "Pre-Synaptic Neuron Idx";
+  private static final String POST_SYNAPTIC_NEURON_INDEX = "Post-Synaptic Neuron Idx";
+  private static final String LAYER_INDEX = "Layer Idx";
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
   private final int[] neurons;
   private final int historyLength;
@@ -39,22 +50,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   private final RandomGenerator randomGenerator;
   private NamedUnivariateRealFunction plasticityFunction;
   private State state;
-
-  private static final String AVERAGE = "AVERAGE";
-  private static final String STD_DEV = "STD_DEV";
-  private static final String CURRENT = "CURRENT";
-  private static final String TREND = "TREND";
-  private static final String ACTIVATION = "ACTIVATION";
-  private static final String PRE = "-PRE_SYNAPTIC";
-  private static final String POST = "-POST_SYNAPTIC";
-  private static final String NEURON = "-NEURON-";
-  private static final String LAYER = "-LAYER-";
-  private static final String NETWORK = "-NETWORK-";
-  private static final String REWARD = "REWARD";
-  private static final String AGE = "AGE";
-  private static final String PRE_SYNAPTIC_NEURON_INDEX = "PRE_SYNAPTIC_NEURON_INDEX";
-  private static final String POST_SYNAPTIC_NEURON_INDEX = "POST_SYNAPTIC_NEURON_INDEX";
-  private static final String LAYER_INDEX = "LAYER_INDEX";
 
   public FreeFormPlasticMLPRLAgent(
       MultiLayerPerceptron.ActivationFunction activationFunction,
@@ -111,26 +106,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     return emptyActivations;
   }
 
-  private static double[][] computeOutput(
-      double[] input,
-      int[] neurons,
-      MultiLayerPerceptron.ActivationFunction activationFunction,
-      double[][][] weights,
-      double[][] activations
-  ) {
-    activations[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      activations[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
-        double sum = weights[i - 1][j][0];
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          sum = sum + activations[i - 1][k - 1] * weights[i - 1][j][k];
-        }
-        activations[i][j] = activationFunction.applyAsDouble(sum);
-      }
-    }
-    return activations;
-  }
 
   private static double[] networkHistory(double[][][] activationsHistory) {
     return Arrays.stream(activationsHistory)
@@ -155,6 +130,26 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
   private static double[] neuronHistory(double[][][] activationsHistory, int layerIdx, int neuronIdx) {
     return Arrays.stream(activationsHistory).mapToDouble(a -> a[layerIdx][neuronIdx]).toArray();
+  }
+
+  private static double[][] computeOutput(
+      double[] input,
+      double[][][] weights,
+      MultiLayerPerceptron.ActivationFunction activationFunction,
+      double[][] activations
+  ) {
+    activations[0] = Arrays.stream(input).map(activationFunction).toArray();
+    for (int i = 1; i < activations.length; i++) {
+      activations[i] = new double[weights[i - 1].length];
+      for (int j = 0; j < activations[i].length; j++) {
+        double sum = weights[i - 1][j][0];
+        for (int k = 1; k < weights[i - 1][j].length; k++) {
+          sum = sum + activations[i - 1][k - 1] * weights[i - 1][j][k];
+        }
+        activations[i][j] = activationFunction.applyAsDouble(sum);
+      }
+    }
+    return activations;
   }
 
   @Override
@@ -183,7 +178,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   }
 
   @Override
-  public double[] step(double[] input, double reward) { // TODO
+  public double[] step(double[] input, double reward) {
     if (input.length != neurons[0]) {
       throw new IllegalArgumentException(
           String.format("Expected input length is %d: found %d", neurons[0], input.length)
@@ -198,26 +193,26 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       // compute statistics network wise
       inputParameters.put(AGE, (double) age);
       inputParameters.put(REWARD, reward);
-      Statistics statsNetwork = Statistics.compute(networkHistory(state.activationsHistory), age);
-      Statistics.insert(inputParameters, statsNetwork, Statistics.STATISTICS_CASE.NETWORK);
+      Statistics.from(networkHistory(state.activationsHistory), age)
+          .insert(inputParameters, Statistics.StatisticsScope.NETWORK);
 
       // update weights
       for (int i = 1; i < neurons.length; i++) {
         // compute statistics layer wise
-        Statistics statsLayerPost = Statistics.compute(layerHistory(state.activationsHistory, i), age);
-        Statistics.insert(inputParameters, statsLayerPost, Statistics.STATISTICS_CASE.LAYER_POST);
-        Statistics statsLayerPre = Statistics.compute(layerHistory(state.activationsHistory, i - 1), age);
-        Statistics.insert(inputParameters, statsLayerPre, Statistics.STATISTICS_CASE.LAYER_PRE);
+        Statistics.from(layerHistory(state.activationsHistory, i), age)
+            .insert(inputParameters, Statistics.StatisticsScope.LAYER_POST);
+        Statistics.from(layerHistory(state.activationsHistory, i - 1), age)
+            .insert(inputParameters, Statistics.StatisticsScope.LAYER_PRE);
 
         for (int j = 0; j < newWeights[i].length; j++) {
           // compute statistics post synapse
-          Statistics statsNeuronPost = Statistics.compute(neuronHistory(state.activationsHistory, i, j), age);
-          Statistics.insert(inputParameters, statsNeuronPost, Statistics.STATISTICS_CASE.NEURON_POST);
+          Statistics.from(neuronHistory(state.activationsHistory, i, j), age)
+              .insert(inputParameters, Statistics.StatisticsScope.NEURON_POST);
 
           for (int k = 1; k < newWeights[i - 1][j].length; k++) {
             // compute statistics pre synapse
-            Statistics statsNeuronPre = Statistics.compute(neuronHistory(state.activationsHistory, i - 1, k - 1), age);
-            Statistics.insert(inputParameters, statsNeuronPre, Statistics.STATISTICS_CASE.NEURON_PRE);
+            Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age)
+                .insert(inputParameters, Statistics.StatisticsScope.NEURON_PRE);
 
             inputParameters.put(LAYER_INDEX, (double) i);
             inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k - 1));
@@ -232,10 +227,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     // compute output
     double[][] newActivations = computeOutput(
         input,
-        neurons,
-        activationFunction,
         newWeights,
-        age > 0 ? state.activationsHistory[(int) ((age - 1) % historyLength)] : new double[neurons.length][]
+        activationFunction,
+        new double[neurons.length][]
     );
 
     // update histories
@@ -282,23 +276,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       double average,
       double stdDev
   ) {
-    //    public Statistics(double[] history, long age) {
-    //      this(
-    //          Arrays.stream(history).average().orElse(0),
-    //          Math.sqrt(
-    //              Arrays.stream(history)
-    //                  .map(v -> Math.pow(v - Arrays.stream(history).average().orElse(0), 2))
-    //                  .average().orElse(0)
-    //          ),
-    //          history[(int) age % history.length],
-    //          history[(int) age % history.length] - history[(int) (age - 1) % history.length]// ultimo meno penultimo
-    //      );
-    //    }
 
-    public static Statistics compute(double[] history, long age) {
-      if (age == 0) {
-        return new Statistics(0, 0, 0, 0);
-      }
+    public static Statistics from(double[] history, long age) {
       double avg = Arrays.stream(history).average().orElse(0);
       double stdDev = Math.sqrt(
           Arrays.stream(history)
@@ -311,42 +290,17 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       return new Statistics(current, trend, avg, stdDev);
     }
 
-    public static void insert(Map<String, Double> container, Statistics statistics, STATISTICS_CASE statisticsCase) {
-      switch (statisticsCase) {
-        case NETWORK -> {
-          container.put(AVERAGE + NETWORK + ACTIVATION, statistics.average);
-          container.put(STD_DEV + NETWORK + ACTIVATION, statistics.stdDev);
-          container.put(CURRENT + NETWORK + ACTIVATION, statistics.current);
-          container.put(TREND + NETWORK + ACTIVATION, statistics.trend);
-        }
-        case LAYER_PRE -> {
-          container.put(AVERAGE + PRE + LAYER + ACTIVATION, statistics.average);
-          container.put(STD_DEV + PRE + LAYER + ACTIVATION, statistics.stdDev);
-          container.put(CURRENT + PRE + LAYER + ACTIVATION, statistics.current);
-          container.put(TREND + PRE + LAYER + ACTIVATION, statistics.trend);
-        }
-        case LAYER_POST -> {
-          container.put(AVERAGE + POST + LAYER + ACTIVATION, statistics.average);
-          container.put(STD_DEV + POST + LAYER + ACTIVATION, statistics.stdDev);
-          container.put(CURRENT + POST + LAYER + ACTIVATION, statistics.current);
-          container.put(TREND + POST + LAYER + ACTIVATION, statistics.trend);
-        }
-        case NEURON_PRE -> {
-          container.put(AVERAGE + PRE + NEURON + ACTIVATION, statistics.average);
-          container.put(STD_DEV + PRE + NEURON + ACTIVATION, statistics.stdDev);
-          container.put(CURRENT + PRE + NEURON + ACTIVATION, statistics.current);
-          container.put(TREND + PRE + NEURON + ACTIVATION, statistics.trend);
-        }
-        case NEURON_POST -> {
-          container.put(AVERAGE + POST + NEURON + ACTIVATION, statistics.average);
-          container.put(STD_DEV + POST + NEURON + ACTIVATION, statistics.stdDev);
-          container.put(CURRENT + POST + NEURON + ACTIVATION, statistics.current);
-          container.put(TREND + POST + NEURON + ACTIVATION, statistics.trend);
-        }
-      }
+    public void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
+      String label = Arrays.stream(statisticsScope.toString().split("_"))
+          .map(t -> t.charAt(0) + t.substring(1).toLowerCase())
+          .collect(Collectors.joining(" ", " ", " "));
+      container.put(AVERAGE + label + ACTIVATION, average);
+      container.put(STD_DEV + label + ACTIVATION, stdDev);
+      container.put(CURRENT + label + ACTIVATION, current);
+      container.put(TREND + label + ACTIVATION, trend);
     }
 
-    private enum STATISTICS_CASE {
+    private enum StatisticsScope {
       NETWORK, LAYER_PRE, LAYER_POST, NEURON_PRE, NEURON_POST
     }
   }
