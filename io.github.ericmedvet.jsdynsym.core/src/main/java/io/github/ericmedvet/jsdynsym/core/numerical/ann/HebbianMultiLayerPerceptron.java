@@ -57,7 +57,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       RandomGenerator randomGenerator,
       ParametrizationType parametrizationType,
       WeightInitializationType weightInitializationType
-
   ) {
     this.activationFunction = activationFunction;
     this.as = as;
@@ -261,7 +260,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       }
     }
     // compute output
-    //double[][] newActivations = computeOutput(input, neurons, state.weights, activationFunction);
     double[][] newActivations = state.activations;
     newActivations[0] = Arrays.stream(input).map(activationFunction).toArray();
     for (int i = 1; i < neurons.length; i++) {
@@ -315,7 +313,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     double[] flatBs = flat(parametrizationType, bs, neurons);
     double[] flatCs = flat(parametrizationType, cs, neurons);
     double[] flatDs = flat(parametrizationType, ds, neurons);
-
     if (weightInitializationType.equals(WeightInitializationType.PARAMS)) {
       double[] flatWeights = MultiLayerPerceptron.flat(state.weights, neurons);
       return concat(flatAs, flatBs, flatCs, flatDs, flatWeights);
