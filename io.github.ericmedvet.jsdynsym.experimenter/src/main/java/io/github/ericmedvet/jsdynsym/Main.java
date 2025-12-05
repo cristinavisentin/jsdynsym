@@ -29,7 +29,7 @@ import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultilayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
@@ -171,9 +171,9 @@ public class Main {
                 """
         );
 
-    @SuppressWarnings("unchecked") HebbianMultilayerPerceptron hmlp = ((Builder<HebbianMultilayerPerceptron, ?>) nb
+    @SuppressWarnings("unchecked") HebbianMultiLayerPerceptron hmlp = ((Builder<HebbianMultiLayerPerceptron, ?>) nb
         .build(
-            "ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = params; parametrizationType = neuron)"
+            "ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = zeros; parametrizationType = network)"
         ))
         .apply(environment.exampleAgent().nOfInputs(), environment.exampleAgent().nOfOutputs());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
