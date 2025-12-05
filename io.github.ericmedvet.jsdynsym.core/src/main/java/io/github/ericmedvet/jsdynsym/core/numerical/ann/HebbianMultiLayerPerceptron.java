@@ -279,22 +279,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     return newActivations[neurons.length - 1];
   }
 
-  public static double[][] computeOutput(double[] input, int[] neurons, double[][][] weights, MultiLayerPerceptron.ActivationFunction activationFunction){
-    double[][] activationValues = new double[neurons.length][];
-    activationValues[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      activationValues[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
-        double sum = weights[i - 1][j][0]; // set the bias
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          sum = sum + activationValues[i - 1][k - 1] * weights[i - 1][j][k];
-        }
-        activationValues[i][j] = activationFunction.applyAsDouble(sum);
-      }
-    }
-    return activationValues;
-  }
-
   @Override
   public int nOfInputs() {
     return neurons[0];
