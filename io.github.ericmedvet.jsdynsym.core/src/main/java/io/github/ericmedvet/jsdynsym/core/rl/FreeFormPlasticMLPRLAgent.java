@@ -173,21 +173,18 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     // compute output
+    int historyIndex = (int) (age % state.rewardsHistory.length);
     double[][] newActivations = MultiLayerPerceptron.computeOutputs(
         input,
         newWeights,
         activationFunction,
-        new double[neurons.length][],
+        state.activationsHistory[historyIndex],
         neurons
     );
     // update state
-    int historyIndex = (int) (age % state.rewardsHistory.length);
-    double[] updatedRewardsHistory = state.rewardsHistory;
-    updatedRewardsHistory[historyIndex] = reward;
-    double[][][] updatedActivationsHistory = state.activationsHistory;
-    updatedActivationsHistory[historyIndex] = newActivations;
+    state.rewardsHistory[historyIndex] = reward;
     return new StateAndOutput(
-        new State(age + 1, newWeights, updatedActivationsHistory, updatedRewardsHistory),
+        new State(age + 1, newWeights, state.activationsHistory, state.rewardsHistory),
         newActivations[neurons.length - 1]
     );
   }
@@ -202,15 +199,34 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     plasticityFunction = namedUnivariateRealFunction;
   }
 
+  private static double[][][] deepCopy(double[][][] src, int historyLength, int[] neurons) {
+    double[][][] copy = emptyActivations(historyLength, neurons);
+    for (int i = 0; i < src.length; i++) {
+      for (int j = 0; j < src[i].length; j++) {
+        copy[i][j] = Arrays.copyOf(src[i][j], src[i][j].length);
+      }
+    }
+    return copy;
+  }
+
   @Override
-  public FrozenableNumericalDynamicalSystem<?> dynamicalSystem() { // TODO
-    final State initialState = new State(state.age, state.weights, state.activationsHistory, state.rewardsHistory); // TODO make deep copy
+  public FrozenableNumericalDynamicalSystem<?> dynamicalSystem() {
+    final State initialState = new State(
+        state.age,
+        HebbianMultiLayerPerceptron.deepCopy(state.weights, neurons),
+        deepCopy(state.activationsHistory, historyLength, neurons),
+        Arrays.copyOf(state.rewardsHistory, historyLength)
+    );
     return new FrozenableNumericalDynamicalSystem<State>() {
       private State innerState = initialState;
 
       @Override
       public NumericalStatelessSystem stateless() {
-        return new MultiLayerPerceptron(activationFunction, innerState.weights, neurons); // TODO make deep copy
+        return new MultiLayerPerceptron(
+            activationFunction,
+            HebbianMultiLayerPerceptron.deepCopy(innerState.weights, neurons),
+            neurons
+        );
       }
 
       @Override

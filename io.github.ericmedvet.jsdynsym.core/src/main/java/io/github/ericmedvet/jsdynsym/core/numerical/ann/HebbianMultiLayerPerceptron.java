@@ -215,7 +215,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     return concatenated;
   }
 
-  private static double[][][] deepCopy(double[][][] src, int[] neurons) {
+  public static double[][][] deepCopy(double[][][] src, int[] neurons) {
     double[][][] copy = emptyArray(neurons);
     for (int i = 0; i < src.length; i++) {
       for (int j = 0; j < src[i].length; j++) {
