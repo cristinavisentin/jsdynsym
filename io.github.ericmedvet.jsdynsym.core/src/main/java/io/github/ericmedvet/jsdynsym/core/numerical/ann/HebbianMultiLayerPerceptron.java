@@ -243,11 +243,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
 
   @Override
   public double[] step(double[] input) {
-    if (input.length != neurons[0]) {
-      throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length)
-      );
-    }
     // update weights
     double[][][] newWeights = state.weights;
     for (int i = 1; i < neurons.length; i++) {
@@ -260,18 +255,13 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       }
     }
     // compute output
-    double[][] newActivations = state.activations;
-    newActivations[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      newActivations[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
-        double sum = state.weights[i - 1][j][0]; // set the bias
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          sum = sum + newActivations[i - 1][k - 1] * state.weights[i - 1][j][k];
-        }
-        newActivations[i][j] = activationFunction.applyAsDouble(sum);
-      }
-    }
+    double[][] newActivations = MultiLayerPerceptron.computeOutputs(
+        input,
+        newWeights,
+        activationFunction,
+        state.activations,
+        neurons
+    );
     // update state
     state = new State(newWeights, newActivations);
     return newActivations[neurons.length - 1];

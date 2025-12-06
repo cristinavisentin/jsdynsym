@@ -132,26 +132,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     return Arrays.stream(activationsHistory).mapToDouble(a -> a[layerIdx][neuronIdx]).toArray();
   }
 
-  private static double[][] computeOutput(
-      double[] input,
-      double[][][] weights,
-      MultiLayerPerceptron.ActivationFunction activationFunction,
-      double[][] activations
-  ) {
-    activations[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < activations.length; i++) {
-      activations[i] = new double[weights[i - 1].length];
-      for (int j = 0; j < activations[i].length; j++) {
-        double sum = weights[i - 1][j][0];
-        for (int k = 1; k < weights[i - 1][j].length; k++) {
-          sum = sum + activations[i - 1][k - 1] * weights[i - 1][j][k];
-        }
-        activations[i][j] = activationFunction.applyAsDouble(sum);
-      }
-    }
-    return activations;
-  }
-
   private static StateAndOutput step(
       double[] input,
       double reward,
@@ -160,11 +140,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       NamedUnivariateRealFunction plasticityFunction,
       int[] neurons
   ) {
-    if (input.length != neurons[0]) {
-      throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length)
-      );
-    }
     long age = state.age;
     double[][][] newWeights = state.weights;
     if (age > 0) {
@@ -198,11 +173,12 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     // compute output
-    double[][] newActivations = computeOutput(
+    double[][] newActivations = MultiLayerPerceptron.computeOutputs(
         input,
         newWeights,
         activationFunction,
-        new double[neurons.length][]
+        new double[neurons.length][],
+        neurons
     );
     // update state
     int historyIndex = (int) (age % state.rewardsHistory.length);
