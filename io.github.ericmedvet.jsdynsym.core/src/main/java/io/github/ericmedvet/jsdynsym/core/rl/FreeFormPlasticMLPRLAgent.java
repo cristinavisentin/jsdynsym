@@ -26,10 +26,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
@@ -39,7 +36,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   private static final String CURRENT = "Current";
   private static final String TREND = "Trend";
   private static final String ACTIVATION = "Activation";
-  private static final String REWARD = "Reward";
   private static final String AGE = "Age";
   private static final String PRE_SYNAPTIC_NEURON_INDEX = "Pre-Synaptic_Neuron_Idx";
   private static final String POST_SYNAPTIC_NEURON_INDEX = "Post-Synaptic_Neuron_Idx";
@@ -189,16 +185,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     );
   }
 
-  @Override
-  public NamedUnivariateRealFunction getParams() {
-    return plasticityFunction;
-  }
-
-  @Override
-  public void setParams(NamedUnivariateRealFunction namedUnivariateRealFunction) {
-    plasticityFunction = namedUnivariateRealFunction;
-  }
-
   private static double[][][] deepCopy(double[][][] src, int historyLength, int[] neurons) {
     double[][][] copy = emptyActivations(historyLength, neurons);
     for (int i = 0; i < src.length; i++) {
@@ -207,6 +193,34 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     return copy;
+  }
+
+  public static List<String> getVariableNames() {
+    String[] statisticTypes = {AVERAGE, STD_DEV, CURRENT, TREND};
+    Statistics.StatisticsScope[] statisticsScopes = {Statistics.StatisticsScope.NEURON_POST, Statistics.StatisticsScope.NEURON_PRE, Statistics.StatisticsScope.LAYER_POST, Statistics.StatisticsScope.LAYER_PRE, Statistics.StatisticsScope.NETWORK
+    };
+    List<String> variableNames = new ArrayList<>();
+    for (String st : statisticTypes) {
+      variableNames.add(String.format("%s_%s", st, Statistics.StatisticsScope.REWARD));
+      for (Statistics.StatisticsScope ss : statisticsScopes) {
+        variableNames.add(String.format("%s_%s_%s", st, ss, ACTIVATION));
+      }
+    }
+    variableNames.add(LAYER_INDEX);
+    variableNames.add(POST_SYNAPTIC_NEURON_INDEX);
+    variableNames.add(PRE_SYNAPTIC_NEURON_INDEX);
+    variableNames.add(AGE);
+    return variableNames;
+  }
+
+  @Override
+  public NamedUnivariateRealFunction getParams() {
+    return plasticityFunction;
+  }
+
+  @Override
+  public void setParams(NamedUnivariateRealFunction namedUnivariateRealFunction) {
+    plasticityFunction = namedUnivariateRealFunction;
   }
 
   @Override
@@ -340,15 +354,15 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
     public void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
       if (statisticsScope.equals(StatisticsScope.REWARD)) {
-        container.put(String.format("%s_%s", AVERAGE, statisticsScope), average);
-        container.put(String.format("%s_%s", STD_DEV, statisticsScope), stdDev);
-        container.put(String.format("%s_%s", CURRENT, statisticsScope), current);
-        container.put(String.format("%s_%s", TREND, statisticsScope), trend);
+        container.put(AVERAGE + "_" + statisticsScope, average);
+        container.put(STD_DEV + "_" + statisticsScope, stdDev);
+        container.put(CURRENT + "_" + statisticsScope, current);
+        container.put(TREND + "_" + statisticsScope, trend);
       } else {
-        container.put(String.format("%s_%s_%s", AVERAGE, statisticsScope, ACTIVATION), average);
-        container.put(String.format("%s_%s_%s", STD_DEV, statisticsScope, ACTIVATION), stdDev);
-        container.put(String.format("%s_%s_%s", CURRENT, statisticsScope, ACTIVATION), current);
-        container.put(String.format("%s_%s_%s", TREND, statisticsScope, ACTIVATION), trend);
+        container.put(AVERAGE + "_" + statisticsScope + "_" + ACTIVATION, average);
+        container.put(STD_DEV + "_" + statisticsScope + "_" + ACTIVATION, stdDev);
+        container.put(CURRENT + "_" + statisticsScope + "_" + ACTIVATION, current);
+        container.put(TREND + "_" + statisticsScope + "_" + ACTIVATION, trend);
       }
     }
 
