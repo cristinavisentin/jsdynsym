@@ -1,21 +1,17 @@
-/*-
- * ========================LICENSE_START=================================
- * jsdynsym-core
- * %%
- * Copyright (C) 2023 - 2025 Eric Medvet
- * %%
+/*
+ * Copyright 2025 eric
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * =========================LICENSE_END==================================
  */
 
 package io.github.ericmedvet.jsdynsym.core.numerical;
@@ -29,7 +25,9 @@ import java.util.stream.IntStream;
 
 public interface MultivariateRealFunction extends NumericalTimeInvariantStatelessSystem {
 
-  double[] compute(double... input);
+  static MultivariateRealFunction from(int nOfInputs, int nOfOutputs) {
+    return from(NamedFunction.from(input -> new double[nOfOutputs], "zeros"), nOfInputs, nOfOutputs);
+  }
 
   static MultivariateRealFunction from(Function<double[], double[]> f, int nOfInputs, int nOfOutputs) {
     return new MultivariateRealFunction() {
@@ -62,11 +60,6 @@ public interface MultivariateRealFunction extends NumericalTimeInvariantStateles
         .toList();
   }
 
-  @Override
-  default double[] step(double[] input) {
-    return compute(input);
-  }
-
   default MultivariateRealFunction andThen(MultivariateRealFunction other) {
     if (other.nOfInputs() != nOfOutputs()) {
       throw new IllegalArgumentException(
@@ -87,5 +80,12 @@ public interface MultivariateRealFunction extends NumericalTimeInvariantStateles
         nOfInputs(),
         nOfOutputs()
     );
+  }
+
+  double[] compute(double... input);
+
+  @Override
+  default double[] step(double[] input) {
+    return compute(input);
   }
 }
