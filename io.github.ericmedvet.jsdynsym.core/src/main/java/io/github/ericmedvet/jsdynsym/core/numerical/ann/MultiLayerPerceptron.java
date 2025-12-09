@@ -161,27 +161,28 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
   @Override
   public double[] compute(double[] input) {
     double[][] activationValues = new double[neurons.length][];
-    return computeOutputs(input, weights, activationFunction, activationValues, neurons)[neurons.length - 1];
+    for (int i = 0; i < neurons.length; i++) {
+      activationValues[i] = new double[neurons[i]];
+    }
+    return computeActivations(input, weights, activationFunction, activationValues)[neurons.length - 1];
   }
 
-  public static double[][] computeOutputs(
+  public static double[][] computeActivations(
       double[] input,
       double[][][] weights,
       MultiLayerPerceptron.ActivationFunction activationFunction,
-      double[][] activations,
-      int[] neurons
+      double[][] activations
   ) {
-    if (input.length != neurons[0]) {
+    if (input.length != activations[0].length) {
       throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length)
+          String.format("Expected input length is %d: found %d", activations[0].length, input.length)
       );
     }
     activations[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      activations[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
+    for (int i = 1; i < activations.length; i++) {
+      for (int j = 0; j < activations[i].length; j++) {
         double sum = weights[i - 1][j][0];
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
+        for (int k = 1; k < activations[i - 1].length + 1; k++) {
           sum = sum + activations[i - 1][k - 1] * weights[i - 1][j][k];
         }
         activations[i][j] = activationFunction.applyAsDouble(sum);

@@ -255,12 +255,11 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       }
     }
     // compute output
-    double[][] newActivations = MultiLayerPerceptron.computeOutputs(
+    double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        state.activations,
-        neurons
+        state.activations
     );
     // update state
     state = new State(newWeights, newActivations);

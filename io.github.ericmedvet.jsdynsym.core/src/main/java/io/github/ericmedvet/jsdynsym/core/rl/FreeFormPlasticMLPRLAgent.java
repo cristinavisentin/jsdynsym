@@ -155,7 +155,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_POST);
         Statistics.from(layerHistory(state.activationsHistory, i - 1), age)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_PRE);
-        for (int j = 0; j < newWeights[i].length; j++) {
+        for (int j = 0; j < newWeights[i - 1].length; j++) {
           // statistics post synapse
           Statistics.from(neuronHistory(state.activationsHistory, i, j), age)
               .insert(inputParameters, Statistics.StatisticsScope.NEURON_POST);
@@ -164,7 +164,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
             Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age)
                 .insert(inputParameters, Statistics.StatisticsScope.NEURON_PRE);
             inputParameters.put(LAYER_INDEX, (double) i);
-            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k - 1));
+            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k));
             inputParameters.put(POST_SYNAPTIC_NEURON_INDEX, (double) j);
             // update weights
             newWeights[i - 1][j][k] += plasticityFunction.computeAsDouble(inputParameters);
@@ -174,12 +174,11 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     }
     // compute output
     int historyIndex = (int) (age % state.rewardsHistory.length);
-    double[][] newActivations = MultiLayerPerceptron.computeOutputs(
+    double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        state.activationsHistory[historyIndex],
-        neurons
+        state.activationsHistory[historyIndex]
     );
     // update state
     state.rewardsHistory[historyIndex] = reward;
@@ -339,7 +338,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     }
 
     public void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
-      container.put(String.format("%s %s %s", AVERAGE, statisticsScope, ACTIVATION), average);
+      container.put(String.format("%s_%s_%s", AVERAGE, statisticsScope, ACTIVATION), average);
       container.put(STD_DEV + statisticsScope + ACTIVATION, stdDev);
       container.put(CURRENT + statisticsScope + ACTIVATION, current);
       container.put(TREND + statisticsScope + ACTIVATION, trend);
