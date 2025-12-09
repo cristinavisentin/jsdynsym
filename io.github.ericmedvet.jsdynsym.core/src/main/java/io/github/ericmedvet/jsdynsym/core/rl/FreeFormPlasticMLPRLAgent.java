@@ -26,6 +26,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,15 +35,15 @@ import java.util.stream.Collectors;
 
 public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforcementLearningAgent<FreeFormPlasticMLPRLAgent.State>, Parametrized<FreeFormPlasticMLPRLAgent, NamedUnivariateRealFunction>, FrozenableNumericalRLAgent<FreeFormPlasticMLPRLAgent.State> {
   private static final String AVERAGE = "Average";
-  private static final String STD_DEV = "Std_Dev";
+  private static final String STD_DEV = "StdDev";
   private static final String CURRENT = "Current";
   private static final String TREND = "Trend";
   private static final String ACTIVATION = "Activation";
   private static final String REWARD = "Reward";
   private static final String AGE = "Age";
-  private static final String PRE_SYNAPTIC_NEURON_INDEX = "Pre-Synaptic Neuron Idx";
-  private static final String POST_SYNAPTIC_NEURON_INDEX = "Post-Synaptic Neuron Idx";
-  private static final String LAYER_INDEX = "Layer Idx";
+  private static final String PRE_SYNAPTIC_NEURON_INDEX = "Pre-Synaptic_Neuron_Idx";
+  private static final String POST_SYNAPTIC_NEURON_INDEX = "Post-Synaptic_Neuron_Idx";
+  private static final String LAYER_INDEX = "Layer_Idx";
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
   private final int[] neurons;
   private final int historyLength;
@@ -146,22 +147,22 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       Map<String, Double> inputParameters = new HashMap<>();
       // statistics network wise
       inputParameters.put(AGE, (double) age);
-      inputParameters.put(REWARD, reward);
-      Statistics.from(networkHistory(state.activationsHistory), age)
+      Statistics.from(state.rewardsHistory, age - 1).insert(inputParameters, Statistics.StatisticsScope.REWARD);
+      Statistics.from(networkHistory(state.activationsHistory), age - 1)
           .insert(inputParameters, Statistics.StatisticsScope.NETWORK);
       for (int i = 1; i < neurons.length; i++) {
         // statistics layer wise
-        Statistics.from(layerHistory(state.activationsHistory, i), age)
+        Statistics.from(layerHistory(state.activationsHistory, i), age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_POST);
-        Statistics.from(layerHistory(state.activationsHistory, i - 1), age)
+        Statistics.from(layerHistory(state.activationsHistory, i - 1), age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_PRE);
         for (int j = 0; j < newWeights[i - 1].length; j++) {
           // statistics post synapse
-          Statistics.from(neuronHistory(state.activationsHistory, i, j), age)
+          Statistics.from(neuronHistory(state.activationsHistory, i, j), age - 1)
               .insert(inputParameters, Statistics.StatisticsScope.NEURON_POST);
           for (int k = 1; k < newWeights[i - 1][j].length; k++) {
             // statistics pre synapse
-            Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age)
+            Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age - 1)
                 .insert(inputParameters, Statistics.StatisticsScope.NEURON_PRE);
             inputParameters.put(LAYER_INDEX, (double) i);
             inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k));
@@ -332,22 +333,29 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
               .average()
               .orElse(0)
       );
-      double current = history[(int) age % history.length];
-      double trend = current - history[(int) (age - 1) % history.length]; // ultimo - penultimo
+      double current = history[(int) (age) % history.length];
+      double trend = (age == 0) ? current : current - history[(int) (age - 1) % history.length]; // ultimo - penultimo
       return new Statistics(current, trend, avg, stdDev);
     }
 
     public void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
-      container.put(String.format("%s_%s_%s", AVERAGE, statisticsScope, ACTIVATION), average);
-      container.put(STD_DEV + statisticsScope + ACTIVATION, stdDev);
-      container.put(CURRENT + statisticsScope + ACTIVATION, current);
-      container.put(TREND + statisticsScope + ACTIVATION, trend);
+      if (statisticsScope.equals(StatisticsScope.REWARD)) {
+        container.put(String.format("%s_%s", AVERAGE, statisticsScope), average);
+        container.put(String.format("%s_%s", STD_DEV, statisticsScope), stdDev);
+        container.put(String.format("%s_%s", CURRENT, statisticsScope), current);
+        container.put(String.format("%s_%s", TREND, statisticsScope), trend);
+      } else {
+        container.put(String.format("%s_%s_%s", AVERAGE, statisticsScope, ACTIVATION), average);
+        container.put(String.format("%s_%s_%s", STD_DEV, statisticsScope, ACTIVATION), stdDev);
+        container.put(String.format("%s_%s_%s", CURRENT, statisticsScope, ACTIVATION), current);
+        container.put(String.format("%s_%s_%s", TREND, statisticsScope, ACTIVATION), trend);
+      }
     }
 
     private enum StatisticsScope {
       NETWORK("Network"), LAYER_PRE("Layer_Pre"), LAYER_POST("Layer_Post"), NEURON_PRE("Neuron_Pre"), NEURON_POST(
           "Neuron_Post"
-      );
+      ), REWARD("Reward");
 
       private final String name;
 
