@@ -197,14 +197,12 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
   public static List<String> getVariableNames() {
     String[] statisticTypes = {AVERAGE, STD_DEV, CURRENT, TREND};
-    Statistics.StatisticsScope[] statisticsScopes = {Statistics.StatisticsScope.NEURON_POST, Statistics.StatisticsScope.NEURON_PRE, Statistics.StatisticsScope.LAYER_POST, Statistics.StatisticsScope.LAYER_PRE, Statistics.StatisticsScope.NETWORK
-    };
     List<String> variableNames = new ArrayList<>();
     for (String st : statisticTypes) {
       variableNames.add(String.format("%s_%s", st, Statistics.StatisticsScope.REWARD));
-      for (Statistics.StatisticsScope ss : statisticsScopes) {
-        variableNames.add(String.format("%s_%s_%s", st, ss, ACTIVATION));
-      }
+      Arrays.stream(Statistics.StatisticsScope.values())
+          .filter(ss -> ss != Statistics.StatisticsScope.REWARD)
+          .forEach(ss -> variableNames.add(String.format("%s_%s_%s", st, ss, ACTIVATION)));
     }
     variableNames.add(LAYER_INDEX);
     variableNames.add(POST_SYNAPTIC_NEURON_INDEX);
