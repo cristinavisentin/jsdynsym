@@ -178,7 +178,7 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
           String.format("Expected input length is %d: found %d", activations[0].length, input.length)
       );
     }
-    activations[0] = Arrays.stream(input).map(activationFunction).toArray();
+    System.arraycopy(input, 0, activations[0], 0, input.length);
     for (int i = 1; i < activations.length; i++) {
       for (int j = 0; j < activations[i].length; j++) {
         double sum = weights[i - 1][j][0];
