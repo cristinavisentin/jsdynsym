@@ -29,13 +29,13 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPercept
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
-@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.nrl") // TODO choose prefix template
+@Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.rl.num")
 public class NumericalRLAgents {
+
   private NumericalRLAgents() {
   }
 
@@ -54,11 +54,11 @@ public class NumericalRLAgents {
     List<String> variableNames = FreeFormPlasticMLPRLAgent.getVariableNames();
     NamedUnivariateRealFunction plasticityFunction = NamedUnivariateRealFunction.from(
         UnivariateRealFunction.from(
-            inputs -> 0 + Arrays.stream(inputs).sum(),
+            inputs -> 0d,
             variableNames.size()
         ),
         variableNames,
-        "Output"
+        "deltaW"
     );
     return eNds -> new FreeFormPlasticMLPRLAgent(
         activationFunction,
