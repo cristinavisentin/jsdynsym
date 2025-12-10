@@ -198,11 +198,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   public static List<String> getVariableNames() {
     String[] statisticTypes = {AVERAGE, STD_DEV, CURRENT, TREND};
     List<String> variableNames = new ArrayList<>();
-    for (String st : statisticTypes) {
-      variableNames.add(String.format("%s_%s", st, Statistics.StatisticsScope.REWARD));
-      Arrays.stream(Statistics.StatisticsScope.values())
-          .filter(ss -> ss != Statistics.StatisticsScope.REWARD)
-          .forEach(ss -> variableNames.add(String.format("%s_%s_%s", st, ss, ACTIVATION)));
+    for (Statistics.StatisticsScope ss : Statistics.StatisticsScope.values()) {
+      for (String st : statisticTypes) {
+        if (ss.equals(Statistics.StatisticsScope.REWARD)) {
+          variableNames.add(String.format("%s_%s", st, Statistics.StatisticsScope.REWARD));
+        } else {
+          variableNames.add(String.format("%s_%s_%s", st, ss, ACTIVATION));
+        }
+      }
     }
     variableNames.add(LAYER_INDEX);
     variableNames.add(POST_SYNAPTIC_NEURON_INDEX);
@@ -337,7 +340,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       double stdDev
   ) {
 
-    public static Statistics from(double[] history, long age) {
+    private static Statistics from(double[] history, long age) {
+      int currentIdx = (int) (age) % history.length;
+      int oldestIdx = (age < history.length) ? 0 : (int) (age + 1) % history.length;
       double avg = Arrays.stream(history).average().orElse(0);
       double stdDev = Math.sqrt(
           Arrays.stream(history)
@@ -345,12 +350,12 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
               .average()
               .orElse(0)
       );
-      double current = history[(int) (age) % history.length];
-      double trend = (age == 0) ? current : current - history[(int) (age - 1) % history.length]; // ultimo - penultimo
+      double current = history[currentIdx];
+      double trend = current - history[oldestIdx]; // newest - oldest
       return new Statistics(current, trend, avg, stdDev);
     }
 
-    public void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
+    private void insert(Map<String, Double> container, StatisticsScope statisticsScope) {
       if (statisticsScope.equals(StatisticsScope.REWARD)) {
         container.put(AVERAGE + "_" + statisticsScope, average);
         container.put(STD_DEV + "_" + statisticsScope, stdDev);
@@ -365,8 +370,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     }
 
     private enum StatisticsScope {
-      NETWORK("Network"), LAYER_PRE("Layer_Pre"), LAYER_POST("Layer_Post"), NEURON_PRE("Neuron_Pre"), NEURON_POST(
-          "Neuron_Post"
+      NEURON_POST("Neuron_Post"), NEURON_PRE("Neuron_Pre"), LAYER_POST("Layer_Post"), LAYER_PRE("Layer_Pre"), NETWORK(
+          "Network"
       ), REWARD("Reward");
 
       private final String name;
