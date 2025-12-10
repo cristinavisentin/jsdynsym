@@ -160,24 +160,35 @@ public class MultiLayerPerceptron implements MultivariateRealFunction, Numerical
 
   @Override
   public double[] compute(double[] input) {
-    if (input.length != neurons[0]) {
+    double[][] activationValues = new double[neurons.length][];
+    for (int i = 0; i < neurons.length; i++) {
+      activationValues[i] = new double[neurons[i]];
+    }
+    return computeActivations(input, weights, activationFunction, activationValues)[neurons.length - 1];
+  }
+
+  public static double[][] computeActivations(
+      double[] input,
+      double[][][] weights,
+      MultiLayerPerceptron.ActivationFunction activationFunction,
+      double[][] activations
+  ) {
+    if (input.length != activations[0].length) {
       throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length)
+          String.format("Expected input length is %d: found %d", activations[0].length, input.length)
       );
     }
-    double[][] activationValues = new double[neurons.length][];
-    activationValues[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      activationValues[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
-        double sum = weights[i - 1][j][0]; // set the bias
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          sum = sum + activationValues[i - 1][k - 1] * weights[i - 1][j][k];
+    System.arraycopy(input, 0, activations[0], 0, input.length);
+    for (int i = 1; i < activations.length; i++) {
+      for (int j = 0; j < activations[i].length; j++) {
+        double sum = weights[i - 1][j][0];
+        for (int k = 1; k < activations[i - 1].length + 1; k++) {
+          sum = sum + activations[i - 1][k - 1] * weights[i - 1][j][k];
         }
-        activationValues[i][j] = activationFunction.applyAsDouble(sum);
+        activations[i][j] = activationFunction.applyAsDouble(sum);
       }
     }
-    return activationValues[neurons.length - 1];
+    return activations;
   }
 
   @Override

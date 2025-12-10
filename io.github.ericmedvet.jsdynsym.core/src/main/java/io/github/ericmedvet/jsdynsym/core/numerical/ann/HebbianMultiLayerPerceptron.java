@@ -57,7 +57,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       RandomGenerator randomGenerator,
       ParametrizationType parametrizationType,
       WeightInitializationType weightInitializationType
-
   ) {
     this.activationFunction = activationFunction;
     this.as = as;
@@ -216,7 +215,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     return concatenated;
   }
 
-  private static double[][][] deepCopy(double[][][] src, int[] neurons) {
+  public static double[][][] deepCopy(double[][][] src, int[] neurons) {
     double[][][] copy = emptyArray(neurons);
     for (int i = 0; i < src.length; i++) {
       for (int j = 0; j < src[i].length; j++) {
@@ -244,11 +243,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
 
   @Override
   public double[] step(double[] input) {
-    if (input.length != neurons[0]) {
-      throw new IllegalArgumentException(
-          String.format("Expected input length is %d: found %d", neurons[0], input.length)
-      );
-    }
     // update weights
     double[][][] newWeights = state.weights;
     for (int i = 1; i < neurons.length; i++) {
@@ -261,19 +255,12 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       }
     }
     // compute output
-    //double[][] newActivations = computeOutput(input, neurons, state.weights, activationFunction);
-    double[][] newActivations = state.activations;
-    newActivations[0] = Arrays.stream(input).map(activationFunction).toArray();
-    for (int i = 1; i < neurons.length; i++) {
-      newActivations[i] = new double[neurons[i]];
-      for (int j = 0; j < neurons[i]; j++) {
-        double sum = state.weights[i - 1][j][0]; // set the bias
-        for (int k = 1; k < neurons[i - 1] + 1; k++) {
-          sum = sum + newActivations[i - 1][k - 1] * state.weights[i - 1][j][k];
-        }
-        newActivations[i][j] = activationFunction.applyAsDouble(sum);
-      }
-    }
+    double[][] newActivations = MultiLayerPerceptron.computeActivations(
+        input,
+        newWeights,
+        activationFunction,
+        state.activations
+    );
     // update state
     state = new State(newWeights, newActivations);
     return newActivations[neurons.length - 1];
@@ -315,7 +302,6 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     double[] flatBs = flat(parametrizationType, bs, neurons);
     double[] flatCs = flat(parametrizationType, cs, neurons);
     double[] flatDs = flat(parametrizationType, ds, neurons);
-
     if (weightInitializationType.equals(WeightInitializationType.PARAMS)) {
       double[] flatWeights = MultiLayerPerceptron.flat(state.weights, neurons);
       return concat(flatAs, flatBs, flatCs, flatDs, flatWeights);
