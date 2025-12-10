@@ -31,15 +31,15 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforcementLearningAgent<FreeFormPlasticMLPRLAgent.State>, Parametrized<FreeFormPlasticMLPRLAgent, NamedUnivariateRealFunction>, FrozenableNumericalRLAgent<FreeFormPlasticMLPRLAgent.State> {
-  private static final String AVERAGE = "Average";
-  private static final String STD_DEV = "StdDev";
-  private static final String CURRENT = "Current";
-  private static final String TREND = "Trend";
-  private static final String ACTIVATION = "Activation";
-  private static final String AGE = "Age";
-  private static final String PRE_SYNAPTIC_NEURON_INDEX = "Pre-Synaptic_Neuron_Idx";
-  private static final String POST_SYNAPTIC_NEURON_INDEX = "Post-Synaptic_Neuron_Idx";
-  private static final String LAYER_INDEX = "Layer_Idx";
+  private static final String AVERAGE = "average";
+  private static final String STD_DEV = "stdDev";
+  private static final String CURRENT = "current";
+  private static final String TREND = "trend";
+  private static final String ACTIVATION = "activation";
+  private static final String AGE = "age";
+  private static final String PRE_SYNAPTIC_NEURON_INDEX = "preSynapticNeuronIdx";
+  private static final String POST_SYNAPTIC_NEURON_INDEX = "postSynapticNeuronIdx";
+  private static final String LAYER_INDEX = "layerIdx";
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
   private final int[] neurons;
   private final int historyLength;
@@ -370,9 +370,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     }
 
     private enum StatisticsScope {
-      NEURON_POST("Neuron_Post"), NEURON_PRE("Neuron_Pre"), LAYER_POST("Layer_Post"), LAYER_PRE("Layer_Pre"), NETWORK(
-          "Network"
-      ), REWARD("Reward");
+      NEURON_POST("neuronPost"), NEURON_PRE("neuronPre"), LAYER_POST("layerPost"), LAYER_PRE("layerPre"), NETWORK(
+          "network"
+      ), REWARD("reward");
 
       private final String name;
 
