@@ -1,3 +1,22 @@
+/*-
+ * ========================LICENSE_START=================================
+ * jsdynsym-buildable
+ * %%
+ * Copyright (C) 2023 - 2025 Eric Medvet
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================LICENSE_END==================================
+ */
 /*
  * Copyright 2025 eric
  *
@@ -5,7 +24,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,12 +42,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.composed.InStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.OutStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
-import io.github.ericmedvet.jsdynsym.core.numerical.EnhancedInput;
-import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
-import io.github.ericmedvet.jsdynsym.core.numerical.Noised;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.Sinusoidal;
+import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.DelayedRecurrentNetwork;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
@@ -93,46 +107,17 @@ public class NumericalDynamicalSystems {
       @Param(value = "parametrizationType", dS = "synapse") HebbianMultiLayerPerceptron.ParametrizationType parametrizationType,
       @Param(value = "weightInitializationType", dS = "params") HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType
   ) {
-    return eNds -> {
-      if (innerLayers.isEmpty()) {
-        int[] innerNeurons = new int[nOfInnerLayers];
-        int centerSize = (int) Math.max(2, Math.round(eNds.nOfInputs() * innerLayerRatio));
-        if (nOfInnerLayers > 1) {
-          for (int i = 0; i < nOfInnerLayers / 2; i++) {
-            innerNeurons[i] = eNds.nOfInputs() + (centerSize - eNds.nOfInputs()) / (nOfInnerLayers / 2 + 1) * (i + 1);
-          }
-          for (int i = nOfInnerLayers / 2; i < nOfInnerLayers; i++) {
-            innerNeurons[i] = centerSize + (eNds
-                .nOfOutputs() - centerSize) / (nOfInnerLayers / 2 + 1) * (i - nOfInnerLayers / 2);
-          }
-        } else if (nOfInnerLayers > 0) {
-          innerNeurons[0] = centerSize;
-        }
-        return new HebbianMultiLayerPerceptron(
-            activationFunction,
-            eNds.nOfInputs(),
-            innerNeurons,
-            eNds.nOfOutputs(),
-            learningRate,
-            initialWeightRange,
-            randomGenerator,
-            parametrizationType,
-            weightInitializationType
-        );
-      } else {
-        return new HebbianMultiLayerPerceptron(
-            activationFunction,
-            eNds.nOfInputs(),
-            innerLayers.stream().mapToInt(i -> i).toArray(),
-            eNds.nOfOutputs(),
-            learningRate,
-            initialWeightRange,
-            randomGenerator,
-            parametrizationType,
-            weightInitializationType
-        );
-      }
-    };
+    return eNds -> new HebbianMultiLayerPerceptron(
+        activationFunction,
+        eNds.nOfInputs(),
+        innerLayers.stream().mapToInt(i -> i).toArray(),
+        eNds.nOfOutputs(),
+        learningRate,
+        initialWeightRange,
+        randomGenerator,
+        parametrizationType,
+        weightInitializationType
+    );
   }
 
   @SuppressWarnings("unused")
@@ -268,5 +253,4 @@ public class NumericalDynamicalSystems {
         eNds.nOfOutputs()
     );
   }
-
 }
