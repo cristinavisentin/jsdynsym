@@ -23,12 +23,12 @@ import io.github.ericmedvet.jnb.core.Cacheable;
 import io.github.ericmedvet.jnb.core.Discoverable;
 import io.github.ericmedvet.jnb.core.Param;
 import io.github.ericmedvet.jnb.datastructure.DoubleRange;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.UnivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
 import java.util.List;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -41,7 +41,7 @@ public class NumericalRLAgents {
 
   @SuppressWarnings("unused")
   @Cacheable
-  public static Function<NumericalDynamicalSystem<?>, FreeFormPlasticMLPRLAgent> freeFormMlp(
+  public static Function<NumericalReinforcementLearningAgent<?>, FreeFormPlasticMLPRLAgent> freeFormMlp(
       @Param(value = "innerLayerRatio", dD = 0.65) double innerLayerRatio,
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param("innerLayers") List<Integer> innerLayers,
