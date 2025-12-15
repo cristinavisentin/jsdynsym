@@ -25,6 +25,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
@@ -35,6 +36,8 @@ import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
 import java.io.File;
@@ -49,7 +52,42 @@ public class Main {
   public static void main(String[] args) throws IOException {
     // navigation();
     // pointNavigation();
-    hebbianNavigation();
+    // hebbianNavigation();
+    freeFormNavigation();
+  }
+
+  public static void freeFormNavigation() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], ?> task = (SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], ?>) nb
+        .build(
+            """
+                ds.srlat.fromNumericalEnvironment(
+                  environment = ds.e.navigation(
+                    arena = ds.arena.prepared(name = empty)
+                  );
+                  reward = ds.e.nav.reward.reaching()
+                )
+                """
+        );
+    @SuppressWarnings("unchecked") FreeFormPlasticMLPRLAgent ffmlp = ((Function<NumericalReinforcementLearningAgent<?>, FreeFormPlasticMLPRLAgent>) nb
+        .build(
+            "ds.rl.num.freeFormMlp(innerLayers = [8]; randomGenerator = m.defaultRG(seed = -1))"
+        )).apply(task.example().orElseThrow());
+    int runs = 10;
+    for (int r = 0; r < runs; r++) {
+      long startTime = System.nanoTime();
+      for (int i = 0; i < 1000; i++) {
+        ffmlp.reset();
+        //      Simulation.Outcome<? extends SingleAgentTask.Step<ReinforcementLearningAgent.RewardedInput<double[]>, double[], ?>> outcome =
+        task.simulate(ffmlp, 0.1, new DoubleRange(0, 30));
+        //        Point finalRobotPosition = ((NavigationEnvironment.State) outcome.snapshots()
+        //            .get(outcome.snapshots().lastKey())
+        //            .state()).robotPosition();
+        //        System.out.printf("%.2f;%.2f%n", finalRobotPosition.x(), finalRobotPosition.y());
+      }
+      long elapsedNanos = System.nanoTime() - startTime;
+      System.out.printf("%.2f%n", elapsedNanos / 1e9);
+    }
   }
 
   public static void hebbianNavigation() {
