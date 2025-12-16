@@ -94,39 +94,46 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   }
 
   private static double[][][] emptyActivations(int historyLength, int[] neurons) {
-    double[][][] emptyActivations = new double[historyLength][][];
-    for (int h = 0; h < historyLength; h++) {
-      emptyActivations[h] = new double[neurons.length][];
-      for (int i = 0; i < neurons.length; i++) {
-        emptyActivations[h][i] = new double[neurons[i]];
+    double[][][] emptyActivations = new double[neurons.length][][];
+    for (int i = 0; i < neurons.length; i++) {
+      emptyActivations[i] = new double[neurons[i]][];
+      for (int j = 0; j < neurons[i]; j++) {
+        emptyActivations[i][j] = new double[historyLength];
       }
     }
     return emptyActivations;
   }
 
   private static double[] networkHistory(double[][][] activationsHistory) {
-    return Arrays.stream(activationsHistory)
-        .mapToDouble(
-            h -> Arrays.stream(h)
-                .flatMapToDouble(Arrays::stream)
-                .average()
-                .orElse(0)
-        )
-        .toArray();
+    int historyLength = activationsHistory[0][0].length;
+    double[] networkHistory = new double[historyLength];
+    double total = 0;
+    for (int h = 0; h < historyLength; h++) {
+      for (int i = 0; i < activationsHistory.length; i++) {
+        for (int j = 0; j < activationsHistory[i].length; j++) {
+          networkHistory[h] += activationsHistory[i][j][h];
+        }
+        total += activationsHistory[i].length;
+      }
+      networkHistory[h] /= total;
+    }
+    return networkHistory;
   }
 
   private static double[] layerHistory(double[][][] activationsHistory, int layerIdx) {
-    return Arrays.stream(activationsHistory)
-        .mapToDouble(
-            a -> Arrays.stream(a[layerIdx])
-                .average()
-                .orElse(0)
-        )
-        .toArray();
+    int historyLength = activationsHistory[layerIdx][0].length;
+    double[] layerHistory = new double[historyLength];
+    for (int h = 0; h < historyLength; h++) {
+      for (int j = 0; j < activationsHistory[layerIdx].length; j++) {
+        layerHistory[h] += activationsHistory[layerIdx][j][h];
+      }
+      layerHistory[h] /= activationsHistory[layerIdx].length;
+    }
+    return layerHistory;
   }
 
   private static double[] neuronHistory(double[][][] activationsHistory, int layerIdx, int neuronIdx) {
-    return Arrays.stream(activationsHistory).mapToDouble(a -> a[layerIdx][neuronIdx]).toArray();
+    return activationsHistory[layerIdx][neuronIdx];
   }
 
   private static StateAndOutput step(
@@ -171,18 +178,42 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     }
     // compute output
     int historyIndex = (int) (age % state.rewardsHistory.length);
+    double[][] activationValues = new double[neurons.length][];
+    for (int i = 0; i < neurons.length; i++) {
+      activationValues[i] = new double[neurons[i]];
+    }
     double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        state.activationsHistory[historyIndex]
+        activationValues
     );
     // update state
     state.rewardsHistory[historyIndex] = reward;
     return new StateAndOutput(
-        new State(age + 1, newWeights, state.activationsHistory, state.rewardsHistory),
+        new State(
+            age + 1,
+            newWeights,
+            fillActivations(state.rewardsHistory.length, neurons, newActivations, historyIndex),
+            state.rewardsHistory
+        ),
         newActivations[neurons.length - 1]
     );
+  }
+
+  private static double[][][] fillActivations(
+      int historyLength,
+      int[] neurons,
+      double[][] newActivations,
+      int historyIndex
+  ) {
+    double[][][] emptyActivations = emptyActivations(historyLength, neurons);
+    for (int i = 0; i < newActivations.length; i++) {
+      for (int j = 0; j < newActivations[i].length; j++) {
+        emptyActivations[i][j][historyIndex] = newActivations[i][j];
+      }
+    }
+    return emptyActivations;
   }
 
   private static double[][][] deepCopy(double[][][] src, int historyLength, int[] neurons) {
