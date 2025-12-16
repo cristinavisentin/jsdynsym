@@ -105,28 +105,37 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   }
 
   private static double[] networkHistory(double[][][] activationsHistory) {
-    return Arrays.stream(activationsHistory)
-        .mapToDouble(
-            h -> Arrays.stream(h)
-                .flatMapToDouble(Arrays::stream)
-                .average()
-                .orElse(0)
-        )
-        .toArray();
+    double[] networkHistory = new double[activationsHistory.length];
+    double total = 0;
+    for (int h = 0; h < activationsHistory.length; h++) {
+      for (int i = 0; i < activationsHistory[h].length; i++) {
+        for (int j = 0; j < activationsHistory[h][i].length; j++) {
+          networkHistory[h] += activationsHistory[h][i][j];
+        }
+        total += activationsHistory[h][i].length;
+      }
+      networkHistory[h] /= total;
+    }
+    return networkHistory;
   }
 
   private static double[] layerHistory(double[][][] activationsHistory, int layerIdx) {
-    return Arrays.stream(activationsHistory)
-        .mapToDouble(
-            a -> Arrays.stream(a[layerIdx])
-                .average()
-                .orElse(0)
-        )
-        .toArray();
+    double[] layerHistory = new double[activationsHistory.length];
+    for (int h = 0; h < activationsHistory.length; h++) {
+      for (int j = 0; j < activationsHistory[h][layerIdx].length; j++) {
+        layerHistory[h] += activationsHistory[h][layerIdx][j];
+      }
+      layerHistory[h] /= activationsHistory[h][layerIdx].length;
+    }
+    return layerHistory;
   }
 
   private static double[] neuronHistory(double[][][] activationsHistory, int layerIdx, int neuronIdx) {
-    return Arrays.stream(activationsHistory).mapToDouble(a -> a[layerIdx][neuronIdx]).toArray();
+    double[] neuronHistory = new double[activationsHistory.length];
+    for (int h = 0; h < activationsHistory.length; h++) {
+      neuronHistory[h] = activationsHistory[h][layerIdx][neuronIdx];
+    }
+    return neuronHistory;
   }
 
   private static StateAndOutput step(
