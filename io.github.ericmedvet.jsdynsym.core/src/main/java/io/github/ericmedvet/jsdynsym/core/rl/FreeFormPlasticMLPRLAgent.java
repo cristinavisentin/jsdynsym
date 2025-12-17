@@ -104,38 +104,6 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     return emptyActivations;
   }
 
-  private static double[] networkHistory(double[][][] activationsHistory) {
-    int historyLength = activationsHistory[0][0].length;
-    double[] networkHistory = new double[historyLength];
-    double total = 0;
-    for (int h = 0; h < historyLength; h++) {
-      for (int i = 0; i < activationsHistory.length; i++) {
-        for (int j = 0; j < activationsHistory[i].length; j++) {
-          networkHistory[h] += activationsHistory[i][j][h];
-        }
-        total += activationsHistory[i].length;
-      }
-      networkHistory[h] /= total;
-    }
-    return networkHistory;
-  }
-
-  private static double[] layerHistory(double[][][] activationsHistory, int layerIdx) {
-    int historyLength = activationsHistory[layerIdx][0].length;
-    double[] layerHistory = new double[historyLength];
-    for (int h = 0; h < historyLength; h++) {
-      for (int j = 0; j < activationsHistory[layerIdx].length; j++) {
-        layerHistory[h] += activationsHistory[layerIdx][j][h];
-      }
-      layerHistory[h] /= activationsHistory[layerIdx].length;
-    }
-    return layerHistory;
-  }
-
-  private static double[] neuronHistory(double[][][] activationsHistory, int layerIdx, int neuronIdx) {
-    return activationsHistory[layerIdx][neuronIdx];
-  }
-
   private static StateAndOutput step(
       double[] input,
       double reward,
@@ -151,24 +119,23 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       // statistics network wise
       inputParameters.put(AGE, (double) age);
       Statistics.from(state.rewardsHistory, age - 1).insert(inputParameters, Statistics.StatisticsScope.REWARD);
-      Statistics.from(networkHistory(state.activationsHistory), age - 1)
-          .insert(inputParameters, Statistics.StatisticsScope.NETWORK);
+      Statistics.from(state.networkHistory, age - 1).insert(inputParameters, Statistics.StatisticsScope.NETWORK);
       for (int i = 1; i < neurons.length; i++) {
         // statistics layer wise
-        Statistics.from(layerHistory(state.activationsHistory, i), age - 1)
+        Statistics.from(state.layersHistory[i], age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_POST);
-        Statistics.from(layerHistory(state.activationsHistory, i - 1), age - 1)
+        Statistics.from(state.layersHistory[i - 1], age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_PRE);
         for (int j = 0; j < newWeights[i - 1].length; j++) {
           // statistics post synapse
-          Statistics.from(neuronHistory(state.activationsHistory, i, j), age - 1)
+          Statistics.from(state.activationsHistory[i][j], age - 1)
               .insert(inputParameters, Statistics.StatisticsScope.NEURON_POST);
           for (int k = 1; k < newWeights[i - 1][j].length; k++) {
             // statistics pre synapse
-            Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age - 1)
+            Statistics.from(state.activationsHistory[i - 1][k - 1], age - 1)
                 .insert(inputParameters, Statistics.StatisticsScope.NEURON_PRE);
             inputParameters.put(LAYER_INDEX, (double) i);
-            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k));
+            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) k);
             inputParameters.put(POST_SYNAPTIC_NEURON_INDEX, (double) j);
             // update weights
             newWeights[i - 1][j][k] += plasticityFunction.computeAsDouble(inputParameters);
@@ -177,43 +144,20 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     // compute output
-    int historyIndex = (int) (age % state.rewardsHistory.length);
-    double[][] activationValues = new double[neurons.length][];
+    double[][] activations = new double[neurons.length][];
     for (int i = 0; i < neurons.length; i++) {
-      activationValues[i] = new double[neurons[i]];
+      activations[i] = new double[neurons[i]];
     }
     double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        activationValues
+        activations
     );
-    // update state
-    state.rewardsHistory[historyIndex] = reward;
     return new StateAndOutput(
-        new State(
-            age + 1,
-            newWeights,
-            fillActivations(state.rewardsHistory.length, neurons, newActivations, historyIndex),
-            state.rewardsHistory
-        ),
+        state.update(newActivations, reward),
         newActivations[neurons.length - 1]
     );
-  }
-
-  private static double[][][] fillActivations(
-      int historyLength,
-      int[] neurons,
-      double[][] newActivations,
-      int historyIndex
-  ) {
-    double[][][] emptyActivations = emptyActivations(historyLength, neurons);
-    for (int i = 0; i < newActivations.length; i++) {
-      for (int j = 0; j < newActivations[i].length; j++) {
-        emptyActivations[i][j][historyIndex] = newActivations[i][j];
-      }
-    }
-    return emptyActivations;
   }
 
   private static double[][][] deepCopy(double[][][] src, int historyLength, int[] neurons) {
@@ -261,7 +205,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
         state.age,
         HebbianMultiLayerPerceptron.deepCopy(state.weights, neurons),
         deepCopy(state.activationsHistory, historyLength, neurons),
-        Arrays.copyOf(state.rewardsHistory, historyLength)
+        Arrays.copyOf(state.rewardsHistory, historyLength),
+        state.layersHistory, // TODO make a deep copy
+        Arrays.copyOf(state.networkHistory, historyLength)
     );
     return new FrozenableNumericalDynamicalSystem<State>() {
       private State innerState = initialState;
@@ -339,6 +285,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
         0,
         HebbianMultiLayerPerceptron.emptyArray(neurons),
         emptyActivations(historyLength, neurons),
+        new double[historyLength],
+        new double[emptyActivations(historyLength, neurons).length][historyLength],
         new double[historyLength]
     );
     if (weightInitializationType.equals(HebbianMultiLayerPerceptron.WeightInitializationType.RANDOM)) {
@@ -422,7 +370,27 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       long age,
       double[][][] weights,
       double[][][] activationsHistory,
-      double[] rewardsHistory
+      double[] rewardsHistory,
+      double[][] layersHistory, // history of average - layer wise - activation values
+      double[] networkHistory // history of average - network wise - activation values
   ) {
+    public State update(double[][] newActivations, double reward) {
+      int nOfNeurons = 0;
+      int historyIndex = (int) (age % rewardsHistory.length);
+      networkHistory[historyIndex] = 0;
+      for (int i = 0; i < newActivations.length; i++) {
+        layersHistory[i][historyIndex] = 0;
+        for (int j = 0; j < newActivations[i].length; j++) {
+          activationsHistory[i][j][historyIndex] = newActivations[i][j];
+          layersHistory[i][historyIndex] += newActivations[i][j];
+          networkHistory[historyIndex] += newActivations[i][j];
+        }
+        layersHistory[i][historyIndex] /= activationsHistory[i].length;
+        nOfNeurons += activationsHistory[i].length;
+      }
+      networkHistory[historyIndex] /= nOfNeurons;
+      rewardsHistory[historyIndex] = reward;
+      return new State(age + 1, weights, activationsHistory, rewardsHistory, layersHistory, networkHistory);
+    }
   }
 }
