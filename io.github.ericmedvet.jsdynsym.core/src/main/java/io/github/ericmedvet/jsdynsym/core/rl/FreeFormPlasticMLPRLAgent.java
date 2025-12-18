@@ -322,13 +322,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     private static Statistics from(double[] history, long age) {
       int currentIdx = (int) (age) % history.length;
       int oldestIdx = (age < history.length) ? 0 : (int) (age + 1) % history.length;
-      double avg = Arrays.stream(history).average().orElse(0);
-      double stdDev = Math.sqrt(
-          Arrays.stream(history)
-              .map(v -> Math.pow(v - avg, 2))
-              .average()
-              .orElse(0)
-      );
+      double avg = 0;
+      double numerator = 0;
+      for (double v : history) {
+        avg += v;
+        numerator += Math.pow(v - avg, 2);
+      }
+      avg /= history.length;
+      double stdDev = Math.sqrt(numerator / history.length);
       double current = history[currentIdx];
       double trend = current - history[oldestIdx]; // newest - oldest
       return new Statistics(current, trend, avg, stdDev);
