@@ -54,8 +54,8 @@ public class Main {
     // testMlp();
     // pointNavigation();
     // hebbianNavigation();
-    testHebbian();
-    // freeFormNavigation();
+    // testHebbian();
+    freeFormNavigation();
   }
 
   public static void freeFormNavigation() {
@@ -78,7 +78,7 @@ public class Main {
     int runs = 10;
     for (int r = 0; r < runs; r++) {
       long startTime = System.nanoTime();
-      for (int i = 0; i < 1000; i++) {
+      for (int i = 0; i < 5000; i++) {
         ffmlp.reset();
         //      Simulation.Outcome<? extends SingleAgentTask.Step<ReinforcementLearningAgent.RewardedInput<double[]>, double[], ?>> outcome =
         task.simulate(ffmlp, 0.1, new DoubleRange(0, 30));

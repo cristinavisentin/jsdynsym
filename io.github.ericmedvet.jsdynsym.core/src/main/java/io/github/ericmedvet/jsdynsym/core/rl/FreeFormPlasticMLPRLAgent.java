@@ -94,48 +94,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   }
 
   private static double[][][] emptyActivations(int historyLength, int[] neurons) {
-    double[][][] emptyActivations = new double[historyLength][][];
-    for (int h = 0; h < historyLength; h++) {
-      emptyActivations[h] = new double[neurons.length][];
-      for (int i = 0; i < neurons.length; i++) {
-        emptyActivations[h][i] = new double[neurons[i]];
+    double[][][] emptyActivations = new double[neurons.length][][];
+    for (int i = 0; i < neurons.length; i++) {
+      emptyActivations[i] = new double[neurons[i]][];
+      for (int j = 0; j < neurons[i]; j++) {
+        emptyActivations[i][j] = new double[historyLength];
       }
     }
     return emptyActivations;
-  }
-
-  private static double[] networkHistory(double[][][] activationsHistory) {
-    double[] networkHistory = new double[activationsHistory.length];
-    double total = 0;
-    for (int h = 0; h < activationsHistory.length; h++) {
-      for (int i = 0; i < activationsHistory[h].length; i++) {
-        for (int j = 0; j < activationsHistory[h][i].length; j++) {
-          networkHistory[h] += activationsHistory[h][i][j];
-        }
-        total += activationsHistory[h][i].length;
-      }
-      networkHistory[h] /= total;
-    }
-    return networkHistory;
-  }
-
-  private static double[] layerHistory(double[][][] activationsHistory, int layerIdx) {
-    double[] layerHistory = new double[activationsHistory.length];
-    for (int h = 0; h < activationsHistory.length; h++) {
-      for (int j = 0; j < activationsHistory[h][layerIdx].length; j++) {
-        layerHistory[h] += activationsHistory[h][layerIdx][j];
-      }
-      layerHistory[h] /= activationsHistory[h][layerIdx].length;
-    }
-    return layerHistory;
-  }
-
-  private static double[] neuronHistory(double[][][] activationsHistory, int layerIdx, int neuronIdx) {
-    double[] neuronHistory = new double[activationsHistory.length];
-    for (int h = 0; h < activationsHistory.length; h++) {
-      neuronHistory[h] = activationsHistory[h][layerIdx][neuronIdx];
-    }
-    return neuronHistory;
   }
 
   private static StateAndOutput step(
@@ -153,24 +119,23 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       // statistics network wise
       inputParameters.put(AGE, (double) age);
       Statistics.from(state.rewardsHistory, age - 1).insert(inputParameters, Statistics.StatisticsScope.REWARD);
-      Statistics.from(networkHistory(state.activationsHistory), age - 1)
-          .insert(inputParameters, Statistics.StatisticsScope.NETWORK);
+      Statistics.from(state.networkHistory, age - 1).insert(inputParameters, Statistics.StatisticsScope.NETWORK);
       for (int i = 1; i < neurons.length; i++) {
         // statistics layer wise
-        Statistics.from(layerHistory(state.activationsHistory, i), age - 1)
+        Statistics.from(state.layersHistory[i], age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_POST);
-        Statistics.from(layerHistory(state.activationsHistory, i - 1), age - 1)
+        Statistics.from(state.layersHistory[i - 1], age - 1)
             .insert(inputParameters, Statistics.StatisticsScope.LAYER_PRE);
         for (int j = 0; j < newWeights[i - 1].length; j++) {
           // statistics post synapse
-          Statistics.from(neuronHistory(state.activationsHistory, i, j), age - 1)
+          Statistics.from(state.activationsHistory[i][j], age - 1)
               .insert(inputParameters, Statistics.StatisticsScope.NEURON_POST);
           for (int k = 1; k < newWeights[i - 1][j].length; k++) {
             // statistics pre synapse
-            Statistics.from(neuronHistory(state.activationsHistory, i - 1, k - 1), age - 1)
+            Statistics.from(state.activationsHistory[i - 1][k - 1], age - 1)
                 .insert(inputParameters, Statistics.StatisticsScope.NEURON_PRE);
             inputParameters.put(LAYER_INDEX, (double) i);
-            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) (k));
+            inputParameters.put(PRE_SYNAPTIC_NEURON_INDEX, (double) k);
             inputParameters.put(POST_SYNAPTIC_NEURON_INDEX, (double) j);
             // update weights
             newWeights[i - 1][j][k] += plasticityFunction.computeAsDouble(inputParameters);
@@ -179,17 +144,18 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     // compute output
-    int historyIndex = (int) (age % state.rewardsHistory.length);
+    double[][] activations = new double[neurons.length][];
+    for (int i = 0; i < neurons.length; i++) {
+      activations[i] = new double[neurons[i]];
+    }
     double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        state.activationsHistory[historyIndex]
+        activations
     );
-    // update state
-    state.rewardsHistory[historyIndex] = reward;
     return new StateAndOutput(
-        new State(age + 1, newWeights, state.activationsHistory, state.rewardsHistory),
+        state.update(newActivations, reward),
         newActivations[neurons.length - 1]
     );
   }
@@ -239,7 +205,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
         state.age,
         HebbianMultiLayerPerceptron.deepCopy(state.weights, neurons),
         deepCopy(state.activationsHistory, historyLength, neurons),
-        Arrays.copyOf(state.rewardsHistory, historyLength)
+        Arrays.copyOf(state.rewardsHistory, historyLength),
+        state.layersHistory, // TODO make a deep copy
+        Arrays.copyOf(state.networkHistory, historyLength)
     );
     return new FrozenableNumericalDynamicalSystem<State>() {
       private State innerState = initialState;
@@ -317,6 +285,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
         0,
         HebbianMultiLayerPerceptron.emptyArray(neurons),
         emptyActivations(historyLength, neurons),
+        new double[historyLength],
+        new double[emptyActivations(historyLength, neurons).length][historyLength],
         new double[historyLength]
     );
     if (weightInitializationType.equals(HebbianMultiLayerPerceptron.WeightInitializationType.RANDOM)) {
@@ -352,13 +322,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     private static Statistics from(double[] history, long age) {
       int currentIdx = (int) (age) % history.length;
       int oldestIdx = (age < history.length) ? 0 : (int) (age + 1) % history.length;
-      double avg = Arrays.stream(history).average().orElse(0);
-      double stdDev = Math.sqrt(
-          Arrays.stream(history)
-              .map(v -> Math.pow(v - avg, 2))
-              .average()
-              .orElse(0)
-      );
+      double avg = 0;
+      double numerator = 0;
+      for (double v : history) {
+        avg += v;
+        numerator += Math.pow(v - avg, 2);
+      }
+      avg /= history.length;
+      double stdDev = Math.sqrt(numerator / history.length);
       double current = history[currentIdx];
       double trend = current - history[oldestIdx]; // newest - oldest
       return new Statistics(current, trend, avg, stdDev);
@@ -400,7 +371,27 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       long age,
       double[][][] weights,
       double[][][] activationsHistory,
-      double[] rewardsHistory
+      double[] rewardsHistory,
+      double[][] layersHistory, // history of average - layer wise - activation values
+      double[] networkHistory // history of average - network wise - activation values
   ) {
+    public State update(double[][] newActivations, double reward) {
+      int nOfNeurons = 0;
+      int historyIndex = (int) (age % rewardsHistory.length);
+      networkHistory[historyIndex] = 0;
+      for (int i = 0; i < newActivations.length; i++) {
+        layersHistory[i][historyIndex] = 0;
+        for (int j = 0; j < newActivations[i].length; j++) {
+          activationsHistory[i][j][historyIndex] = newActivations[i][j];
+          layersHistory[i][historyIndex] += newActivations[i][j];
+          networkHistory[historyIndex] += newActivations[i][j];
+        }
+        layersHistory[i][historyIndex] /= activationsHistory[i].length;
+        nOfNeurons += activationsHistory[i].length;
+      }
+      networkHistory[historyIndex] /= nOfNeurons;
+      rewardsHistory[historyIndex] = reward;
+      return new State(age + 1, weights, activationsHistory, rewardsHistory, layersHistory, networkHistory);
+    }
   }
 }
