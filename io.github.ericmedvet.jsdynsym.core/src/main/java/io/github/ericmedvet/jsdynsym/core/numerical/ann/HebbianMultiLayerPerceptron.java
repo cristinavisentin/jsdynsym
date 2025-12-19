@@ -24,6 +24,7 @@ import io.github.ericmedvet.jnb.datastructure.NumericalParametrized;
 import io.github.ericmedvet.jsdynsym.core.numerical.FrozenableNumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalTimeInvariantDynamicalSystem;
+
 import java.util.Arrays;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
@@ -38,6 +39,8 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
   private final double[][][] initialWeights;
   private final int[] neurons;
   private final double learningRate;
+  private final int weightsUpdateInterval;
+  private int stepCounter;
   private final DoubleRange initialWeightRange;
   private final ParametrizationType parametrizationType;
   private final WeightInitializationType weightInitializationType;
@@ -53,6 +56,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       double[][][] initialWeights,
       int[] neurons,
       double learningRate,
+      int weightsUpdateInterval,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator,
       ParametrizationType parametrizationType,
@@ -66,6 +70,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
     this.initialWeights = initialWeights;
     this.neurons = neurons;
     this.learningRate = learningRate;
+    this.weightsUpdateInterval = weightsUpdateInterval;
     this.initialWeightRange = initialWeightRange;
     this.randomGenerator = randomGenerator;
     this.parametrizationType = parametrizationType;
@@ -80,6 +85,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       int nOfOutput,
       double[] params,
       double learningRate,
+      int weightsUpdateInterval,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator,
       ParametrizationType parametrizationType,
@@ -91,6 +97,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
         innerNeurons,
         nOfOutput,
         learningRate,
+        weightsUpdateInterval,
         initialWeightRange,
         randomGenerator,
         parametrizationType,
@@ -105,6 +112,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
       int[] innerNeurons,
       int nOfOutput,
       double learningRate,
+      int weightsUpdateInterval,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator,
       ParametrizationType parametrizationType,
@@ -119,6 +127,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
         emptyArray(MultiLayerPerceptron.countNeurons(nOfInput, innerNeurons, nOfOutput)),
         MultiLayerPerceptron.countNeurons(nOfInput, innerNeurons, nOfOutput),
         learningRate,
+        weightsUpdateInterval,
         initialWeightRange,
         randomGenerator,
         parametrizationType,
@@ -245,12 +254,14 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
   public double[] step(double[] input) {
     // update weights
     double[][][] newWeights = state.weights;
-    for (int i = 1; i < neurons.length; i++) {
-      for (int j = 0; j < newWeights[i - 1].length; j++) {
-        double postActivation = state.activations[i][j];
-        for (int k = 1; k < newWeights[i - 1][j].length; k++) {
-          double preActivation = state.activations[i - 1][k - 1];
-          newWeights[i - 1][j][k] += learningRate * (as[i - 1][j][k] * preActivation + bs[i - 1][j][k] * postActivation + cs[i - 1][j][k] * preActivation * postActivation + ds[i - 1][j][k]);
+    if (stepCounter > 0 && stepCounter % weightsUpdateInterval == 0) {
+      for (int i = 1; i < neurons.length; i++) {
+        for (int j = 0; j < newWeights[i - 1].length; j++) {
+          double postActivation = state.activations[i][j];
+          for (int k = 1; k < newWeights[i - 1][j].length; k++) {
+            double preActivation = state.activations[i - 1][k - 1];
+            newWeights[i - 1][j][k] += learningRate * (as[i - 1][j][k] * preActivation + bs[i - 1][j][k] * postActivation + cs[i - 1][j][k] * preActivation * postActivation + ds[i - 1][j][k]);
+          }
         }
       }
     }
@@ -261,7 +272,8 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
         activationFunction,
         state.activations
     );
-    // update state
+    // update state and counter
+    stepCounter += 1;
     state = new State(newWeights, newActivations);
     return newActivations[neurons.length - 1];
   }
@@ -283,6 +295,7 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
 
   @Override
   public void reset() {
+    stepCounter = 0;
     state = new State(
         switch (weightInitializationType) {
           case PARAMS -> deepCopy(initialWeights, neurons);
