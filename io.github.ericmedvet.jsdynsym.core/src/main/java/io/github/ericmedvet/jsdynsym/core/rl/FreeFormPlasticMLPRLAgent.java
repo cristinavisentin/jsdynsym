@@ -26,6 +26,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.NumericalStatelessSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
+
 import java.util.*;
 import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
@@ -41,12 +42,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   private static final String POST_SYNAPTIC_NEURON_INDEX = "postSynapticNeuronIdx";
   private static final String LAYER_INDEX = "layerIdx";
   private final MultiLayerPerceptron.ActivationFunction activationFunction;
+  private final int weightsUpdateInterval;
   private final int[] neurons;
   private final int historyLength;
-  private final HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType;
   private final DoubleRange initialWeightRange;
-  private final RandomGenerator randomGenerator;
   private NamedUnivariateRealFunction plasticityFunction;
+  private final HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType;
+  private final RandomGenerator randomGenerator;
+  private int stepCounter;
   private State state;
 
   public FreeFormPlasticMLPRLAgent(
@@ -54,6 +57,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       NamedUnivariateRealFunction plasticityFunction,
       int[] neurons,
       int historyLength,
+      int weightsUpdateInterval,
       HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator
@@ -65,6 +69,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     this.plasticityFunction = plasticityFunction;
     this.neurons = neurons;
     this.historyLength = historyLength;
+    this.weightsUpdateInterval = weightsUpdateInterval;
     this.weightInitializationType = weightInitializationType;
     this.initialWeightRange = initialWeightRange;
     this.randomGenerator = randomGenerator;
@@ -78,6 +83,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       int[] innerNeurons,
       int nOfOutput,
       int historyLength,
+      int weightsUpdateInterval,
       HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType,
       DoubleRange initialWeightRange,
       RandomGenerator randomGenerator
@@ -87,6 +93,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
         plasticityFunction,
         MultiLayerPerceptron.countNeurons(nOfInput, innerNeurons, nOfOutput),
         historyLength,
+        weightsUpdateInterval,
         weightInitializationType,
         initialWeightRange,
         randomGenerator
@@ -110,11 +117,12 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       State state,
       MultiLayerPerceptron.ActivationFunction activationFunction,
       NamedUnivariateRealFunction plasticityFunction,
-      int[] neurons
+      int[] neurons,
+      boolean isUpdateStep
   ) {
     long age = state.age;
     double[][][] newWeights = state.weights;
-    if (age > 0) {
+    if (age > 0 && isUpdateStep) {
       Map<String, Double> inputParameters = new HashMap<>();
       // statistics network wise
       inputParameters.put(AGE, (double) age);
@@ -160,12 +168,20 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     );
   }
 
-  private static double[][][] deepCopy(double[][][] src, int historyLength, int[] neurons) {
+  private static double[][][] deepCopy3D(double[][][] src, int historyLength, int[] neurons) {
     double[][][] copy = emptyActivations(historyLength, neurons);
     for (int i = 0; i < src.length; i++) {
       for (int j = 0; j < src[i].length; j++) {
         copy[i][j] = Arrays.copyOf(src[i][j], src[i][j].length);
       }
+    }
+    return copy;
+  }
+
+  private static double[][] deepCopy2D(double[][] src) {
+    double[][] copy = new double[src.length][];
+    for (int i = 0; i < src.length; i++) {
+      copy[i] = Arrays.copyOf(src[i], src[i].length);
     }
     return copy;
   }
@@ -204,13 +220,14 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
     final State initialState = new State(
         state.age,
         HebbianMultiLayerPerceptron.deepCopy(state.weights, neurons),
-        deepCopy(state.activationsHistory, historyLength, neurons),
+        deepCopy3D(state.activationsHistory, historyLength, neurons),
         Arrays.copyOf(state.rewardsHistory, historyLength),
-        state.layersHistory, // TODO make a deep copy
+        deepCopy2D(state.layersHistory),
         Arrays.copyOf(state.networkHistory, historyLength)
     );
     return new FrozenableNumericalDynamicalSystem<State>() {
       private State innerState = initialState;
+      private int innerStepCounter;
 
       @Override
       public NumericalStatelessSystem stateless() {
@@ -238,19 +255,23 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
       @Override
       public void reset() {
+        innerStepCounter = 0;
         innerState = initialState;
       }
 
       @Override
       public double[] step(double t, double[] input) {
+        boolean isUpdateStep = innerStepCounter > 0 && innerStepCounter % weightsUpdateInterval == 0;
         StateAndOutput step = FreeFormPlasticMLPRLAgent.step(
             input,
             0,
             innerState,
             activationFunction,
             plasticityFunction,
-            neurons
+            neurons,
+            isUpdateStep
         );
+        innerStepCounter += 1;
         innerState = step.state;
         return step.output;
       }
@@ -269,8 +290,10 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
   @Override
   public double[] step(double[] input, double reward) {
-    StateAndOutput step = step(input, reward, state, activationFunction, plasticityFunction, neurons);
+    boolean isUpdateStep = stepCounter > 0 && stepCounter % weightsUpdateInterval == 0;
+    StateAndOutput step = step(input, reward, state, activationFunction, plasticityFunction, neurons, isUpdateStep);
     state = step.state;
+    stepCounter += 1;
     return step.output;
   }
 
@@ -281,6 +304,7 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
 
   @Override
   public void reset() {
+    stepCounter = 0;
     state = new State(
         0,
         HebbianMultiLayerPerceptron.emptyArray(neurons),

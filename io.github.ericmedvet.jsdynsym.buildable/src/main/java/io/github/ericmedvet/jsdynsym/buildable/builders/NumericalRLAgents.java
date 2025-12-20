@@ -29,6 +29,7 @@ import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.named.NamedUnivariateRealFunction;
 import io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent;
 import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -47,6 +48,7 @@ public class NumericalRLAgents {
       @Param("innerLayers") List<Integer> innerLayers,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "historyLength", dI = 10) int historyLength,
+      @Param(value = "weightsUpdateInterval", dI = 1) int weightsUpdateInterval,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.1;max=0.1)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
       @Param(value = "weightInitializationType", dS = "random") HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType
@@ -67,6 +69,7 @@ public class NumericalRLAgents {
         innerLayers.stream().mapToInt(i -> i).toArray(),
         eNds.nOfOutputs(),
         historyLength,
+        weightsUpdateInterval,
         weightInitializationType,
         initialWeightRange,
         randomGenerator
