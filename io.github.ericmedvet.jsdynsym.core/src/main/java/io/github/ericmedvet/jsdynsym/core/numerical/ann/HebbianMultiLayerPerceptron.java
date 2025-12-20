@@ -40,11 +40,11 @@ public class HebbianMultiLayerPerceptron implements NumericalTimeInvariantDynami
   private final int[] neurons;
   private final double learningRate;
   private final int weightsUpdateInterval;
-  private int stepCounter;
   private final DoubleRange initialWeightRange;
   private final ParametrizationType parametrizationType;
   private final WeightInitializationType weightInitializationType;
   private final RandomGenerator randomGenerator;
+  private int stepCounter;
   private State state;
 
   public HebbianMultiLayerPerceptron(
