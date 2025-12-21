@@ -152,15 +152,11 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       }
     }
     // compute output
-    double[][] activations = new double[neurons.length][];
-    for (int i = 0; i < neurons.length; i++) {
-      activations[i] = new double[neurons[i]];
-    }
     double[][] newActivations = MultiLayerPerceptron.computeActivations(
         input,
         newWeights,
         activationFunction,
-        activations
+        state.getCurrentAgeActivations()
     );
     return new StateAndOutput(
         state.update(newActivations, reward),
@@ -292,8 +288,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   public double[] step(double[] input, double reward) {
     boolean isUpdateStep = stepCounter > 0 && stepCounter % weightsUpdateInterval == 0;
     StateAndOutput step = step(input, reward, state, activationFunction, plasticityFunction, neurons, isUpdateStep);
-    state = step.state;
     stepCounter += 1;
+    state = step.state;
     return step.output;
   }
 
@@ -416,6 +412,18 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       networkHistory[historyIndex] /= nOfNeurons;
       rewardsHistory[historyIndex] = reward;
       return new State(age + 1, weights, activationsHistory, rewardsHistory, layersHistory, networkHistory);
+    }
+
+    public double[][] getCurrentAgeActivations() {
+      int historyIndex = (int) (age % rewardsHistory.length);
+      double[][] activations = new double[activationsHistory.length][];
+      for (int i = 0; i < activations.length; i++) {
+        activations[i] = new double[activationsHistory[i].length];
+        for (int j = 0; j < activationsHistory[i].length; j++) {
+          activations[i][j] = activationsHistory[i][j][historyIndex];
+        }
+      }
+      return activations;
     }
   }
 }
