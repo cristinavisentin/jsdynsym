@@ -31,6 +31,7 @@ import java.util.random.RandomGenerator;
 
 @Discoverable(prefixTemplate = "dynamicalSystem|dynSys|ds.simulation|sim|s")
 public class Simulations {
+
   private Simulations() {
   }
 
