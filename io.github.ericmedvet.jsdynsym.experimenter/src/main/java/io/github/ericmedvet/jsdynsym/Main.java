@@ -25,6 +25,7 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.control.Environment;
 import io.github.ericmedvet.jsdynsym.control.Simulation;
 import io.github.ericmedvet.jsdynsym.control.SingleAgentTask;
+import io.github.ericmedvet.jsdynsym.control.SingleRLAgentTask;
 import io.github.ericmedvet.jsdynsym.control.navigation.Arena;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationDrawer;
 import io.github.ericmedvet.jsdynsym.control.navigation.NavigationEnvironment;
@@ -35,6 +36,8 @@ import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
 import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+import io.github.ericmedvet.jsdynsym.core.rl.FreeFormPlasticMLPRLAgent;
+import io.github.ericmedvet.jsdynsym.core.rl.NumericalReinforcementLearningAgent;
 import io.github.ericmedvet.jviz.core.drawer.Drawer;
 import io.github.ericmedvet.jviz.core.drawer.Drawer.Arrangement;
 import java.io.File;
@@ -48,8 +51,73 @@ public class Main {
 
   public static void main(String[] args) throws IOException {
     // navigation();
+    // testMlp();
     // pointNavigation();
-    hebbianNavigation();
+    // hebbianNavigation();
+    // testHebbian();
+    freeFormNavigation();
+  }
+
+  public static void freeFormNavigation() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], ?> task = (SingleRLAgentTask<NumericalReinforcementLearningAgent<?>, double[], double[], ?>) nb
+        .build(
+            """
+                ds.srlat.fromNumericalEnvironment(
+                  environment = ds.e.navigation(
+                    arena = ds.arena.prepared(name = empty)
+                  );
+                  reward = ds.e.nav.reward.reaching()
+                )
+                """
+        );
+    @SuppressWarnings("unchecked") FreeFormPlasticMLPRLAgent ffmlp = ((Function<NumericalReinforcementLearningAgent<?>, FreeFormPlasticMLPRLAgent>) nb
+        .build(
+            "ds.rl.num.freeFormMlp(innerLayers = [8]; randomGenerator = m.defaultRG(seed = -1))"
+        )).apply(task.example().orElseThrow());
+    int runs = 10;
+    for (int r = 0; r < runs; r++) {
+      long startTime = System.nanoTime();
+      for (int i = 0; i < 5000; i++) {
+        ffmlp.reset();
+        //      Simulation.Outcome<? extends SingleAgentTask.Step<ReinforcementLearningAgent.RewardedInput<double[]>, double[], ?>> outcome =
+        task.simulate(ffmlp, 0.1, new DoubleRange(0, 30));
+        //        Point finalRobotPosition = ((NavigationEnvironment.State) outcome.snapshots()
+        //            .get(outcome.snapshots().lastKey())
+        //            .state()).robotPosition();
+        //        System.out.printf("%.2f;%.2f%n", finalRobotPosition.x(), finalRobotPosition.y());
+      }
+      long elapsedNanos = System.nanoTime() - startTime;
+      System.out.printf("%.2f%n", elapsedNanos / 1e9);
+    }
+  }
+
+  public static void testHebbian() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                    arena = ds.arena.prepared(name = empty)
+                )
+                """
+        );
+    @SuppressWarnings("unchecked") HebbianMultiLayerPerceptron hmlp = ((Function<NumericalDynamicalSystem<?>, HebbianMultiLayerPerceptron>) nb
+        .build(
+            "ds.num.hebbianMlp(innerLayers = [8]; weightInitializationType = zeros)"
+        )).apply(environment.exampleAgent());
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, true);
+    int runs = 10;
+    for (int r = 0; r < runs; r++) {
+      long startTime = System.nanoTime();
+      for (int i = 0; i < 1000; i++) {
+        hmlp.reset();
+        task.simulate(hmlp, 0.1, new DoubleRange(0, 30));
+      }
+      long elapsedNanos = System.nanoTime() - startTime;
+      System.out.printf("%.2f%n", elapsedNanos / 1e9);
+    }
   }
 
   public static void hebbianNavigation() {
@@ -74,7 +142,6 @@ public class Main {
             "ds.num.hebbianMlp(innerLayers = [16]; learningRate = 0.02; weightInitializationType = params; parametrizationType = synapse)"
         )).apply(environment.exampleAgent());
     hmlp.randomize(new Random(2), DoubleRange.SYMMETRIC_UNIT);
-
     SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
         .fromEnvironment(() -> environment, s -> false, true);
     Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>> outcome = task.simulate(
@@ -82,7 +149,6 @@ public class Main {
         0.1,
         new DoubleRange(0, 30)
     );
-
     NavigationDrawer d = new NavigationDrawer(NavigationDrawer.Configuration.DEFAULT);
     @SuppressWarnings("unchecked") Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double> fitness = (Function<Simulation.Outcome<SingleAgentTask.Step<double[], double[], NavigationEnvironment.State>>, Double>) nb
         .build("ds.e.n.arenaCoverage()");
@@ -98,6 +164,33 @@ public class Main {
         .show(
             DoubleStream.iterate(0.05, v -> v <= 0.25, v -> v + 0.025).boxed().map(tResF).toList()
         );
+  }
+
+  public static void testMlp() {
+    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
+    @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
+        .build(
+            """
+                ds.e.navigation(
+                    arena = ds.arena.prepared(name = empty)
+                )
+                """
+        );
+    @SuppressWarnings("unchecked") MultiLayerPerceptron mlp = ((Function<NumericalDynamicalSystem<?>, MultiLayerPerceptron>) nb
+        .build(
+            "ds.num.mlp(innerLayers = [8])"
+        )).apply(environment.exampleAgent());
+    SingleAgentTask<NumericalDynamicalSystem<?>, double[], double[], NavigationEnvironment.State> task = SingleAgentTask
+        .fromEnvironment(() -> environment, s -> false, true);
+    int runs = 10;
+    for (int r = 0; r < runs; r++) {
+      long startTime = System.nanoTime();
+      for (int i = 0; i < 1000; i++) {
+        task.simulate(mlp, 0.1, new DoubleRange(0, 30));
+      }
+      long elapsedNanos = System.nanoTime() - startTime;
+      System.out.printf("%.2f%n", elapsedNanos / 1e9);
+    }
   }
 
   public static void navigation() {

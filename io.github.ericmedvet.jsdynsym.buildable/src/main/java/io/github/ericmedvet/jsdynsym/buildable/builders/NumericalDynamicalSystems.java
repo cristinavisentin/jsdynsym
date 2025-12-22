@@ -27,15 +27,11 @@ import io.github.ericmedvet.jnb.datastructure.DoubleRange;
 import io.github.ericmedvet.jsdynsym.core.composed.InStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.OutStepped;
 import io.github.ericmedvet.jsdynsym.core.composed.Stepped;
-import io.github.ericmedvet.jsdynsym.core.numerical.EnhancedInput;
-import io.github.ericmedvet.jsdynsym.core.numerical.LinearCombination;
-import io.github.ericmedvet.jsdynsym.core.numerical.MultivariateRealFunction;
-import io.github.ericmedvet.jsdynsym.core.numerical.Noised;
-import io.github.ericmedvet.jsdynsym.core.numerical.NumericalDynamicalSystem;
-import io.github.ericmedvet.jsdynsym.core.numerical.Sinusoidal;
+import io.github.ericmedvet.jsdynsym.core.numerical.*;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.DelayedRecurrentNetwork;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.HebbianMultiLayerPerceptron;
 import io.github.ericmedvet.jsdynsym.core.numerical.ann.MultiLayerPerceptron;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
@@ -91,6 +87,7 @@ public class NumericalDynamicalSystems {
       @Param(value = "nOfInnerLayers", dI = 1) int nOfInnerLayers,
       @Param("innerLayers") List<Integer> innerLayers,
       @Param(value = "learningRate", dD = 0.01) double learningRate,
+      @Param(value = "weightsUpdateInterval", dI = 1) int weightsUpdateInterval,
       @Param(value = "activationFunction", dS = "tanh") MultiLayerPerceptron.ActivationFunction activationFunction,
       @Param(value = "initialWeightRange", dNPM = "m.range(min=-0.1;max=0.1)") DoubleRange initialWeightRange,
       @Param(value = "randomGenerator", dNPM = "m.defaultRG()") RandomGenerator randomGenerator,
@@ -103,6 +100,7 @@ public class NumericalDynamicalSystems {
         innerLayers.stream().mapToInt(i -> i).toArray(),
         eNds.nOfOutputs(),
         learningRate,
+        weightsUpdateInterval,
         initialWeightRange,
         randomGenerator,
         parametrizationType,
