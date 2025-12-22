@@ -46,9 +46,9 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   private final int[] neurons;
   private final int historyLength;
   private final DoubleRange initialWeightRange;
-  private NamedUnivariateRealFunction plasticityFunction;
   private final HebbianMultiLayerPerceptron.WeightInitializationType weightInitializationType;
   private final RandomGenerator randomGenerator;
+  private NamedUnivariateRealFunction plasticityFunction;
   private int stepCounter;
   private State state;
 
@@ -340,16 +340,19 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
   ) {
 
     private static Statistics from(double[] history, long age) {
-      int currentIdx = (int) (age) % history.length;
-      int oldestIdx = (age < history.length) ? 0 : (int) (age + 1) % history.length;
+      int n = history.length;
+      int currentIdx = (int) (age) % n;
+      int oldestIdx = (age < n) ? 0 : (int) (age + 1) % n;
       double avg = 0;
-      double numerator = 0;
       for (double v : history) {
         avg += v;
-        numerator += Math.pow(v - avg, 2);
       }
-      avg /= history.length;
-      double stdDev = Math.sqrt(numerator / history.length);
+      avg /= n;
+      double numerator = 0;
+      for (double v : history) {
+        numerator += (v - avg) * (v - avg);
+      }
+      double stdDev = Math.sqrt(numerator / n);
       double current = history[currentIdx];
       double trend = current - history[oldestIdx]; // newest - oldest
       return new Statistics(current, trend, avg, stdDev);
@@ -392,8 +395,8 @@ public class FreeFormPlasticMLPRLAgent implements NumericalTimeInvariantReinforc
       double[][][] weights,
       double[][][] activationsHistory,
       double[] rewardsHistory,
-      double[][] layersHistory, // history of average - layer wise - activation values
-      double[] networkHistory // history of average - network wise - activation values
+      double[][] layersHistory,
+      double[] networkHistory
   ) {
     public State update(double[][] newActivations, double reward) {
       int nOfNeurons = 0;
