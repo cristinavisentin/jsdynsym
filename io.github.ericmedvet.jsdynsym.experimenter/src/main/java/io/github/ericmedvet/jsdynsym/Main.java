@@ -50,9 +50,9 @@ public class Main {
     // navigation();
     // pointNavigation();
     // hebbianNavigation();
-    // testMlp(10, 5000);
+    testMlp(10, 5000);
     // testHebbian(10, 2000);
-    testFreeForm(10, 1000);
+    // testFreeForm(10, 1000);
   }
 
   public static void hebbianNavigation() {
@@ -251,6 +251,7 @@ public class Main {
     test(
         runs,
         nOfSimulations,
+        nb,
         hmlp,
         HebbianMultiLayerPerceptron::reset
     );
@@ -265,6 +266,7 @@ public class Main {
     test(
         runs,
         nOfSimulations,
+        nb,
         mlp,
         m -> {
         }
@@ -274,10 +276,10 @@ public class Main {
   private static <A> void test(
       int runs,
       int nOfSimulations,
+      NamedBuilder<?> nb,
       Function<NumericalDynamicalSystem<?>, A> ds,
       Consumer<A> consumer
   ) {
-    NamedBuilder<?> nb = NamedBuilder.fromDiscovery();
     @SuppressWarnings("unchecked") Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>> environment = (Environment<double[], double[], NavigationEnvironment.State, NumericalDynamicalSystem<?>>) nb
         .build(
             """
